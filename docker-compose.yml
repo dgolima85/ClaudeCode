@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: file:./prisma/data/dev.db
+      # Defina como "true" apenas na primeira subida, para popular analistas
+      # e listas auxiliares de exemplo. Volte para "false" depois.
+      SEED_ON_BOOT: "false"
+    volumes:
+      - db-data:/app/prisma/data
+    restart: unless-stopped
+
+volumes:
+  db-data:
