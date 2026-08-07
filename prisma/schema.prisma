@@ -1,0 +1,141 @@
+// Sistema de Passagem de Turno — NOC/VOC
+// SQLite não suporta enum nativamente: Turno e Status são String,
+// validados na camada de aplicação (ver src/lib/turno.ts e src/lib/status.ts).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Analista {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  turno     String
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ocorrencias Ocorrencia[] @relation("OcorrenciaAnalista")
+  eventos     Evento[]
+
+  @@map("analistas")
+}
+
+model TipoOcorrencia {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("tipos_ocorrencia")
+}
+
+model Parceria {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  empresas    Empresa[]
+  ocorrencias Ocorrencia[]
+
+  @@map("parcerias")
+}
+
+model Empresa {
+  id          String       @id @default(cuid())
+  nome        String
+  parceriaId  String
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  parceria    Parceria     @relation(fields: [parceriaId], references: [id], onDelete: Restrict)
+  ocorrencias Ocorrencia[]
+
+  @@unique([parceriaId, nome])
+  @@map("empresas")
+}
+
+model Ambiente {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("ambientes")
+}
+
+model Servico {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("servicos")
+}
+
+model SistemaOperacional {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("sistemas_operacionais")
+}
+
+model Ocorrencia {
+  id                   String    @id @default(cuid())
+  tipoId               String
+  status               String    @default("EM_ANDAMENTO")
+  titulo               String
+  ticket               String?
+  analistaId           String
+  parceriaId           String?
+  empresaId            String?
+  ambienteId           String?
+  servicoId            String?
+  sistemaOperacionalId String?
+  resolvidoEm          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  tipo               TipoOcorrencia      @relation(fields: [tipoId], references: [id], onDelete: Restrict)
+  analista            Analista           @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
+  parceria            Parceria?          @relation(fields: [parceriaId], references: [id], onDelete: Restrict)
+  empresa             Empresa?           @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  ambiente            Ambiente?          @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
+  servico             Servico?           @relation(fields: [servicoId], references: [id], onDelete: Restrict)
+  sistemaOperacional  SistemaOperacional? @relation(fields: [sistemaOperacionalId], references: [id], onDelete: Restrict)
+  eventos             Evento[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("ocorrencias")
+}
+
+model Evento {
+  id           String   @id @default(cuid())
+  ocorrenciaId String
+  analistaId   String
+  comentario   String
+  createdAt    DateTime @default(now())
+
+  ocorrencia Ocorrencia @relation(fields: [ocorrenciaId], references: [id], onDelete: Cascade)
+  analista   Analista   @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+
+  @@index([ocorrenciaId])
+  @@map("eventos")
+}
