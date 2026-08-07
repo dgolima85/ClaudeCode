@@ -3,7 +3,4 @@ node_modules
 .git
 .gitignore
 npm-debug.log*
-prisma/*.db
-prisma/*.db-journal
-prisma/data
 .env

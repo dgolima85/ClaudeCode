@@ -1,6 +1,6 @@
 // Sistema de Passagem de Turno — NOC/VOC
-// SQLite não suporta enum nativamente: Turno e Status são String,
-// validados na camada de aplicação (ver src/lib/turno.ts e src/lib/status.ts).
+// Turno e Status são String (não enum do schema) para manter os mesmos
+// valores/validação usados no app, ver src/lib/turno.ts e src/lib/status.ts.
 
 generator client {
   provider = "prisma-client"
@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Analista {
