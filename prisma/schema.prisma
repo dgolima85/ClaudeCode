@@ -96,6 +96,28 @@ model SistemaOperacional {
   @@map("sistemas_operacionais")
 }
 
+model Causa {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("causas")
+}
+
+model Solucao {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("solucoes")
+}
+
 model Ocorrencia {
   id                   String    @id @default(cuid())
   tipoId               String
@@ -109,6 +131,10 @@ model Ocorrencia {
   servicoId            String?
   sistemaOperacionalId String?
   resolvidoEm          DateTime?
+  causaId              String?
+  causaOutraDescricao  String?
+  solucaoId            String?
+  solucaoOutraDescricao String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -119,6 +145,8 @@ model Ocorrencia {
   ambiente            Ambiente?          @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
   servico             Servico?           @relation(fields: [servicoId], references: [id], onDelete: Restrict)
   sistemaOperacional  SistemaOperacional? @relation(fields: [sistemaOperacionalId], references: [id], onDelete: Restrict)
+  causa               Causa?             @relation(fields: [causaId], references: [id], onDelete: Restrict)
+  solucao             Solucao?           @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
   eventos             Evento[]
 
   @@index([status])

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
-import { novaOcorrenciaSchema } from "@/lib/validations";
+import { novaOcorrenciaSchema, normalizacaoOcorrenciaSchema } from "@/lib/validations";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 
 export async function criarOcorrencia(dados: {
@@ -37,17 +37,95 @@ export async function atualizarStatusOcorrencia(
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
   if (!isStatusOcorrencia(status)) return { error: "Status inválido." };
+  if (status === "RESOLVIDO") {
+    return {
+      error: "Para marcar como resolvido, preencha a normalização da ocorrência (causa e solução).",
+    };
+  }
 
   await prisma.ocorrencia.update({
     where: { id },
     data: {
       status,
-      resolvidoEm: status === "RESOLVIDO" ? new Date() : null,
+      resolvidoEm: null,
+      causaId: null,
+      causaOutraDescricao: null,
+      solucaoId: null,
+      solucaoOutraDescricao: null,
     },
   });
 
   revalidatePath("/");
   return {};
+}
+
+export async function normalizarOcorrencia(
+  id: string,
+  dados: {
+    causaId: string | null;
+    causaOutra: string;
+    solucaoId: string | null;
+    solucaoOutra: string;
+  },
+): Promise<{ error?: string }> {
+  await exigirAnalistaLogado();
+  const parsed = normalizacaoOcorrenciaSchema.safeParse(dados);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
+
+  await prisma.ocorrencia.update({
+    where: { id },
+    data: {
+      status: "RESOLVIDO",
+      resolvidoEm: new Date(),
+      causaId: parsed.data.causaId || null,
+      causaOutraDescricao: parsed.data.causaId ? null : parsed.data.causaOutra,
+      solucaoId: parsed.data.solucaoId || null,
+      solucaoOutraDescricao: parsed.data.solucaoId ? null : parsed.data.solucaoOutra,
+    },
+  });
+
+  revalidatePath("/");
+  return {};
+}
+
+export type DadosNormalizacaoOcorrencia = {
+  id: string;
+  titulo: string;
+  tipo: string;
+  parceriaEmpresa: string | null;
+  ambiente: string | null;
+  servico: string | null;
+  causas: ItemReferencia[];
+  solucoes: ItemReferencia[];
+};
+
+export async function buscarDadosNormalizacaoOcorrencia(
+  id: string,
+): Promise<DadosNormalizacaoOcorrencia | null> {
+  await exigirAnalistaLogado();
+
+  const [o, causas, solucoes] = await Promise.all([
+    prisma.ocorrencia.findUnique({
+      where: { id },
+      include: { tipo: true, parceria: true, empresa: true, ambiente: true, servico: true },
+    }),
+    prisma.causa.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+    prisma.solucao.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+  ]);
+  if (!o) return null;
+
+  const parceriaEmpresa = [o.parceria?.nome, o.empresa?.nome].filter(Boolean).join(" / ") || null;
+
+  return {
+    id: o.id,
+    titulo: o.titulo,
+    tipo: o.tipo.nome,
+    parceriaEmpresa,
+    ambiente: o.ambiente?.nome ?? null,
+    servico: o.servico?.nome ?? null,
+    causas: causas.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
+    solucoes: solucoes.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
+  };
 }
 
 export async function atualizarTituloOcorrencia(
@@ -91,6 +169,9 @@ export type OcorrenciaDetalhe = {
   titulo: string;
   ticket: string | null;
   createdAt: string;
+  resolvidoEm: string | null;
+  causa: string | null;
+  solucao: string | null;
   tipoId: string;
   analista: { id: string; nome: string };
   parceriaId: string | null;
@@ -113,6 +194,8 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
     where: { id },
     include: {
       analista: true,
+      causa: true,
+      solucao: true,
       eventos: {
         include: { analista: true },
         orderBy: { createdAt: "desc" },
@@ -127,6 +210,9 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),
+    resolvidoEm: o.resolvidoEm ? o.resolvidoEm.toISOString() : null,
+    causa: o.causa?.nome ?? o.causaOutraDescricao ?? null,
+    solucao: o.solucao?.nome ?? o.solucaoOutraDescricao ?? null,
     tipoId: o.tipoId,
     analista: { id: o.analista.id, nome: o.analista.nome },
     parceriaId: o.parceriaId,

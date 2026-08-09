@@ -8,11 +8,12 @@ type ModalProps = {
   onClose: () => void;
   title?: ReactNode;
   children: ReactNode;
+  zIndexClassName?: string;
 };
 
-export default function Modal({ open, onClose, title, children }: ModalProps) {
+export default function Modal({ open, onClose, title, children, zIndexClassName = "z-50" }: ModalProps) {
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-50">
+    <Dialog open={open} onClose={onClose} className={`relative ${zIndexClassName}`}>
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
         <DialogPanel className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-white shadow-xl">

@@ -8,6 +8,8 @@ const LINKS = [
   { href: "/admin/ambientes", label: "Ambientes" },
   { href: "/admin/servicos", label: "Serviços" },
   { href: "/admin/sistemas-operacionais", label: "Sistemas Operacionais" },
+  { href: "/admin/causas", label: "Causas" },
+  { href: "/admin/solucoes", label: "Soluções" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

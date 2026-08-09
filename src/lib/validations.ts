@@ -36,3 +36,19 @@ export const comentarioEventoSchema = z
   .trim()
   .min(1, "Comentário é obrigatório")
   .max(4000, "Comentário muito longo");
+
+export const normalizacaoOcorrenciaSchema = z
+  .object({
+    causaId: z.string().trim().nullable(),
+    causaOutra: z.string().trim().max(300, "Descrição da causa muito longa"),
+    solucaoId: z.string().trim().nullable(),
+    solucaoOutra: z.string().trim().max(300, "Descrição da solução muito longa"),
+  })
+  .refine((d) => Boolean(d.causaId) || d.causaOutra.length > 0, {
+    message: "Informe a causa da ocorrência.",
+    path: ["causaId"],
+  })
+  .refine((d) => Boolean(d.solucaoId) || d.solucaoOutra.length > 0, {
+    message: "Informe a solução da ocorrência.",
+    path: ["solucaoId"],
+  });

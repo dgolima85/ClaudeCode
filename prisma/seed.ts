@@ -57,6 +57,14 @@ async function main() {
     data: [{ nome: "Linux" }, { nome: "Windows Server" }, { nome: "Windows 10/11" }],
   });
 
+  await prisma.causa.createMany({
+    data: [{ nome: "Rompimento de Fibra" }, { nome: "Queda de Energia" }],
+  });
+
+  await prisma.solucao.createMany({
+    data: [{ nome: "Recuperação da Fibra" }, { nome: "Energia Restabelecida" }],
+  });
+
   console.log("Seed concluído.");
 }
 

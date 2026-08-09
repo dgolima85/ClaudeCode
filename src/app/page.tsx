@@ -29,6 +29,7 @@ export default async function HomePage({
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),
+    resolvidoEm: o.resolvidoEm ? o.resolvidoEm.toISOString() : null,
     tipo: { id: o.tipo.id, nome: o.tipo.nome },
     analista: { id: o.analista.id, nome: o.analista.nome },
   }));

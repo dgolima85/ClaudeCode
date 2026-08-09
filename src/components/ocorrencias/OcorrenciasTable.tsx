@@ -7,6 +7,7 @@ import NovaOcorrenciaRow from "./NovaOcorrenciaRow";
 import StatusSelect from "./StatusSelect";
 import EditableCell from "@/components/ui/EditableCell";
 import OcorrenciaModal from "./OcorrenciaModal";
+import NormalizacaoOcorrenciaModal from "./NormalizacaoOcorrenciaModal";
 import type { StatusOcorrencia } from "@/lib/status";
 import {
   criarOcorrencia,
@@ -22,6 +23,7 @@ export type OcorrenciaLinha = {
   titulo: string;
   ticket: string | null;
   createdAt: string;
+  resolvidoEm: string | null;
   tipo: { id: string; nome: string };
   analista: { id: string; nome: string };
 };
@@ -61,6 +63,7 @@ function TipoCell({ ocorrenciaId, tipoId, tipos }: { ocorrenciaId: string; tipoI
 
 export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaId }: OcorrenciasTableProps) {
   const [modalId, setModalId] = useState<string | null>(ocorrenciaAbertaId ?? null);
+  const [normalizandoId, setNormalizandoId] = useState<string | null>(null);
 
   function abrirModal(id: string) {
     setModalId(id);
@@ -84,7 +87,8 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
             <tr>
               <th className="px-3 py-2 text-left font-medium text-gray-600">Tipo</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Data e Hora</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600">Analista</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600">Ocorrência</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600">Ticket</th>
@@ -100,11 +104,22 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
                 <td className="px-3 py-2">
                   <StatusSelect
                     value={o.status}
-                    onChange={(novo) => atualizarStatusOcorrencia(o.id, novo)}
+                    onChange={async (novo) => {
+                      if (novo === "RESOLVIDO") {
+                        setNormalizandoId(o.id);
+                        return;
+                      }
+                      return atualizarStatusOcorrencia(o.id, novo);
+                    }}
                   />
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-gray-600">
                   {format(new Date(o.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+                  {o.resolvidoEm
+                    ? format(new Date(o.resolvidoEm), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                    : "—"}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-gray-600">{o.analista.nome}</td>
                 <td className="px-3 py-2">
@@ -136,7 +151,7 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
             ))}
             {ocorrencias.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-gray-400">
+                <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
                   Nenhuma ocorrência encontrada para os filtros selecionados.
                 </td>
               </tr>
@@ -146,6 +161,13 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
       </div>
 
       {modalId && <OcorrenciaModal ocorrenciaId={modalId} onClose={fecharModal} />}
+      {normalizandoId && (
+        <NormalizacaoOcorrenciaModal
+          ocorrenciaId={normalizandoId}
+          onClose={() => setNormalizandoId(null)}
+          onNormalizado={() => setNormalizandoId(null)}
+        />
+      )}
     </>
   );
 }

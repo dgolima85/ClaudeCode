@@ -8,6 +8,7 @@ import EditableCell from "@/components/ui/EditableCell";
 import StatusSelect from "./StatusSelect";
 import ParceriaEmpresaSelect from "./ParceriaEmpresaSelect";
 import EventosTable from "./EventosTable";
+import NormalizacaoOcorrenciaModal from "./NormalizacaoOcorrenciaModal";
 import {
   buscarOcorrenciaDetalhe,
   buscarListasReferenciaOcorrencia,
@@ -49,6 +50,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
   const [detalhe, setDetalhe] = useState<OcorrenciaDetalhe | null>(null);
   const [listas, setListas] = useState<Listas | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [normalizando, setNormalizando] = useState(false);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -115,8 +117,18 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
               <div className="mt-1">
                 <StatusSelect
                   value={detalhe.status}
-                  onChange={(novo) => {
-                    setDetalhe({ ...detalhe, status: novo });
+                  onChange={async (novo) => {
+                    if (novo === "RESOLVIDO") {
+                      setNormalizando(true);
+                      return;
+                    }
+                    setDetalhe({
+                      ...detalhe,
+                      status: novo,
+                      resolvidoEm: null,
+                      causa: null,
+                      solucao: null,
+                    });
                     return atualizarStatusOcorrencia(detalhe.id, novo);
                   }}
                 />
@@ -124,16 +136,38 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Data e Hora</span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Analista</span>
+              <p className="mt-1 text-sm text-gray-700">{detalhe.analista.nome}</p>
+            </div>
+
+            <div>
+              <span className="block text-xs font-medium uppercase text-gray-500">Início</span>
               <p className="mt-1 text-sm text-gray-700">
                 {format(new Date(detalhe.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
               </p>
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Analista</span>
-              <p className="mt-1 text-sm text-gray-700">{detalhe.analista.nome}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500">Fim</span>
+              <p className="mt-1 text-sm text-gray-700">
+                {detalhe.resolvidoEm
+                  ? format(new Date(detalhe.resolvidoEm), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                  : "—"}
+              </p>
             </div>
+
+            {detalhe.status === "RESOLVIDO" && (
+              <>
+                <div>
+                  <span className="block text-xs font-medium uppercase text-gray-500">Causa</span>
+                  <p className="mt-1 text-sm text-gray-700">{detalhe.causa ?? "—"}</p>
+                </div>
+                <div>
+                  <span className="block text-xs font-medium uppercase text-gray-500">Solução</span>
+                  <p className="mt-1 text-sm text-gray-700">{detalhe.solucao ?? "—"}</p>
+                </div>
+              </>
+            )}
 
             <div className="sm:col-span-2">
               <span className="block text-xs font-medium uppercase text-gray-500">Ocorrência</span>
@@ -247,6 +281,18 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             />
           </section>
         </div>
+      )}
+
+      {normalizando && detalhe && (
+        <NormalizacaoOcorrenciaModal
+          ocorrenciaId={detalhe.id}
+          onClose={() => setNormalizando(false)}
+          onNormalizado={async () => {
+            setNormalizando(false);
+            const atualizado = await buscarOcorrenciaDetalhe(detalhe.id);
+            if (atualizado) setDetalhe(atualizado);
+          }}
+        />
       )}
     </Modal>
   );
