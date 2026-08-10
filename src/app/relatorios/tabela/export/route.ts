@@ -6,6 +6,7 @@ import { parseFiltros, montarWhereOcorrencia, type SearchParamsRelatorio } from 
 import { STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
 import { TURNO_LABELS, type Turno } from "@/lib/turno";
 import { toCsv } from "@/lib/csv";
+import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 
 export async function GET(request: NextRequest) {
   await exigirAnalistaLogado();
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   const linhas = ocorrencias.map((o) => [
     o.tipo.nome,
     STATUS_LABELS[o.status as StatusOcorrencia] ?? o.status,
-    o.createdAt.toISOString(),
+    formatarDataHoraBR(o.createdAt),
     o.analista.nome,
     TURNO_LABELS[o.analista.turno as Turno] ?? o.analista.turno,
     o.titulo,

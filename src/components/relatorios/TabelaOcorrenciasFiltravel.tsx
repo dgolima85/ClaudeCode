@@ -1,5 +1,4 @@
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { STATUS_LABELS, STATUS_DOT_COLOR, type StatusOcorrencia } from "@/lib/status";
 import { TURNO_LABELS, type Turno } from "@/lib/turno";
 
@@ -44,7 +43,7 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
                 </span>
               </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600">
-                {format(new Date(l.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                {formatarDataHoraBR(l.createdAt)}
               </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600">{l.analista}</td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600">{TURNO_LABELS[l.turno]}</td>

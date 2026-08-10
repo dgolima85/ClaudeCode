@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import NovaOcorrenciaRow from "./NovaOcorrenciaRow";
 import StatusSelect from "./StatusSelect";
 import EditableCell from "@/components/ui/EditableCell";
@@ -114,12 +113,10 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
                   />
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-gray-600">
-                  {format(new Date(o.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                  {formatarDataHoraBR(o.createdAt)}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-gray-600">
-                  {o.resolvidoEm
-                    ? format(new Date(o.resolvidoEm), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                    : "—"}
+                  {o.resolvidoEm ? formatarDataHoraBR(o.resolvidoEm) : "—"}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-gray-600">{o.analista.nome}</td>
                 <td className="px-3 py-2">

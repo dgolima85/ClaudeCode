@@ -1,8 +1,8 @@
-import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { getAnalistaLogado } from "@/lib/session";
 import PassagemTurnoResumo from "@/components/relatorios/PassagemTurnoResumo";
 import { TURNOS, TURNO_LABELS, isTurno, type Turno } from "@/lib/turno";
+import { dataBR, inicioDoDiaBR, fimDoDiaBR } from "@/lib/dataHoraBR";
 import type { StatusOcorrencia } from "@/lib/status";
 import type { LinhaRelatorio } from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
@@ -16,10 +16,10 @@ export default async function PassagemTurnoPage({
 
   const turnoSelecionado: Turno =
     sp.turno && isTurno(sp.turno) ? sp.turno : ((analistaLogado?.turno as Turno) ?? "MANHA");
-  const dataSelecionada = sp.data || format(new Date(), "yyyy-MM-dd");
+  const dataSelecionada = sp.data || dataBR();
 
-  const inicio = new Date(`${dataSelecionada}T00:00:00`);
-  const fim = new Date(`${dataSelecionada}T23:59:59`);
+  const inicio = inicioDoDiaBR(dataSelecionada);
+  const fim = fimDoDiaBR(dataSelecionada);
 
   const [emAberto, atividade] = await Promise.all([
     prisma.ocorrencia.findMany({

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { criarEvento } from "@/app/ocorrencias/eventos-actions";
 
 export type Evento = {
@@ -75,7 +74,7 @@ export default function EventosTable({ ocorrenciaId, eventos, onNovoEvento }: Ev
             {eventos.map((evento) => (
               <tr key={evento.id}>
                 <td className="whitespace-nowrap px-3 py-2 align-top text-gray-600">
-                  {format(new Date(evento.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                  {formatarDataHoraBR(evento.createdAt)}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 align-top text-gray-600">
                   {evento.analista.nome}

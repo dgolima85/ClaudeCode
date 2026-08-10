@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import DashboardCharts from "@/components/relatorios/DashboardCharts";
 import { STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
+import { dataBR } from "@/lib/dataHoraBR";
 
 export default async function RelatoriosDashboardPage() {
   const ocorrencias = await prisma.ocorrencia.findMany({
@@ -20,7 +21,7 @@ export default async function RelatoriosDashboardPage() {
     porStatus.set(o.status, (porStatus.get(o.status) ?? 0) + 1);
     porAnalista.set(o.analista.nome, (porAnalista.get(o.analista.nome) ?? 0) + 1);
 
-    const dia = o.createdAt.toISOString().slice(0, 10);
+    const dia = dataBR(o.createdAt);
     porDia.set(dia, (porDia.get(dia) ?? 0) + 1);
 
     if (o.resolvidoEm) {

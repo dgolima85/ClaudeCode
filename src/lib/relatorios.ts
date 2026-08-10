@@ -1,5 +1,6 @@
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { isTurno } from "@/lib/turno";
+import { inicioDoDiaBR, fimDoDiaBR } from "@/lib/dataHoraBR";
 
 export type SearchParamsRelatorio = Record<string, string | string[] | undefined>;
 
@@ -40,8 +41,8 @@ export function montarWhereOcorrencia(filtros: FiltrosRelatorio) {
     ...(filtros.de || filtros.ate
       ? {
           createdAt: {
-            ...(filtros.de ? { gte: new Date(`${filtros.de}T00:00:00`) } : {}),
-            ...(filtros.ate ? { lte: new Date(`${filtros.ate}T23:59:59`) } : {}),
+            ...(filtros.de ? { gte: inicioDoDiaBR(filtros.de) } : {}),
+            ...(filtros.ate ? { lte: fimDoDiaBR(filtros.ate) } : {}),
           },
         }
       : {}),

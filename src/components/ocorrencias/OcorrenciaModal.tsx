@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import Modal from "@/components/ui/Modal";
 import EditableCell from "@/components/ui/EditableCell";
 import StatusSelect from "./StatusSelect";
@@ -142,17 +141,13 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Início</span>
-              <p className="mt-1 text-sm text-gray-700">
-                {format(new Date(detalhe.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-              </p>
+              <p className="mt-1 text-sm text-gray-700">{formatarDataHoraBR(detalhe.createdAt)}</p>
             </div>
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Fim</span>
               <p className="mt-1 text-sm text-gray-700">
-                {detalhe.resolvidoEm
-                  ? format(new Date(detalhe.resolvidoEm), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                  : "—"}
+                {detalhe.resolvidoEm ? formatarDataHoraBR(detalhe.resolvidoEm) : "—"}
               </p>
             </div>
 
