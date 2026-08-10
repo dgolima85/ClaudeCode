@@ -8,6 +8,7 @@ export type LinhaRelatorio = {
   titulo: string;
   ticket: string | null;
   createdAt: string;
+  resolvidoEm?: string | null;
   tipo: string;
   analista: string;
   turno: Turno;
@@ -25,7 +26,8 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Tipo</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Data e Hora</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Analista</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Turno</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Ocorrência</th>
@@ -45,6 +47,9 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
               <td className="whitespace-nowrap px-3 py-2 text-gray-600">
                 {formatarDataHoraBR(l.createdAt)}
               </td>
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+                {l.resolvidoEm ? formatarDataHoraBR(l.resolvidoEm) : "—"}
+              </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600">{l.analista}</td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600">{TURNO_LABELS[l.turno]}</td>
               <td className="px-3 py-2">{l.titulo}</td>
@@ -53,7 +58,7 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
+              <td colSpan={8} className="px-3 py-6 text-center text-gray-400">
                 Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>

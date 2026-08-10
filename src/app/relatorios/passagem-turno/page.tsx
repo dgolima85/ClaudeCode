@@ -28,6 +28,7 @@ export default async function PassagemTurnoPage({
       titulo: o.titulo,
       ticket: o.ticket,
       createdAt: o.createdAt.toISOString(),
+      resolvidoEm: o.resolvidoEm ? o.resolvidoEm.toISOString() : null,
       tipo: o.tipo.nome,
       analista: o.analista.nome,
       turno: o.analista.turno as Turno,
