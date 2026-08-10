@@ -49,7 +49,7 @@ export default async function RelatorioTabelaPage({
             {linhas.length === 1 ? "" : "s"}.
           </p>
         </div>
-        <ExportCsvButton queryString={queryString} />
+        <ExportCsvButton href="/relatorios/tabela/export" queryString={queryString} />
       </div>
 
       <FiltrosRelatorioTabela analistas={analistas} tipos={tipos} parcerias={parcerias} filtros={filtros} />

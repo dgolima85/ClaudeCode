@@ -1,8 +1,9 @@
-import { prisma } from "@/lib/prisma";
 import { getAnalistaLogado } from "@/lib/session";
 import PassagemTurnoResumo from "@/components/relatorios/PassagemTurnoResumo";
+import ExportPdfButton from "@/components/relatorios/ExportPdfButton";
 import { TURNOS, TURNO_LABELS, isTurno, type Turno } from "@/lib/turno";
-import { dataBR, inicioDoDiaBR, fimDoDiaBR } from "@/lib/dataHoraBR";
+import { dataBR } from "@/lib/dataHoraBR";
+import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import type { StatusOcorrencia } from "@/lib/status";
 import type { LinhaRelatorio } from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
@@ -18,28 +19,7 @@ export default async function PassagemTurnoPage({
     sp.turno && isTurno(sp.turno) ? sp.turno : ((analistaLogado?.turno as Turno) ?? "MANHA");
   const dataSelecionada = sp.data || dataBR();
 
-  const inicio = inicioDoDiaBR(dataSelecionada);
-  const fim = fimDoDiaBR(dataSelecionada);
-
-  const [emAberto, atividade] = await Promise.all([
-    prisma.ocorrencia.findMany({
-      where: { status: { not: "RESOLVIDO" } },
-      include: { tipo: true, analista: true },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.ocorrencia.findMany({
-      where: {
-        analista: { turno: turnoSelecionado },
-        OR: [
-          { createdAt: { gte: inicio, lte: fim } },
-          { updatedAt: { gte: inicio, lte: fim } },
-          { eventos: { some: { createdAt: { gte: inicio, lte: fim } } } },
-        ],
-      },
-      include: { tipo: true, analista: true },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+  const { emAberto, atividade } = await buscarDadosPassagemTurno(turnoSelecionado, dataSelecionada);
 
   function mapLinha(o: (typeof emAberto)[number]): LinhaRelatorio {
     return {
@@ -56,11 +36,16 @@ export default async function PassagemTurnoPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Passagem de Turno</h1>
-        <p className="text-sm text-gray-500">
-          Resumo para repasse entre turnos: ocorrências em aberto e atividade do período selecionado.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Passagem de Turno</h1>
+          <p className="text-sm text-gray-500">
+            Resumo para repasse entre turnos: ocorrências em aberto e atividade do período selecionado.
+          </p>
+        </div>
+        <ExportPdfButton
+          href={`/relatorios/passagem-turno/pdf?turno=${turnoSelecionado}&data=${dataSelecionada}`}
+        />
       </div>
 
       <form
