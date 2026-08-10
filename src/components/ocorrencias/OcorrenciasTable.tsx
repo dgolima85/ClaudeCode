@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
-import NovaOcorrenciaRow from "./NovaOcorrenciaRow";
+import NovaOcorrenciaForm from "./NovaOcorrenciaForm";
 import StatusSelect from "./StatusSelect";
 import EditableCell from "@/components/ui/EditableCell";
 import OcorrenciaModal from "./OcorrenciaModal";
@@ -80,6 +80,8 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
 
   return (
     <>
+      <NovaOcorrenciaForm tipos={tipos} onCriar={criarOcorrencia} />
+
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50">
@@ -94,7 +96,6 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            <NovaOcorrenciaRow tipos={tipos} onCriar={criarOcorrencia} />
             {ocorrencias.map((o) => (
               <tr key={o.id} className="hover:bg-gray-50/70">
                 <td className="px-3 py-2">
