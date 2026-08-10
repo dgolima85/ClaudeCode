@@ -24,6 +24,25 @@ Copie a connection string (formato `postgresql://usuario:senha@host:5432/banco?s
 
 No build, a Vercel roda `npm install` (que já dispara `prisma generate` via `postinstall`) e depois `npm run build`, que executa `prisma migrate deploy && next build` — ou seja, o schema do banco é criado/atualizado automaticamente a cada deploy, sem passo manual.
 
+#### Erro "Timed out trying to acquire a postgres advisory lock"
+
+Se o build falhar com esse erro, o `prisma migrate deploy` não conseguiu obter o lock que evita migrations concorrentes — geralmente porque uma conexão de um build anterior (interrompido, ou dois deploys sobrepostos) ficou presa segurando o lock.
+
+Desbloqueio: no console SQL do seu provedor Postgres, rode:
+
+```sql
+SELECT l.pid, a.state, a.query_start
+FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid
+WHERE l.locktype = 'advisory';
+```
+
+E encerre a sessão presa com `SELECT pg_terminate_backend(<pid>);`. Depois, clique em **Redeploy** no deployment que falhou.
+
+Se isso acontecer com frequência (não só numa sobreposição pontual de deploys), a causa provável é a `DATABASE_URL` apontar para uma conexão **pooled** (ex: Neon com `-pooler` no host, ou qualquer PgBouncer em modo transação) — esse tipo de conexão não sustenta bem locks de sessão. Nesse caso, adicione em **Environment Variables**:
+   - `DIRECT_URL` = a connection string **direta** (sem pooler) do mesmo banco — usada só pelo `prisma migrate deploy`.
+
+`DATABASE_URL` continua sendo a usada pela aplicação em tempo de execução (pode continuar pooled, é o ideal para ambiente serverless).
+
 ### 3. Popular os dados iniciais (uma vez)
 
 O login não usa senha — depende de já existir pelo menos um Analista cadastrado. Rode o seed uma única vez, apontando para o banco de produção, a partir da sua máquina:

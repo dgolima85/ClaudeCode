@@ -10,6 +10,13 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // DIRECT_URL é opcional: só é necessária se DATABASE_URL apontar para uma
+    // conexão "pooled" (ex: PgBouncer, Neon com -pooler no host). O Prisma
+    // Migrate usa advisory lock (lock de sessão), que não funciona de forma
+    // confiável atrás de um pooler de transação — nesse caso, configure
+    // DIRECT_URL com a connection string direta (sem pooler) só para
+    // migrations. Sem DIRECT_URL definida, cai de volta em DATABASE_URL
+    // normalmente (comportamento inalterado).
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });
