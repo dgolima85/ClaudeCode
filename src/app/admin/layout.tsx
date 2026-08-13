@@ -2,12 +2,15 @@ import Link from "next/link";
 
 const LINKS = [
   { href: "/admin/analistas", label: "Analistas" },
-  { href: "/admin/tipos-ocorrencia", label: "Tipos de Ocorrência" },
+  { href: "/admin/tipos-ocorrencia", label: "Afiliadas" },
   { href: "/admin/parcerias", label: "Parcerias" },
   { href: "/admin/empresas", label: "Empresas" },
-  { href: "/admin/ambientes", label: "Ambientes" },
   { href: "/admin/servicos", label: "Serviços" },
-  { href: "/admin/sistemas-operacionais", label: "Sistemas Operacionais" },
+  { href: "/admin/sistemas-operacionais", label: "Devices" },
+  { href: "/admin/ambientes-infra", label: "Ambiente" },
+  { href: "/admin/recursos", label: "Recurso" },
+  { href: "/admin/cdns", label: "CDN" },
+  { href: "/admin/plataformas", label: "Plataforma" },
   { href: "/admin/causas", label: "Causas" },
   { href: "/admin/solucoes", label: "Soluções" },
 ];

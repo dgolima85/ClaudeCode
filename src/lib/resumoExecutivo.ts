@@ -6,9 +6,12 @@ const includeCompleto = {
   analista: true,
   parceria: true,
   empresa: true,
-  ambiente: true,
   servico: true,
   sistemaOperacional: true,
+  ambienteInfra: true,
+  recurso: true,
+  cdn: true,
+  plataforma: true,
   causa: true,
   solucao: true,
 } as const;

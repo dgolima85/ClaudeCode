@@ -24,11 +24,11 @@ type PassagemTurnoPdfDocumentProps = {
 };
 
 const colunas: ColunaPdf[] = [
-  { label: "Tipo", largura: 2 },
+  { label: "Afiliada", largura: 2 },
   { label: "Status", largura: 1.3 },
   { label: "Início", largura: 1.3 },
   { label: "Analista", largura: 1.3 },
-  { label: "Ocorrência", largura: 2.8 },
+  { label: "Título", largura: 2.8 },
   { label: "Ticket", largura: 1 },
 ];
 

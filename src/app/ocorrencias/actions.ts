@@ -130,9 +130,10 @@ export async function normalizarOcorrencia(
 export type DadosNormalizacaoOcorrencia = {
   id: string;
   titulo: string;
-  tipo: string;
+  afiliada: string;
   parceriaEmpresa: string | null;
   ambiente: string | null;
+  recurso: string | null;
   servico: string | null;
   causas: ItemReferencia[];
   solucoes: ItemReferencia[];
@@ -146,7 +147,14 @@ export async function buscarDadosNormalizacaoOcorrencia(
   const [o, causas, solucoes] = await Promise.all([
     prisma.ocorrencia.findUnique({
       where: { id },
-      include: { tipo: true, parceria: true, empresa: true, ambiente: true, servico: true },
+      include: {
+        tipo: true,
+        parceria: true,
+        empresa: true,
+        ambienteInfra: true,
+        recurso: true,
+        servico: true,
+      },
     }),
     prisma.causa.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
     prisma.solucao.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
@@ -158,9 +166,10 @@ export async function buscarDadosNormalizacaoOcorrencia(
   return {
     id: o.id,
     titulo: o.titulo,
-    tipo: o.tipo.nome,
+    afiliada: o.tipo.nome,
     parceriaEmpresa,
-    ambiente: o.ambiente?.nome ?? null,
+    ambiente: o.ambienteInfra?.nome ?? null,
+    recurso: o.recurso?.nome ?? null,
     servico: o.servico?.nome ?? null,
     causas: causas.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
     solucoes: solucoes.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
@@ -215,9 +224,12 @@ export type OcorrenciaDetalhe = {
   analista: { id: string; nome: string };
   parceriaId: string | null;
   empresaId: string | null;
-  ambienteId: string | null;
   servicoId: string | null;
   sistemaOperacionalId: string | null;
+  ambienteInfraId: string | null;
+  recursoId: string | null;
+  cdnId: string | null;
+  plataformaId: string | null;
   eventos: {
     id: string;
     comentario: string;
@@ -256,9 +268,12 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
     analista: { id: o.analista.id, nome: o.analista.nome },
     parceriaId: o.parceriaId,
     empresaId: o.empresaId,
-    ambienteId: o.ambienteId,
     servicoId: o.servicoId,
     sistemaOperacionalId: o.sistemaOperacionalId,
+    ambienteInfraId: o.ambienteInfraId,
+    recursoId: o.recursoId,
+    cdnId: o.cdnId,
+    plataformaId: o.plataformaId,
     eventos: o.eventos.map((e) => ({
       id: e.id,
       comentario: e.comentario,
@@ -273,22 +288,43 @@ export type ItemReferencia = { id: string; nome: string; ativo: boolean };
 export async function buscarListasReferenciaOcorrencia() {
   await exigirAnalistaLogado();
 
-  const [tipos, parcerias, empresas, ambientes, servicos, sistemasOperacionais] = await Promise.all([
+  const [
+    tipos,
+    parcerias,
+    empresas,
+    servicos,
+    sistemasOperacionais,
+    ambientesInfra,
+    recursos,
+    cdns,
+    plataformas,
+  ] = await Promise.all([
     prisma.tipoOcorrencia.findMany({ orderBy: { nome: "asc" } }),
     prisma.parceria.findMany({ orderBy: { nome: "asc" } }),
     prisma.empresa.findMany({ orderBy: { nome: "asc" } }),
-    prisma.ambiente.findMany({ orderBy: { nome: "asc" } }),
     prisma.servico.findMany({ orderBy: { nome: "asc" } }),
     prisma.sistemaOperacional.findMany({ orderBy: { nome: "asc" } }),
+    prisma.ambienteInfra.findMany({ orderBy: { nome: "asc" } }),
+    prisma.recurso.findMany({ orderBy: { nome: "asc" } }),
+    prisma.cdn.findMany({ orderBy: { nome: "asc" } }),
+    prisma.plataforma.findMany({ orderBy: { nome: "asc" } }),
   ]);
 
   return {
     tipos: tipos.map((t) => ({ id: t.id, nome: t.nome, ativo: t.ativo })),
     parcerias: parcerias.map((p) => ({ id: p.id, nome: p.nome, ativo: p.ativo })),
     empresas: empresas.map((e) => ({ id: e.id, nome: e.nome, parceriaId: e.parceriaId, ativo: e.ativo })),
-    ambientes: ambientes.map((a) => ({ id: a.id, nome: a.nome, ativo: a.ativo })),
     servicos: servicos.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
     sistemasOperacionais: sistemasOperacionais.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
+    ambientesInfra: ambientesInfra.map((a) => ({ id: a.id, nome: a.nome, ativo: a.ativo })),
+    recursos: recursos.map((r) => ({
+      id: r.id,
+      nome: r.nome,
+      ambienteInfraId: r.ambienteInfraId,
+      ativo: r.ativo,
+    })),
+    cdns: cdns.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
+    plataformas: plataformas.map((p) => ({ id: p.id, nome: p.nome, ativo: p.ativo })),
   };
 }
 
@@ -297,9 +333,12 @@ export async function atualizarDetalhesOcorrencia(
   dados: {
     parceriaId?: string | null;
     empresaId?: string | null;
-    ambienteId?: string | null;
     servicoId?: string | null;
     sistemaOperacionalId?: string | null;
+    ambienteInfraId?: string | null;
+    recursoId?: string | null;
+    cdnId?: string | null;
+    plataformaId?: string | null;
   },
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
@@ -309,9 +348,12 @@ export async function atualizarDetalhesOcorrencia(
     data: {
       parceriaId: dados.parceriaId || null,
       empresaId: dados.empresaId || null,
-      ambienteId: dados.ambienteId || null,
       servicoId: dados.servicoId || null,
       sistemaOperacionalId: dados.sistemaOperacionalId || null,
+      ambienteInfraId: dados.ambienteInfraId || null,
+      recursoId: dados.recursoId || null,
+      cdnId: dados.cdnId || null,
+      plataformaId: dados.plataformaId || null,
     },
   });
 

@@ -6,6 +6,7 @@ import Modal from "@/components/ui/Modal";
 import EditableCell from "@/components/ui/EditableCell";
 import StatusSelect from "./StatusSelect";
 import ParceriaEmpresaSelect from "./ParceriaEmpresaSelect";
+import AmbienteRecursoSelect from "./AmbienteRecursoSelect";
 import EventosTable from "./EventosTable";
 import NormalizacaoOcorrenciaModal from "./NormalizacaoOcorrenciaModal";
 import {
@@ -23,19 +24,30 @@ import {
 } from "@/app/ocorrencias/actions";
 
 type Empresa = ItemReferencia & { parceriaId: string };
+type Recurso = ItemReferencia & { ambienteInfraId: string };
 
 type Listas = {
   tipos: ItemReferencia[];
   parcerias: ItemReferencia[];
   empresas: Empresa[];
-  ambientes: ItemReferencia[];
   servicos: ItemReferencia[];
   sistemasOperacionais: ItemReferencia[];
+  ambientesInfra: ItemReferencia[];
+  recursos: Recurso[];
+  cdns: ItemReferencia[];
+  plataformas: ItemReferencia[];
 };
 
 type CamposDetalhe = Pick<
   OcorrenciaDetalhe,
-  "parceriaId" | "empresaId" | "ambienteId" | "servicoId" | "sistemaOperacionalId"
+  | "parceriaId"
+  | "empresaId"
+  | "servicoId"
+  | "sistemaOperacionalId"
+  | "ambienteInfraId"
+  | "recursoId"
+  | "cdnId"
+  | "plataformaId"
 >;
 
 type OcorrenciaModalProps = {
@@ -77,22 +89,25 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
       await atualizarDetalhesOcorrencia(atualizado.id, {
         parceriaId: atualizado.parceriaId,
         empresaId: atualizado.empresaId,
-        ambienteId: atualizado.ambienteId,
         servicoId: atualizado.servicoId,
         sistemaOperacionalId: atualizado.sistemaOperacionalId,
+        ambienteInfraId: atualizado.ambienteInfraId,
+        recursoId: atualizado.recursoId,
+        cdnId: atualizado.cdnId,
+        plataformaId: atualizado.plataformaId,
       });
     });
   }
 
   return (
-    <Modal open onClose={onClose} title={detalhe?.titulo ?? "Ocorrência"}>
+    <Modal open onClose={onClose} title={detalhe?.titulo ?? "Título"}>
       {carregando || !detalhe || !listas ? (
         <p className="py-6 text-center text-sm text-gray-400">Carregando...</p>
       ) : (
         <div className="flex flex-col gap-5">
           <section className="grid grid-cols-1 gap-4 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Tipo</span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Afiliada</span>
               <select
                 value={detalhe.tipoId}
                 disabled={pending}
@@ -183,21 +198,56 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
               )}
             </div>
 
-            {detalhe.status === "RESOLVIDO" && (
-              <>
-                <div>
-                  <span className="block text-xs font-medium uppercase text-gray-500">Causa</span>
-                  <p className="mt-1 text-sm text-gray-700">{detalhe.causa ?? "—"}</p>
-                </div>
-                <div>
-                  <span className="block text-xs font-medium uppercase text-gray-500">Solução</span>
-                  <p className="mt-1 text-sm text-gray-700">{detalhe.solucao ?? "—"}</p>
-                </div>
-              </>
-            )}
+            <div className="sm:col-span-2">
+              <span className="block text-xs font-medium uppercase text-gray-500">Ambiente / Recurso</span>
+              <div className="mt-1">
+                <AmbienteRecursoSelect
+                  ambientes={listas.ambientesInfra}
+                  recursos={listas.recursos}
+                  ambienteInfraId={detalhe.ambienteInfraId}
+                  recursoId={detalhe.recursoId}
+                  disabled={pending}
+                  onChange={(novo) => salvarCamposDetalhe(novo)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <span className="block text-xs font-medium uppercase text-gray-500">CDN</span>
+              <select
+                value={detalhe.cdnId ?? ""}
+                disabled={pending}
+                onChange={(e) => salvarCamposDetalhe({ cdnId: e.target.value || null })}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              >
+                <option value="">Nenhum</option>
+                {listas.cdns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {rotulo(c)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <span className="block text-xs font-medium uppercase text-gray-500">Plataforma</span>
+              <select
+                value={detalhe.plataformaId ?? ""}
+                disabled={pending}
+                onChange={(e) => salvarCamposDetalhe({ plataformaId: e.target.value || null })}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              >
+                <option value="">Nenhuma</option>
+                {listas.plataformas.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {rotulo(p)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500">Ocorrência</span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Título</span>
               <div className="mt-1">
                 <EditableCell
                   value={detalhe.titulo}
@@ -242,23 +292,6 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Ambiente</span>
-              <select
-                value={detalhe.ambienteId ?? ""}
-                disabled={pending}
-                onChange={(e) => salvarCamposDetalhe({ ambienteId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              >
-                <option value="">Nenhum</option>
-                {listas.ambientes.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {rotulo(a)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Serviço</span>
               <select
                 value={detalhe.servicoId ?? ""}
@@ -276,9 +309,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">
-                Sistema Operacional
-              </span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Devices</span>
               <select
                 value={detalhe.sistemaOperacionalId ?? ""}
                 disabled={pending}
@@ -293,6 +324,19 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                 ))}
               </select>
             </div>
+
+            {detalhe.status === "RESOLVIDO" && (
+              <>
+                <div>
+                  <span className="block text-xs font-medium uppercase text-gray-500">Causa</span>
+                  <p className="mt-1 text-sm text-gray-700">{detalhe.causa ?? "—"}</p>
+                </div>
+                <div>
+                  <span className="block text-xs font-medium uppercase text-gray-500">Solução</span>
+                  <p className="mt-1 text-sm text-gray-700">{detalhe.solucao ?? "—"}</p>
+                </div>
+              </>
+            )}
           </section>
 
           <section>

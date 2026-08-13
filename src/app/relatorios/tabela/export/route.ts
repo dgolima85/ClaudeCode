@@ -30,13 +30,17 @@ export async function GET(request: NextRequest) {
     o.tipo.nome,
     STATUS_LABELS[o.status as StatusOcorrencia] ?? o.status,
     formatarDataHoraBR(o.createdAt),
+    o.resolvidoEm ? formatarDataHoraBR(o.resolvidoEm) : "",
     o.analista.nome,
     TURNO_LABELS[o.analista.turno as Turno] ?? o.analista.turno,
     o.titulo,
     o.ticket ?? "",
   ]);
 
-  const csv = toCsv(["Tipo", "Status", "Data e Hora", "Analista", "Turno", "Ocorrência", "Ticket"], linhas);
+  const csv = toCsv(
+    ["Afiliada", "Status", "Início", "Fim", "Analista", "Turno", "Título", "Ticket"],
+    linhas,
+  );
 
   return new NextResponse(csv, {
     headers: {

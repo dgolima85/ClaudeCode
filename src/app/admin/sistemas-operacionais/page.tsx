@@ -13,7 +13,7 @@ export default async function SistemasOperacionaisPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Sistemas Operacionais</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Devices</h1>
         <p className="text-sm text-gray-500">Ex: Linux, Windows Server, Windows 10/11.</p>
       </div>
       <CrudTable
@@ -22,7 +22,7 @@ export default async function SistemasOperacionaisPage() {
         criar={criarSistemaOperacional}
         atualizar={atualizarSistemaOperacional}
         excluir={excluirSistemaOperacional}
-        labelNovo="Adicionar sistema operacional"
+        labelNovo="Adicionar device"
       />
     </div>
   );

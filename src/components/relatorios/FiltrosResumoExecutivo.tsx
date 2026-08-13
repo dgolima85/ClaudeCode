@@ -70,7 +70,7 @@ export default function FiltrosResumoExecutivo({
         </select>
       </label>
       <label className="flex flex-col gap-1 text-xs text-gray-600">
-        Tipo
+        Afiliada
         <select
           name="tipoId"
           defaultValue={filtros.tipoId ?? ""}

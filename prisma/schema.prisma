@@ -96,6 +96,58 @@ model SistemaOperacional {
   @@map("sistemas_operacionais")
 }
 
+// Exibido na UI como "Ambiente" (substitui o antigo model Ambiente nas
+// Ocorrências). Opções como AWS / Data Center Lapa / Data Center Campinas;
+// cada uma tem sua própria lista de Recursos, no mesmo esquema de
+// Parceria -> Empresa.
+model AmbienteInfra {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  recursos    Recurso[]
+  ocorrencias Ocorrencia[]
+
+  @@map("ambientes_infra")
+}
+
+model Recurso {
+  id              String        @id @default(cuid())
+  nome            String
+  ambienteInfraId String
+  ativo           Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  ambienteInfra   AmbienteInfra @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
+  ocorrencias     Ocorrencia[]
+
+  @@unique([ambienteInfraId, nome])
+  @@map("recursos")
+}
+
+model Cdn {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("cdns")
+}
+
+model Plataforma {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("plataformas")
+}
+
 model Causa {
   id          String       @id @default(cuid())
   nome        String       @unique
@@ -130,6 +182,10 @@ model Ocorrencia {
   ambienteId           String?
   servicoId            String?
   sistemaOperacionalId String?
+  ambienteInfraId      String?
+  recursoId            String?
+  cdnId                String?
+  plataformaId         String?
   resolvidoEm          DateTime?
   causaId              String?
   causaOutraDescricao  String?
@@ -145,6 +201,10 @@ model Ocorrencia {
   ambiente            Ambiente?          @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
   servico             Servico?           @relation(fields: [servicoId], references: [id], onDelete: Restrict)
   sistemaOperacional  SistemaOperacional? @relation(fields: [sistemaOperacionalId], references: [id], onDelete: Restrict)
+  ambienteInfra       AmbienteInfra?     @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
+  recurso             Recurso?           @relation(fields: [recursoId], references: [id], onDelete: Restrict)
+  cdn                 Cdn?               @relation(fields: [cdnId], references: [id], onDelete: Restrict)
+  plataforma          Plataforma?        @relation(fields: [plataformaId], references: [id], onDelete: Restrict)
   causa               Causa?             @relation(fields: [causaId], references: [id], onDelete: Restrict)
   solucao             Solucao?           @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
   eventos             Evento[]

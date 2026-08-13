@@ -19,7 +19,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       ticket={o.ticket}
       tipo={o.tipo.nome}
       parceriaEmpresa={parceriaEmpresaLabel(o)}
-      ambiente={o.ambiente?.nome ?? null}
+      ambiente={o.ambienteInfra?.nome ?? null}
+      recurso={o.recurso?.nome ?? null}
+      cdn={o.cdn?.nome ?? null}
+      plataforma={o.plataforma?.nome ?? null}
       servico={o.servico?.nome ?? null}
       sistemaOperacional={o.sistemaOperacional?.nome ?? null}
       analista={o.analista.nome}

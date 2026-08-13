@@ -6,7 +6,6 @@ export type LinhaResumoExecutivo = {
   titulo: string;
   ticket: string | null;
   parceriaEmpresa: string | null;
-  ambiente: string | null;
   servico: string | null;
   analista: string;
   createdAt: string;
@@ -25,8 +24,8 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Ocorrência</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Tipo</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Afiliada</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Parceria / Empresa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Causa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Solução</th>

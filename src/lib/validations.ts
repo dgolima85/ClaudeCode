@@ -25,6 +25,11 @@ export const empresaSchema = z.object({
   parceriaId: z.string().trim().min(1, "Selecione uma parceria"),
 });
 
+export const recursoSchema = z.object({
+  nome: nomeSchema,
+  ambienteInfraId: z.string().trim().min(1, "Selecione um ambiente"),
+});
+
 export const dataHoraLocalSchema = z
   .string()
   .trim()

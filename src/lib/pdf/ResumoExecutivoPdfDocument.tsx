@@ -14,6 +14,9 @@ type ResumoExecutivoPdfDocumentProps = {
   tipo: string;
   parceriaEmpresa: string | null;
   ambiente: string | null;
+  recurso: string | null;
+  cdn: string | null;
+  plataforma: string | null;
   servico: string | null;
   sistemaOperacional: string | null;
   analista: string;
@@ -39,6 +42,9 @@ export function ResumoExecutivoPdfDocument({
   tipo,
   parceriaEmpresa,
   ambiente,
+  recurso,
+  cdn,
+  plataforma,
   servico,
   sistemaOperacional,
   analista,
@@ -55,13 +61,16 @@ export function ResumoExecutivoPdfDocument({
         <Text style={estilos.subtitulo}>{titulo}</Text>
 
         <View style={estilos.grade}>
-          <Campo label="Tipo" valor={tipo} />
+          <Campo label="Afiliada" valor={tipo} />
           <Campo label="Ticket" valor={ticket ?? "—"} />
           <Campo label="Analista" valor={analista} />
           <Campo label="Parceria / Empresa" valor={parceriaEmpresa ?? "—"} />
           <Campo label="Ambiente" valor={ambiente ?? "—"} />
+          <Campo label="Recurso" valor={recurso ?? "—"} />
+          <Campo label="CDN" valor={cdn ?? "—"} />
+          <Campo label="Plataforma" valor={plataforma ?? "—"} />
           <Campo label="Serviço" valor={servico ?? "—"} />
-          <Campo label="Sistema Operacional" valor={sistemaOperacional ?? "—"} />
+          <Campo label="Devices" valor={sistemaOperacional ?? "—"} />
           <Campo label="Início" valor={formatarDataHoraBR(inicio)} />
           <Campo label="Fim" valor={fim ? formatarDataHoraBR(fim) : "—"} />
         </View>

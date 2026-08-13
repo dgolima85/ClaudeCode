@@ -92,11 +92,11 @@ export default function NormalizacaoOcorrenciaModal({
         <div className="flex flex-col gap-5">
           <section className="grid grid-cols-1 gap-3 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Tipo</span>
-              <p className="mt-1 text-sm text-gray-700">{dados.tipo}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500">Afiliada</span>
+              <p className="mt-1 text-sm text-gray-700">{dados.afiliada}</p>
             </div>
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500">Ocorrência</span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Título</span>
               <p className="mt-1 text-sm text-gray-700">{dados.titulo}</p>
             </div>
             <div>
@@ -108,6 +108,10 @@ export default function NormalizacaoOcorrenciaModal({
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Ambiente</span>
               <p className="mt-1 text-sm text-gray-700">{dados.ambiente ?? "—"}</p>
+            </div>
+            <div>
+              <span className="block text-xs font-medium uppercase text-gray-500">Recurso</span>
+              <p className="mt-1 text-sm text-gray-700">{dados.recurso ?? "—"}</p>
             </div>
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Serviço</span>

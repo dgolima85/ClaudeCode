@@ -26,7 +26,6 @@ export default async function ResumosExecutivosPage({
     titulo: o.titulo,
     ticket: o.ticket,
     parceriaEmpresa: parceriaEmpresaLabel(o),
-    ambiente: o.ambiente?.nome ?? null,
     servico: o.servico?.nome ?? null,
     analista: o.analista.nome,
     createdAt: o.createdAt.toISOString(),

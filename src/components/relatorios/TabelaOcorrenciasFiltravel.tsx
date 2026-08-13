@@ -24,13 +24,13 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Tipo</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Afiliada</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Analista</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Turno</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Ocorrência</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Ticket</th>
           </tr>
         </thead>
