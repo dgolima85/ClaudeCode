@@ -16,7 +16,7 @@ type NovaOcorrenciaFormProps = {
 };
 
 export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFormProps) {
-  const [tipoId, setTipoId] = useState("");
+  const [tipoId, setTipoId] = useState(() => tipos[0]?.id ?? "");
   const [titulo, setTitulo] = useState("");
   const [ticket, setTicket] = useState("");
   const [inicio, setInicio] = useState(() => paraInputDataHoraBR(new Date()));
@@ -31,7 +31,7 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
         setErro(res.error);
         return;
       }
-      setTipoId("");
+      setTipoId(tipos[0]?.id ?? "");
       setTitulo("");
       setTicket("");
       setInicio(paraInputDataHoraBR(new Date()));
@@ -42,25 +42,8 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
     <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
       <h2 className="mb-3 text-sm font-semibold text-gray-700">Nova Ocorrência</h2>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex min-w-[12rem] flex-col gap-1 text-xs text-gray-600">
-          Tipo
-          <select
-            value={tipoId}
-            disabled={pending}
-            onChange={(e) => setTipoId(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-          >
-            <option value="">Selecione o tipo</option>
-            {tipos.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.nome}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-xs text-gray-600">
-          Ocorrência
+          Título
           <input
             value={titulo}
             disabled={pending}
@@ -94,7 +77,7 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
 
         <button
           type="button"
-          disabled={pending || !tipoId || !titulo.trim() || !inicio}
+          disabled={pending || !tipoId || tipos.length === 0 || !titulo.trim() || !inicio}
           onClick={salvar}
           className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
