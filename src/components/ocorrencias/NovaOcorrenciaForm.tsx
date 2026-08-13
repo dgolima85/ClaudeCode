@@ -1,25 +1,32 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { paraInputDataHoraBR } from "@/lib/dataHoraBR";
 
 type Tipo = { id: string; nome: string };
 
 type NovaOcorrenciaFormProps = {
   tipos: Tipo[];
-  onCriar: (dados: { tipoId: string; titulo: string; ticket: string }) => Promise<{ error?: string }>;
+  onCriar: (dados: {
+    tipoId: string;
+    titulo: string;
+    ticket: string;
+    inicio: string;
+  }) => Promise<{ error?: string }>;
 };
 
 export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFormProps) {
   const [tipoId, setTipoId] = useState("");
   const [titulo, setTitulo] = useState("");
   const [ticket, setTicket] = useState("");
+  const [inicio, setInicio] = useState(() => paraInputDataHoraBR(new Date()));
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function salvar() {
     setErro(null);
     startTransition(async () => {
-      const res = await onCriar({ tipoId, titulo, ticket });
+      const res = await onCriar({ tipoId, titulo, ticket, inicio });
       if (res?.error) {
         setErro(res.error);
         return;
@@ -27,6 +34,7 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
       setTipoId("");
       setTitulo("");
       setTicket("");
+      setInicio(paraInputDataHoraBR(new Date()));
     });
   }
 
@@ -73,9 +81,20 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
           />
         </label>
 
+        <label className="flex min-w-[12rem] flex-col gap-1 text-xs text-gray-600">
+          Início
+          <input
+            type="datetime-local"
+            value={inicio}
+            disabled={pending}
+            onChange={(e) => setInicio(e.target.value)}
+            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+
         <button
           type="button"
-          disabled={pending || !tipoId || !titulo.trim()}
+          disabled={pending || !tipoId || !titulo.trim() || !inicio}
           onClick={salvar}
           className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >

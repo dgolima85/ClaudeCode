@@ -3,13 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
-import { novaOcorrenciaSchema, normalizacaoOcorrenciaSchema } from "@/lib/validations";
+import {
+  novaOcorrenciaSchema,
+  normalizacaoOcorrenciaSchema,
+  dataHoraLocalSchema,
+} from "@/lib/validations";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { deInputDataHoraBR } from "@/lib/dataHoraBR";
 
 export async function criarOcorrencia(dados: {
   tipoId: string;
   titulo: string;
   ticket: string;
+  inicio: string;
 }): Promise<{ error?: string }> {
   const analista = await exigirAnalistaLogado();
   const parsed = novaOcorrenciaSchema.safeParse(dados);
@@ -24,7 +30,39 @@ export async function criarOcorrencia(dados: {
       ticket: parsed.data.ticket ? parsed.data.ticket : null,
       analistaId: analista.id,
       status: "EM_ANDAMENTO",
+      createdAt: deInputDataHoraBR(parsed.data.inicio),
     },
+  });
+
+  revalidatePath("/");
+  return {};
+}
+
+export async function atualizarInicioOcorrencia(
+  id: string,
+  inicio: string,
+): Promise<{ error?: string }> {
+  await exigirAnalistaLogado();
+  const parsed = dataHoraLocalSchema.safeParse(inicio);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Data e hora inválidas" };
+
+  await prisma.ocorrencia.update({
+    where: { id },
+    data: { createdAt: deInputDataHoraBR(parsed.data) },
+  });
+
+  revalidatePath("/");
+  return {};
+}
+
+export async function atualizarFimOcorrencia(id: string, fim: string): Promise<{ error?: string }> {
+  await exigirAnalistaLogado();
+  const parsed = dataHoraLocalSchema.safeParse(fim);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Data e hora inválidas" };
+
+  await prisma.ocorrencia.update({
+    where: { id },
+    data: { resolvidoEm: deInputDataHoraBR(parsed.data) },
   });
 
   revalidatePath("/");
@@ -66,6 +104,7 @@ export async function normalizarOcorrencia(
     causaOutra: string;
     solucaoId: string | null;
     solucaoOutra: string;
+    fim: string;
   },
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
@@ -76,7 +115,7 @@ export async function normalizarOcorrencia(
     where: { id },
     data: {
       status: "RESOLVIDO",
-      resolvidoEm: new Date(),
+      resolvidoEm: deInputDataHoraBR(parsed.data.fim),
       causaId: parsed.data.causaId || null,
       causaOutraDescricao: parsed.data.causaId ? null : parsed.data.causaOutra,
       solucaoId: parsed.data.solucaoId || null,

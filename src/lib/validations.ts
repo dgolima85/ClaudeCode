@@ -25,10 +25,17 @@ export const empresaSchema = z.object({
   parceriaId: z.string().trim().min(1, "Selecione uma parceria"),
 });
 
+export const dataHoraLocalSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Informe data e hora válidas")
+  .refine((v) => !Number.isNaN(new Date(`${v}:00-03:00`).getTime()), "Informe data e hora válidas");
+
 export const novaOcorrenciaSchema = z.object({
   tipoId: z.string().trim().min(1, "Selecione um tipo"),
   titulo: z.string().trim().min(1, "Descreva a ocorrência").max(500),
   ticket: z.string().trim().max(120).optional().or(z.literal("")),
+  inicio: dataHoraLocalSchema,
 });
 
 export const comentarioEventoSchema = z
@@ -43,6 +50,7 @@ export const normalizacaoOcorrenciaSchema = z
     causaOutra: z.string().trim().max(300, "Descrição da causa muito longa"),
     solucaoId: z.string().trim().nullable(),
     solucaoOutra: z.string().trim().max(300, "Descrição da solução muito longa"),
+    fim: dataHoraLocalSchema,
   })
   .refine((d) => Boolean(d.causaId) || d.causaOutra.length > 0, {
     message: "Informe a causa da ocorrência.",

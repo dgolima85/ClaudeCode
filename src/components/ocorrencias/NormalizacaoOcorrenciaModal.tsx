@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Modal from "@/components/ui/Modal";
+import { paraInputDataHoraBR } from "@/lib/dataHoraBR";
 import {
   buscarDadosNormalizacaoOcorrencia,
   normalizarOcorrencia,
@@ -27,6 +28,7 @@ export default function NormalizacaoOcorrenciaModal({
   const [causaOutra, setCausaOutra] = useState("");
   const [solucaoId, setSolucaoId] = useState("");
   const [solucaoOutra, setSolucaoOutra] = useState("");
+  const [fim, setFim] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -35,6 +37,7 @@ export default function NormalizacaoOcorrenciaModal({
     buscarDadosNormalizacaoOcorrencia(ocorrenciaId).then((d) => {
       if (cancelado) return;
       setDados(d);
+      setFim(paraInputDataHoraBR(new Date()));
       setCarregando(false);
     });
     return () => {
@@ -44,6 +47,10 @@ export default function NormalizacaoOcorrenciaModal({
 
   function confirmar() {
     setErro(null);
+    if (!fim) {
+      setErro("Informe a data e hora de término (Fim).");
+      return;
+    }
     if (!causaId) {
       setErro("Selecione a causa da ocorrência.");
       return;
@@ -67,6 +74,7 @@ export default function NormalizacaoOcorrenciaModal({
         causaOutra: causaId === OUTRA ? causaOutra.trim() : "",
         solucaoId: solucaoId === OUTRA ? null : solucaoId,
         solucaoOutra: solucaoId === OUTRA ? solucaoOutra.trim() : "",
+        fim,
       });
       if (res.error) {
         setErro(res.error);
@@ -108,6 +116,17 @@ export default function NormalizacaoOcorrenciaModal({
           </section>
 
           <div className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-medium uppercase text-gray-500">Fim *</label>
+              <input
+                type="datetime-local"
+                value={fim}
+                disabled={pending}
+                onChange={(e) => setFim(e.target.value)}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm disabled:opacity-50"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-medium uppercase text-gray-500">Causa *</label>
               <select

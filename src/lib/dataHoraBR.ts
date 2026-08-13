@@ -22,6 +22,16 @@ const formatterDiaBR = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
+const formatterInputBR = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIMEZONE_BR,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
 /** Formata uma data/hora no padrão dd/MM/yyyy HH:mm, sempre no horário de Brasília. */
 export function formatarDataHoraBR(data: Date | string): string {
   const d = typeof data === "string" ? new Date(data) : data;
@@ -41,4 +51,17 @@ export function inicioDoDiaBR(diaBR: string): Date {
 /** Instante UTC correspondente ao fim (23:59:59.999) de um dia (yyyy-MM-dd) em Brasília. */
 export function fimDoDiaBR(diaBR: string): Date {
   return new Date(`${diaBR}T23:59:59.999-03:00`);
+}
+
+/** Formata uma data/hora para o valor de um <input type="datetime-local">, em horário de Brasília. */
+export function paraInputDataHoraBR(data: Date | string): string {
+  const d = typeof data === "string" ? new Date(data) : data;
+  const partes = formatterInputBR.formatToParts(d);
+  const parte = (tipo: string) => partes.find((p) => p.type === tipo)?.value ?? "";
+  return `${parte("year")}-${parte("month")}-${parte("day")}T${parte("hour")}:${parte("minute")}`;
+}
+
+/** Converte o valor de um <input type="datetime-local"> (yyyy-MM-ddTHH:mm), entendido como horário de Brasília, para o instante UTC correspondente. */
+export function deInputDataHoraBR(valor: string): Date {
+  return new Date(`${valor}:00-03:00`);
 }

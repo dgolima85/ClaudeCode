@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { formatarDataHoraBR } from "@/lib/dataHoraBR";
+import { paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import Modal from "@/components/ui/Modal";
 import EditableCell from "@/components/ui/EditableCell";
 import StatusSelect from "./StatusSelect";
@@ -16,6 +16,8 @@ import {
   atualizarTicketOcorrencia,
   atualizarTipoDaOcorrencia,
   atualizarDetalhesOcorrencia,
+  atualizarInicioOcorrencia,
+  atualizarFimOcorrencia,
   type OcorrenciaDetalhe,
   type ItemReferencia,
 } from "@/app/ocorrencias/actions";
@@ -141,14 +143,44 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Início</span>
-              <p className="mt-1 text-sm text-gray-700">{formatarDataHoraBR(detalhe.createdAt)}</p>
+              <input
+                type="datetime-local"
+                value={paraInputDataHoraBR(detalhe.createdAt)}
+                disabled={pending}
+                onChange={(e) => {
+                  const valor = e.target.value;
+                  if (!valor) return;
+                  const novaData = deInputDataHoraBR(valor).toISOString();
+                  setDetalhe({ ...detalhe, createdAt: novaData });
+                  startTransition(async () => {
+                    await atualizarInicioOcorrencia(detalhe.id, valor);
+                  });
+                }}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
+              />
             </div>
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Fim</span>
-              <p className="mt-1 text-sm text-gray-700">
-                {detalhe.resolvidoEm ? formatarDataHoraBR(detalhe.resolvidoEm) : "—"}
-              </p>
+              {detalhe.resolvidoEm ? (
+                <input
+                  type="datetime-local"
+                  value={paraInputDataHoraBR(detalhe.resolvidoEm)}
+                  disabled={pending}
+                  onChange={(e) => {
+                    const valor = e.target.value;
+                    if (!valor) return;
+                    const novaData = deInputDataHoraBR(valor).toISOString();
+                    setDetalhe({ ...detalhe, resolvidoEm: novaData });
+                    startTransition(async () => {
+                      await atualizarFimOcorrencia(detalhe.id, valor);
+                    });
+                  }}
+                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
+                />
+              ) : (
+                <p className="mt-1 text-sm text-gray-700">—</p>
+              )}
             </div>
 
             {detalhe.status === "RESOLVIDO" && (
