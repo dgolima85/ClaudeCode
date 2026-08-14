@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { formatarDataHoraBR, paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { MODELOS_AVISO, MODELO_AVISO_LABELS, type ModeloAviso } from "@/lib/aviso";
-import { criarAviso, excluirAviso } from "@/app/avisos/actions";
+import { criarAviso, atualizarAviso, excluirAviso } from "@/app/avisos/actions";
 import { IconeAtivo, IconeInformativo, IconeAcompanhamento, IconeAtuacao } from "./icones";
 
 export type AvisoLinha = {
@@ -68,9 +68,121 @@ function IconeSeta({ direcao, className }: { direcao: "esquerda" | "direita"; cl
   );
 }
 
-function AvisoCard({ aviso, onExcluir }: { aviso: AvisoLinha; onExcluir: (id: string) => void }) {
+function AvisoCard({
+  aviso,
+  onExcluir,
+  onAtualizar,
+}: {
+  aviso: AvisoLinha;
+  onExcluir: (id: string) => void;
+  onAtualizar: (aviso: AvisoLinha) => void;
+}) {
   const [pending, startTransition] = useTransition();
+  const [editando, setEditando] = useState(false);
+  const [modelo, setModelo] = useState<ModeloAviso>(aviso.modelo);
+  const [descricao, setDescricao] = useState(aviso.descricao);
+  const [expiraEm, setExpiraEm] = useState(() => paraInputDataHoraBR(new Date(aviso.expiraEm)));
+  const [erro, setErro] = useState<string | null>(null);
   const IconeModelo = ICONE_MODELO[aviso.modelo];
+
+  function abrirEdicao() {
+    setModelo(aviso.modelo);
+    setDescricao(aviso.descricao);
+    setExpiraEm(paraInputDataHoraBR(new Date(aviso.expiraEm)));
+    setErro(null);
+    setEditando(true);
+  }
+
+  function salvarEdicao() {
+    setErro(null);
+    if (deInputDataHoraBR(expiraEm).getTime() <= Date.now()) {
+      setErro("Escolha uma data e hora futura para o aviso expirar.");
+      return;
+    }
+    startTransition(async () => {
+      const res = await atualizarAviso(aviso.id, { modelo, descricao, expiraEm });
+      if (res?.error || !res.aviso) {
+        setErro(res.error ?? "Não foi possível salvar o aviso.");
+        return;
+      }
+      onAtualizar({ ...res.aviso, modelo });
+      setEditando(false);
+    });
+  }
+
+  if (editando) {
+    return (
+      <div className="flex flex-col gap-2 rounded-md border border-gray-200 bg-gray-50 p-2.5">
+        <div>
+          <span className="block text-xs text-gray-600">Modelo</span>
+          <div className="mt-1 flex gap-2">
+            {MODELOS_AVISO.map((m) => {
+              const IconeM = ICONE_MODELO[m];
+              const ativo = modelo === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  disabled={pending}
+                  onClick={() => setModelo(m)}
+                  className={`flex flex-1 flex-col items-center gap-1 rounded border px-2 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
+                    ativo ? ESTILO_BOTAO_MODELO[m] : "border-gray-300 text-gray-500 hover:bg-gray-100"
+                  }`}
+                >
+                  <IconeM className="h-5 w-5" />
+                  {MODELO_AVISO_LABELS[m]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <label className="flex flex-col gap-1 text-xs text-gray-600">
+          Descrição
+          <textarea
+            value={descricao}
+            disabled={pending}
+            onChange={(e) => setDescricao(e.target.value)}
+            placeholder="Conteúdo do comunicado"
+            rows={3}
+            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1 text-xs text-gray-600">
+          Expira em
+          <input
+            type="datetime-local"
+            value={expiraEm}
+            disabled={pending}
+            onChange={(e) => setExpiraEm(e.target.value)}
+            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+
+        {erro && <p className="text-xs text-red-600">{erro}</p>}
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setEditando(false)}
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={pending || !descricao.trim() || !expiraEm}
+            onClick={salvarEdicao}
+            className="rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-start gap-3 rounded-md border border-gray-200 p-2.5">
@@ -84,20 +196,31 @@ function AvisoCard({ aviso, onExcluir }: { aviso: AvisoLinha; onExcluir: (id: st
         <p className="whitespace-pre-wrap break-words text-sm text-gray-700">{aviso.descricao}</p>
         <p className="mt-1 text-xs text-gray-400">Expira em {formatarDataHoraBR(aviso.expiraEm)}</p>
       </div>
-      <button
-        type="button"
-        disabled={pending}
-        onClick={() =>
-          startTransition(async () => {
-            await excluirAviso(aviso.id);
-            onExcluir(aviso.id);
-          })
-        }
-        title="Excluir aviso"
-        className="shrink-0 text-gray-400 hover:text-red-600 disabled:opacity-50"
-      >
-        ✕
-      </button>
+      <div className="flex shrink-0 flex-col items-center gap-1.5">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={abrirEdicao}
+          title="Editar aviso"
+          className="text-gray-400 hover:text-blue-600 disabled:opacity-50"
+        >
+          ✎
+        </button>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              await excluirAviso(aviso.id);
+              onExcluir(aviso.id);
+            })
+          }
+          title="Excluir aviso"
+          className="text-gray-400 hover:text-red-600 disabled:opacity-50"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   );
 }
@@ -136,6 +259,10 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
       setAvisos((atual) => [{ ...res.aviso!, modelo }, ...atual]);
       setIndice(0);
     });
+  }
+
+  function atualizarLocal(atualizado: AvisoLinha) {
+    setAvisos((atual) => atual.map((a) => (a.id === atualizado.id ? atualizado : a)));
   }
 
   function excluirLocal(id: string) {
@@ -250,7 +377,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
               </button>
 
               <div className="min-w-0 flex-1">
-                <AvisoCard aviso={avisos[indice]} onExcluir={excluirLocal} />
+                <AvisoCard aviso={avisos[indice]} onExcluir={excluirLocal} onAtualizar={atualizarLocal} />
               </div>
 
               <button
