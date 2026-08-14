@@ -1,7 +1,9 @@
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
+import { STATUS_LABELS, STATUS_DOT_COLOR, type StatusOcorrencia } from "@/lib/status";
 
 export type LinhaResumoExecutivo = {
   id: string;
+  status: StatusOcorrencia;
   tipo: string;
   titulo: string;
   ticket: string | null;
@@ -25,6 +27,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
         <thead className="bg-gray-50">
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Origem</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Parceria / Empresa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Causa</th>
@@ -40,6 +43,12 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
           {linhas.map((l) => (
             <tr key={l.id}>
               <td className="px-3 py-2">{l.titulo}</td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                <span className="inline-flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${STATUS_DOT_COLOR[l.status]}`} />
+                  {STATUS_LABELS[l.status]}
+                </span>
+              </td>
               <td className="px-3 py-2 whitespace-nowrap">{l.tipo}</td>
               <td className="px-3 py-2 whitespace-nowrap">{l.parceriaEmpresa ?? "—"}</td>
               <td className="px-3 py-2">{l.causa}</td>
@@ -64,8 +73,8 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={10} className="px-3 py-6 text-center text-gray-400">
-                Nenhuma ocorrência normalizada encontrada para os filtros selecionados.
+              <td colSpan={11} className="px-3 py-6 text-center text-gray-400">
+                Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>
           )}

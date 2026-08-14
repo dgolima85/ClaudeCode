@@ -10,6 +10,8 @@ export type EventoPdf = {
 
 type ResumoExecutivoPdfDocumentProps = {
   titulo: string;
+  status: string;
+  resolvido: boolean;
   ticket: string | null;
   tipo: string;
   parceriaEmpresa: string | null;
@@ -39,6 +41,8 @@ function Campo({ label, valor }: { label: string; valor: string }) {
 
 export function ResumoExecutivoPdfDocument({
   titulo,
+  status,
+  resolvido,
   ticket,
   tipo,
   parceriaEmpresa,
@@ -63,6 +67,7 @@ export function ResumoExecutivoPdfDocument({
         <Text style={estilos.subtitulo}>{titulo}</Text>
 
         <View style={estilos.grade}>
+          <Campo label="Status" valor={status} />
           <Campo label="Origem" valor={tipo} />
           <Campo label="Ticket" valor={ticket ?? "—"} />
           <Campo label="Analista" valor={analista} />
@@ -78,14 +83,18 @@ export function ResumoExecutivoPdfDocument({
           <Campo label="Fim" valor={fim ? formatarDataHoraBR(fim) : "—"} />
         </View>
 
-        <View style={estilos.blocoDestaque}>
-          <Text style={estilos.blocoDestaqueLabel}>Causa</Text>
-          <Text style={estilos.blocoDestaqueTexto}>{causa}</Text>
-        </View>
-        <View style={estilos.blocoDestaque}>
-          <Text style={estilos.blocoDestaqueLabel}>Solução</Text>
-          <Text style={estilos.blocoDestaqueTexto}>{solucao}</Text>
-        </View>
+        {resolvido && (
+          <>
+            <View style={estilos.blocoDestaque}>
+              <Text style={estilos.blocoDestaqueLabel}>Causa</Text>
+              <Text style={estilos.blocoDestaqueTexto}>{causa}</Text>
+            </View>
+            <View style={estilos.blocoDestaque}>
+              <Text style={estilos.blocoDestaqueLabel}>Solução</Text>
+              <Text style={estilos.blocoDestaqueTexto}>{solucao}</Text>
+            </View>
+          </>
+        )}
 
         {eventos.length > 0 && (
           <>

@@ -3,6 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { exigirAnalistaLogado } from "@/lib/session";
 import { buscarResumoExecutivo, nomeCausa, nomeSolucao, parceriaEmpresaLabel } from "@/lib/resumoExecutivo";
 import { ResumoExecutivoPdfDocument } from "@/lib/pdf/ResumoExecutivoPdfDocument";
+import { STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   await exigirAnalistaLogado();
@@ -10,12 +11,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const o = await buscarResumoExecutivo(id);
   if (!o) {
-    return new NextResponse("Ocorrência não encontrada ou ainda não normalizada.", { status: 404 });
+    return new NextResponse("Ocorrência não encontrada.", { status: 404 });
   }
 
   const buffer = await renderToBuffer(
     <ResumoExecutivoPdfDocument
       titulo={o.titulo}
+      status={STATUS_LABELS[o.status as StatusOcorrencia] ?? o.status}
+      resolvido={o.status === "RESOLVIDO"}
       ticket={o.ticket}
       tipo={o.tipo.nome}
       parceriaEmpresa={parceriaEmpresaLabel(o)}

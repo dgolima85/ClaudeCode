@@ -5,6 +5,7 @@ import { parseFiltros, type SearchParamsRelatorio } from "@/lib/relatorios";
 import { listarResumosExecutivos, nomeCausa, nomeSolucao, parceriaEmpresaLabel } from "@/lib/resumoExecutivo";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { toCsv } from "@/lib/csv";
+import { STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
 
 export async function GET(request: NextRequest) {
   await exigirAnalistaLogado();
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
   const ocorrencias = await listarResumosExecutivos(filtros);
 
   const linhas = ocorrencias.map((o) => [
+    STATUS_LABELS[o.status as StatusOcorrencia] ?? o.status,
     o.tipo.nome,
     o.titulo,
     parceriaEmpresaLabel(o) ?? "",
@@ -39,6 +41,7 @@ export async function GET(request: NextRequest) {
 
   const csv = toCsv(
     [
+      "Status",
       "Origem",
       "Título",
       "Parceria / Empresa",

@@ -18,17 +18,17 @@ const includeCompleto = {
 } as const;
 
 export async function listarResumosExecutivos(filtros: FiltrosRelatorio) {
-  const where = { ...montarWhereOcorrencia(filtros), status: "RESOLVIDO" as const };
+  const where = montarWhereOcorrencia(filtros);
   return prisma.ocorrencia.findMany({
     where,
     include: includeCompleto,
-    orderBy: { resolvidoEm: "desc" },
+    orderBy: { createdAt: "desc" },
   });
 }
 
 export async function buscarResumoExecutivo(id: string) {
   return prisma.ocorrencia.findUnique({
-    where: { id, status: "RESOLVIDO" },
+    where: { id },
     include: {
       ...includeCompleto,
       eventos: { include: { analista: true }, orderBy: { createdAt: "asc" } },

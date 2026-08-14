@@ -4,6 +4,7 @@ import TabelaResumoExecutivo from "@/components/relatorios/TabelaResumoExecutivo
 import ExportCsvButton from "@/components/relatorios/ExportCsvButton";
 import { parseFiltros, buildQueryString, type SearchParamsRelatorio } from "@/lib/relatorios";
 import { listarResumosExecutivos, nomeCausa, nomeSolucao, parceriaEmpresaLabel } from "@/lib/resumoExecutivo";
+import type { StatusOcorrencia } from "@/lib/status";
 
 export default async function ResumosExecutivosPage({
   searchParams,
@@ -22,6 +23,7 @@ export default async function ResumosExecutivosPage({
 
   const linhas = ocorrencias.map((o) => ({
     id: o.id,
+    status: o.status as StatusOcorrencia,
     tipo: o.tipo.nome,
     titulo: o.titulo,
     ticket: o.ticket,
@@ -42,8 +44,8 @@ export default async function ResumosExecutivosPage({
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Resumos Executivos</h1>
           <p className="text-sm text-gray-500">
-            {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} normalizada
-            {linhas.length === 1 ? "" : "s"}, com causa e solução registradas.
+            {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} encontrada
+            {linhas.length === 1 ? "" : "s"}, de qualquer status.
           </p>
         </div>
         <ExportCsvButton href="/relatorios/executivo/export" queryString={queryString} />
