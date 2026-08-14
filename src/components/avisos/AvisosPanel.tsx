@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { formatarDataHoraBR, paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { MODELOS_AVISO, MODELO_AVISO_LABELS, type ModeloAviso } from "@/lib/aviso";
 import { criarAviso, atualizarAviso, excluirAviso } from "@/app/avisos/actions";
@@ -34,6 +34,8 @@ const ESTILO_BOTAO_MODELO: Record<ModeloAviso, string> = {
   ACOMPANHAMENTO: "border-yellow-500 bg-yellow-50 text-yellow-700",
   ATUACAO: "border-red-500 bg-red-50 text-red-700",
 };
+
+const ROTACAO_AUTOMATICA_MS = 7000;
 
 function CampoIcone({
   Icone,
@@ -72,10 +74,12 @@ function AvisoCard({
   aviso,
   onExcluir,
   onAtualizar,
+  onEditandoChange,
 }: {
   aviso: AvisoLinha;
   onExcluir: (id: string) => void;
   onAtualizar: (aviso: AvisoLinha) => void;
+  onEditandoChange: (editando: boolean) => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [editando, setEditando] = useState(false);
@@ -84,6 +88,12 @@ function AvisoCard({
   const [expiraEm, setExpiraEm] = useState(() => paraInputDataHoraBR(new Date(aviso.expiraEm)));
   const [erro, setErro] = useState<string | null>(null);
   const IconeModelo = ICONE_MODELO[aviso.modelo];
+
+  useEffect(() => {
+    onEditandoChange(editando);
+    return () => onEditandoChange(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editando]);
 
   function abrirEdicao() {
     setModelo(aviso.modelo);
@@ -229,6 +239,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
   const [avisos, setAvisos] = useState(avisosIniciais);
   const [indice, setIndice] = useState(0);
   const [criando, setCriando] = useState(false);
+  const [editandoAlgum, setEditandoAlgum] = useState(false);
   const [modelo, setModelo] = useState<ModeloAviso>("INFORMATIVO");
   const [descricao, setDescricao] = useState("");
   const [expiraEm, setExpiraEm] = useState(() => paraInputDataHoraBR(new Date()));
@@ -280,6 +291,14 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
   function proximo() {
     setIndice((i) => (i + 1) % avisos.length);
   }
+
+  useEffect(() => {
+    if (avisos.length <= 1 || criando || editandoAlgum) return;
+    const timer = setInterval(() => {
+      setIndice((i) => (i + 1) % avisos.length);
+    }, ROTACAO_AUTOMATICA_MS);
+    return () => clearInterval(timer);
+  }, [avisos.length, criando, editandoAlgum, indice]);
 
   return (
     <div className="flex h-full flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
@@ -377,7 +396,12 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
               </button>
 
               <div className="min-w-0 flex-1">
-                <AvisoCard aviso={avisos[indice]} onExcluir={excluirLocal} onAtualizar={atualizarLocal} />
+                <AvisoCard
+                  aviso={avisos[indice]}
+                  onExcluir={excluirLocal}
+                  onAtualizar={atualizarLocal}
+                  onEditandoChange={setEditandoAlgum}
+                />
               </div>
 
               <button
