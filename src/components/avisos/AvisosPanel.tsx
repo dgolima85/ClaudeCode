@@ -23,6 +23,18 @@ const ICONE_MODELO: Record<ModeloAviso, typeof IconeInformativo> = {
   ATUACAO: IconeAtuacao,
 };
 
+const COR_MODELO: Record<ModeloAviso, string> = {
+  INFORMATIVO: "text-blue-600",
+  ACOMPANHAMENTO: "text-yellow-600",
+  ATUACAO: "text-red-600",
+};
+
+const ESTILO_BOTAO_MODELO: Record<ModeloAviso, string> = {
+  INFORMATIVO: "border-blue-500 bg-blue-50 text-blue-700",
+  ACOMPANHAMENTO: "border-yellow-500 bg-yellow-50 text-yellow-700",
+  ATUACAO: "border-red-500 bg-red-50 text-red-700",
+};
+
 function CampoIcone({
   Icone,
   label,
@@ -63,7 +75,11 @@ function AvisoCard({ aviso, onExcluir }: { aviso: AvisoLinha; onExcluir: (id: st
   return (
     <div className="flex items-start gap-3 rounded-md border border-gray-200 p-2.5">
       <CampoIcone Icone={IconeAtivo} label="Ativo" className="text-green-600" />
-      <CampoIcone Icone={IconeModelo} label={MODELO_AVISO_LABELS[aviso.modelo]} className="text-blue-600" />
+      <CampoIcone
+        Icone={IconeModelo}
+        label={MODELO_AVISO_LABELS[aviso.modelo]}
+        className={COR_MODELO[aviso.modelo]}
+      />
       <div className="min-w-0 flex-1">
         <p className="whitespace-pre-wrap break-words text-sm text-gray-700">{aviso.descricao}</p>
         <p className="mt-1 text-xs text-gray-400">Expira em {formatarDataHoraBR(aviso.expiraEm)}</p>
@@ -167,7 +183,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
                     onClick={() => setModelo(m)}
                     className={`flex flex-1 flex-col items-center gap-1 rounded border px-2 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
                       ativo
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        ? ESTILO_BOTAO_MODELO[m]
                         : "border-gray-300 text-gray-500 hover:bg-gray-100"
                     }`}
                   >
