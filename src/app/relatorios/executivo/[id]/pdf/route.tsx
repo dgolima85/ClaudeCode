@@ -20,12 +20,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       tipo={o.tipo.nome}
       parceriaEmpresa={parceriaEmpresaLabel(o)}
       ambiente={o.ambienteInfra?.nome ?? null}
-      recurso={o.recurso?.nome ?? null}
+      recurso={o.recursos.map((r) => r.nome).join(", ") || null}
       cdn={o.cdn?.nome ?? null}
-      plataforma={o.plataforma?.nome ?? null}
-      canal={o.canal?.nome ?? null}
-      servico={o.servico?.nome ?? null}
-      sistemaOperacional={o.sistemaOperacional?.nome ?? null}
+      plataforma={o.plataformas.map((p) => p.nome).join(", ") || null}
+      canal={o.canais.map((c) => c.nome).join(", ") || null}
+      servico={o.servicos.map((s) => s.nome).join(", ") || null}
+      sistemaOperacional={o.sistemasOperacionais.map((s) => s.nome).join(", ") || null}
       analista={o.analista.nome}
       inicio={o.createdAt.toISOString()}
       fim={o.resolvidoEm ? o.resolvidoEm.toISOString() : null}

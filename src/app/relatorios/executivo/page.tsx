@@ -26,7 +26,7 @@ export default async function ResumosExecutivosPage({
     titulo: o.titulo,
     ticket: o.ticket,
     parceriaEmpresa: parceriaEmpresaLabel(o),
-    servico: o.servico?.nome ?? null,
+    servico: o.servicos.map((s) => s.nome).join(", ") || null,
     analista: o.analista.nome,
     createdAt: o.createdAt.toISOString(),
     resolvidoEm: o.resolvidoEm ? o.resolvidoEm.toISOString() : null,

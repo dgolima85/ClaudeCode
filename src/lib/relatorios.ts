@@ -50,7 +50,7 @@ export function montarWhereOcorrencia(filtros: FiltrosRelatorio) {
     ...(filtros.turno ? { analista: { turno: filtros.turno } } : {}),
     ...(filtros.status.length > 0 ? { status: { in: filtros.status } } : {}),
     ...(filtros.tipoId ? { tipoId: filtros.tipoId } : {}),
-    ...(filtros.parceriaId ? { parceriaId: filtros.parceriaId } : {}),
+    ...(filtros.parceriaId ? { parcerias: { some: { id: filtros.parceriaId } } } : {}),
   };
 }
 

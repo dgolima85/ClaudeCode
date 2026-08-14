@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import Modal from "@/components/ui/Modal";
 import EditableCell from "@/components/ui/EditableCell";
+import MultiSelect from "@/components/ui/MultiSelect";
 import StatusSelect from "./StatusSelect";
 import ParceriaEmpresaSelect from "./ParceriaEmpresaSelect";
 import AmbienteRecursoSelect from "./AmbienteRecursoSelect";
@@ -41,15 +42,15 @@ type Listas = {
 
 type CamposDetalhe = Pick<
   OcorrenciaDetalhe,
-  | "parceriaId"
-  | "empresaId"
-  | "servicoId"
-  | "sistemaOperacionalId"
+  | "parceriaIds"
+  | "empresaIds"
+  | "servicoIds"
+  | "sistemaOperacionalIds"
   | "ambienteInfraId"
-  | "recursoId"
+  | "recursoIds"
   | "cdnId"
-  | "plataformaId"
-  | "canalId"
+  | "plataformaIds"
+  | "canalIds"
 >;
 
 type OcorrenciaModalProps = {
@@ -89,15 +90,15 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
     setDetalhe(atualizado);
     startTransition(async () => {
       await atualizarDetalhesOcorrencia(atualizado.id, {
-        parceriaId: atualizado.parceriaId,
-        empresaId: atualizado.empresaId,
-        servicoId: atualizado.servicoId,
-        sistemaOperacionalId: atualizado.sistemaOperacionalId,
+        parceriaIds: atualizado.parceriaIds,
+        empresaIds: atualizado.empresaIds,
+        servicoIds: atualizado.servicoIds,
+        sistemaOperacionalIds: atualizado.sistemaOperacionalIds,
         ambienteInfraId: atualizado.ambienteInfraId,
-        recursoId: atualizado.recursoId,
+        recursoIds: atualizado.recursoIds,
         cdnId: atualizado.cdnId,
-        plataformaId: atualizado.plataformaId,
-        canalId: atualizado.canalId,
+        plataformaIds: atualizado.plataformaIds,
+        canalIds: atualizado.canalIds,
       });
     });
   }
@@ -208,7 +209,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                   ambientes={listas.ambientesInfra}
                   recursos={listas.recursos}
                   ambienteInfraId={detalhe.ambienteInfraId}
-                  recursoId={detalhe.recursoId}
+                  recursoIds={detalhe.recursoIds}
                   disabled={pending}
                   onChange={(novo) => salvarCamposDetalhe(novo)}
                 />
@@ -234,36 +235,26 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Plataforma</span>
-              <select
-                value={detalhe.plataformaId ?? ""}
-                disabled={pending}
-                onChange={(e) => salvarCamposDetalhe({ plataformaId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              >
-                <option value="">Nenhuma</option>
-                {listas.plataformas.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {rotulo(p)}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1">
+                <MultiSelect
+                  opcoes={listas.plataformas}
+                  selecionados={detalhe.plataformaIds}
+                  disabled={pending}
+                  onChange={(plataformaIds) => salvarCamposDetalhe({ plataformaIds })}
+                />
+              </div>
             </div>
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Canal</span>
-              <select
-                value={detalhe.canalId ?? ""}
-                disabled={pending}
-                onChange={(e) => salvarCamposDetalhe({ canalId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              >
-                <option value="">Nenhum</option>
-                {listas.canais.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {rotulo(c)}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1">
+                <MultiSelect
+                  opcoes={listas.canais}
+                  selecionados={detalhe.canalIds}
+                  disabled={pending}
+                  onChange={(canalIds) => salvarCamposDetalhe({ canalIds })}
+                />
+              </div>
             </div>
 
             <div className="sm:col-span-2">
@@ -303,8 +294,8 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                 <ParceriaEmpresaSelect
                   parcerias={listas.parcerias}
                   empresas={listas.empresas}
-                  parceriaId={detalhe.parceriaId}
-                  empresaId={detalhe.empresaId}
+                  parceriaIds={detalhe.parceriaIds}
+                  empresaIds={detalhe.empresaIds}
                   disabled={pending}
                   onChange={(novo) => salvarCamposDetalhe(novo)}
                 />
@@ -313,36 +304,26 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Serviço</span>
-              <select
-                value={detalhe.servicoId ?? ""}
-                disabled={pending}
-                onChange={(e) => salvarCamposDetalhe({ servicoId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              >
-                <option value="">Nenhum</option>
-                {listas.servicos.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {rotulo(s)}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1">
+                <MultiSelect
+                  opcoes={listas.servicos}
+                  selecionados={detalhe.servicoIds}
+                  disabled={pending}
+                  onChange={(servicoIds) => salvarCamposDetalhe({ servicoIds })}
+                />
+              </div>
             </div>
 
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500">Devices</span>
-              <select
-                value={detalhe.sistemaOperacionalId ?? ""}
-                disabled={pending}
-                onChange={(e) => salvarCamposDetalhe({ sistemaOperacionalId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              >
-                <option value="">Nenhum</option>
-                {listas.sistemasOperacionais.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {rotulo(s)}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1">
+                <MultiSelect
+                  opcoes={listas.sistemasOperacionais}
+                  selecionados={detalhe.sistemaOperacionalIds}
+                  disabled={pending}
+                  onChange={(sistemaOperacionalIds) => salvarCamposDetalhe({ sistemaOperacionalIds })}
+                />
+              </div>
             </div>
 
             {detalhe.status === "RESOLVIDO" && (

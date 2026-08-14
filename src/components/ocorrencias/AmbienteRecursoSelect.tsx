@@ -1,5 +1,7 @@
 "use client";
 
+import MultiSelect from "@/components/ui/MultiSelect";
+
 type Opcao = { id: string; nome: string; ativo: boolean };
 type Recurso = Opcao & { ambienteInfraId: string };
 
@@ -7,9 +9,9 @@ type AmbienteRecursoSelectProps = {
   ambientes: Opcao[];
   recursos: Recurso[];
   ambienteInfraId: string | null;
-  recursoId: string | null;
+  recursoIds: string[];
   disabled?: boolean;
-  onChange: (novo: { ambienteInfraId: string | null; recursoId: string | null }) => void;
+  onChange: (novo: { ambienteInfraId: string | null; recursoIds: string[] }) => void;
 };
 
 function rotulo(item: Opcao) {
@@ -20,7 +22,7 @@ export default function AmbienteRecursoSelect({
   ambientes,
   recursos,
   ambienteInfraId,
-  recursoId,
+  recursoIds,
   disabled,
   onChange,
 }: AmbienteRecursoSelectProps) {
@@ -33,7 +35,7 @@ export default function AmbienteRecursoSelect({
         disabled={disabled}
         onChange={(e) => {
           const novoAmbienteId = e.target.value || null;
-          onChange({ ambienteInfraId: novoAmbienteId, recursoId: null });
+          onChange({ ambienteInfraId: novoAmbienteId, recursoIds: [] });
         }}
         className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
       >
@@ -45,19 +47,15 @@ export default function AmbienteRecursoSelect({
         ))}
       </select>
       {ambienteInfraId && (
-        <select
-          value={recursoId ?? ""}
-          disabled={disabled}
-          onChange={(e) => onChange({ ambienteInfraId, recursoId: e.target.value || null })}
-          className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
-        >
-          <option value="">Selecione o recurso</option>
-          {recursosFiltrados.map((recurso) => (
-            <option key={recurso.id} value={recurso.id}>
-              {rotulo(recurso)}
-            </option>
-          ))}
-        </select>
+        <div className="flex-1">
+          <MultiSelect
+            opcoes={recursosFiltrados}
+            selecionados={recursoIds}
+            disabled={disabled}
+            placeholder="Selecione o(s) recurso(s)"
+            onChange={(novosRecursoIds) => onChange({ ambienteInfraId, recursoIds: novosRecursoIds })}
+          />
+        </div>
       )}
     </div>
   );

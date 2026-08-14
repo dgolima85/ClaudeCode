@@ -4,15 +4,15 @@ import { montarWhereOcorrencia, type FiltrosRelatorio } from "@/lib/relatorios";
 const includeCompleto = {
   tipo: true,
   analista: true,
-  parceria: true,
-  empresa: true,
-  servico: true,
-  sistemaOperacional: true,
+  parcerias: true,
+  empresas: true,
+  servicos: true,
+  sistemasOperacionais: true,
   ambienteInfra: true,
-  recurso: true,
+  recursos: true,
   cdn: true,
-  plataforma: true,
-  canal: true,
+  plataformas: true,
+  canais: true,
   causa: true,
   solucao: true,
 } as const;
@@ -47,6 +47,13 @@ export function nomeSolucao(o: ComSolucao): string {
   return o.solucao?.nome ?? o.solucaoOutraDescricao ?? "—";
 }
 
-export function parceriaEmpresaLabel(o: { parceria: { nome: string } | null; empresa: { nome: string } | null }) {
-  return [o.parceria?.nome, o.empresa?.nome].filter(Boolean).join(" / ") || null;
+export function parceriaEmpresaLabel(o: {
+  parcerias: { nome: string }[];
+  empresas: { nome: string }[];
+}) {
+  return (
+    [o.parcerias.map((p) => p.nome).join(", "), o.empresas.map((e) => e.nome).join(", ")]
+      .filter(Boolean)
+      .join(" / ") || null
+  );
 }

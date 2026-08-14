@@ -182,45 +182,39 @@ model Solucao {
 }
 
 model Ocorrencia {
-  id                   String    @id @default(cuid())
-  tipoId               String
-  status               String    @default("EM_ANDAMENTO")
-  titulo               String
-  ticket               String?
-  analistaId           String
-  parceriaId           String?
-  empresaId            String?
-  ambienteId           String?
-  servicoId            String?
-  sistemaOperacionalId String?
-  ambienteInfraId      String?
-  recursoId            String?
-  cdnId                String?
-  plataformaId         String?
-  canalId              String?
-  resolvidoEm          DateTime?
-  causaId              String?
-  causaOutraDescricao  String?
-  solucaoId            String?
+  id                    String    @id @default(cuid())
+  tipoId                String
+  status                String    @default("EM_ANDAMENTO")
+  titulo                String
+  ticket                String?
+  analistaId            String
+  ambienteId            String?
+  ambienteInfraId       String?
+  cdnId                 String?
+  resolvidoEm           DateTime?
+  causaId               String?
+  causaOutraDescricao   String?
+  solucaoId             String?
   solucaoOutraDescricao String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  tipo               TipoOcorrencia      @relation(fields: [tipoId], references: [id], onDelete: Restrict)
-  analista            Analista           @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
-  parceria            Parceria?          @relation(fields: [parceriaId], references: [id], onDelete: Restrict)
-  empresa             Empresa?           @relation(fields: [empresaId], references: [id], onDelete: Restrict)
-  ambiente            Ambiente?          @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
-  servico             Servico?           @relation(fields: [servicoId], references: [id], onDelete: Restrict)
-  sistemaOperacional  SistemaOperacional? @relation(fields: [sistemaOperacionalId], references: [id], onDelete: Restrict)
-  ambienteInfra       AmbienteInfra?     @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
-  recurso             Recurso?           @relation(fields: [recursoId], references: [id], onDelete: Restrict)
-  cdn                 Cdn?               @relation(fields: [cdnId], references: [id], onDelete: Restrict)
-  plataforma          Plataforma?        @relation(fields: [plataformaId], references: [id], onDelete: Restrict)
-  canal               Canal?             @relation(fields: [canalId], references: [id], onDelete: Restrict)
-  causa               Causa?             @relation(fields: [causaId], references: [id], onDelete: Restrict)
-  solucao             Solucao?           @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
-  eventos             Evento[]
+  tipo          TipoOcorrencia @relation(fields: [tipoId], references: [id], onDelete: Restrict)
+  analista      Analista       @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
+  ambiente      Ambiente?      @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
+  ambienteInfra AmbienteInfra? @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
+  cdn           Cdn?           @relation(fields: [cdnId], references: [id], onDelete: Restrict)
+  causa         Causa?         @relation(fields: [causaId], references: [id], onDelete: Restrict)
+  solucao       Solucao?       @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
+  eventos       Evento[]
+
+  parcerias            Parceria[]
+  empresas             Empresa[]
+  servicos             Servico[]
+  sistemasOperacionais SistemaOperacional[]
+  recursos             Recurso[]
+  plataformas          Plataforma[]
+  canais               Canal[]
 
   @@index([status])
   @@index([createdAt])
