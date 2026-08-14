@@ -40,6 +40,22 @@ function CampoIcone({
   );
 }
 
+function IconeSeta({ direcao, className }: { direcao: "esquerda" | "direita"; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={direcao === "esquerda" ? "m14.5 5-7 7 7 7" : "m9.5 5 7 7-7 7"} />
+    </svg>
+  );
+}
+
 function AvisoCard({ aviso, onExcluir }: { aviso: AvisoLinha; onExcluir: (id: string) => void }) {
   const [pending, startTransition] = useTransition();
   const IconeModelo = ICONE_MODELO[aviso.modelo];
@@ -72,6 +88,7 @@ function AvisoCard({ aviso, onExcluir }: { aviso: AvisoLinha; onExcluir: (id: st
 
 export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps) {
   const [avisos, setAvisos] = useState(avisosIniciais);
+  const [indice, setIndice] = useState(0);
   const [criando, setCriando] = useState(false);
   const [modelo, setModelo] = useState<ModeloAviso>("INFORMATIVO");
   const [descricao, setDescricao] = useState("");
@@ -101,7 +118,24 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
       }
       setCriando(false);
       setAvisos((atual) => [{ ...res.aviso!, modelo }, ...atual]);
+      setIndice(0);
     });
+  }
+
+  function excluirLocal(id: string) {
+    setAvisos((atual) => {
+      const novaLista = atual.filter((x) => x.id !== id);
+      setIndice((i) => Math.min(i, Math.max(novaLista.length - 1, 0)));
+      return novaLista;
+    });
+  }
+
+  function anterior() {
+    setIndice((i) => (i - 1 + avisos.length) % avisos.length);
+  }
+
+  function proximo() {
+    setIndice((i) => (i + 1) % avisos.length);
   }
 
   return (
@@ -183,17 +217,53 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
         </div>
       )}
 
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto">
+      <div className="flex flex-1 flex-col justify-center gap-2">
         {avisos.length === 0 ? (
           <p className="py-2 text-center text-sm text-gray-400">Nenhum aviso ativo no momento.</p>
         ) : (
-          avisos.map((a) => (
-            <AvisoCard
-              key={a.id}
-              aviso={a}
-              onExcluir={(id) => setAvisos((atual) => atual.filter((x) => x.id !== id))}
-            />
-          ))
+          <>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={anterior}
+                disabled={avisos.length <= 1}
+                aria-label="Aviso anterior"
+                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+              >
+                <IconeSeta direcao="esquerda" className="h-5 w-5" />
+              </button>
+
+              <div className="min-w-0 flex-1">
+                <AvisoCard aviso={avisos[indice]} onExcluir={excluirLocal} />
+              </div>
+
+              <button
+                type="button"
+                onClick={proximo}
+                disabled={avisos.length <= 1}
+                aria-label="Próximo aviso"
+                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+              >
+                <IconeSeta direcao="direita" className="h-5 w-5" />
+              </button>
+            </div>
+
+            {avisos.length > 1 && (
+              <div className="flex items-center justify-center gap-1.5">
+                {avisos.map((a, i) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setIndice(i)}
+                    aria-label={`Ir para o aviso ${i + 1}`}
+                    className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                      i === indice ? "bg-blue-600" : "bg-gray-300 hover:bg-gray-400"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
