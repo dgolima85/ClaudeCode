@@ -39,9 +39,9 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
   }
 
   return (
-    <div className="flex h-[460px] flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
+    <div className="flex h-[240px] flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
       <h2 className="shrink-0 text-sm font-semibold text-gray-700">Nova Ocorrência</h2>
-      <div className="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         <label className="flex flex-col gap-1 text-xs text-gray-600">
           Título
           <input

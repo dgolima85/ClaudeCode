@@ -203,7 +203,7 @@ function AvisoCard({
         className={COR_MODELO[aviso.modelo]}
       />
       <div className="min-w-0 flex-1">
-        <p className="max-h-40 overflow-y-auto whitespace-pre-wrap break-words pr-1 text-sm text-gray-700">
+        <p className="max-h-28 overflow-y-auto whitespace-pre-wrap break-words pr-1 text-sm text-gray-700">
           {aviso.descricao}
         </p>
         <p className="mt-1 text-xs text-gray-400">Expira em {formatarDataHoraBR(aviso.expiraEm)}</p>
@@ -303,7 +303,11 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
   }, [avisos.length, criando, editandoAlgum, indice]);
 
   return (
-    <div className="flex h-[460px] flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
+    <div
+      className={`flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 ${
+        criando || editandoAlgum ? "h-auto" : "h-[240px]"
+      }`}
+    >
       <div className="flex shrink-0 items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">Avisos</h2>
         <button
@@ -316,7 +320,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
-        {criando && (
+        {criando ? (
           <div className="flex shrink-0 flex-col gap-2 rounded-md border border-gray-100 bg-gray-50 p-3">
             <div>
               <span className="block text-xs text-gray-600">Modelo</span>
@@ -380,62 +384,58 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
               </button>
             </div>
           </div>
-        )}
+        ) : avisos.length === 0 ? (
+          <p className="py-2 text-center text-sm text-gray-400">Nenhum aviso ativo no momento.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={anterior}
+                disabled={avisos.length <= 1}
+                aria-label="Aviso anterior"
+                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+              >
+                <IconeSeta direcao="esquerda" className="h-5 w-5" />
+              </button>
 
-        <div className="flex flex-1 flex-col justify-center gap-2">
-          {avisos.length === 0 ? (
-            <p className="py-2 text-center text-sm text-gray-400">Nenhum aviso ativo no momento.</p>
-          ) : (
-            <>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={anterior}
-                  disabled={avisos.length <= 1}
-                  aria-label="Aviso anterior"
-                  className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
-                >
-                  <IconeSeta direcao="esquerda" className="h-5 w-5" />
-                </button>
-
-                <div className="min-w-0 flex-1">
-                  <AvisoCard
-                    aviso={avisos[indice]}
-                    onExcluir={excluirLocal}
-                    onAtualizar={atualizarLocal}
-                    onEditandoChange={setEditandoAlgum}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={proximo}
-                  disabled={avisos.length <= 1}
-                  aria-label="Próximo aviso"
-                  className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
-                >
-                  <IconeSeta direcao="direita" className="h-5 w-5" />
-                </button>
+              <div className="min-w-0 flex-1">
+                <AvisoCard
+                  aviso={avisos[indice]}
+                  onExcluir={excluirLocal}
+                  onAtualizar={atualizarLocal}
+                  onEditandoChange={setEditandoAlgum}
+                />
               </div>
 
-              {avisos.length > 1 && (
-                <div className="flex shrink-0 items-center justify-center gap-1.5">
-                  {avisos.map((a, i) => (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => setIndice(i)}
-                      aria-label={`Ir para o aviso ${i + 1}`}
-                      className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                        i === indice ? "bg-blue-600" : "bg-gray-300 hover:bg-gray-400"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+              <button
+                type="button"
+                onClick={proximo}
+                disabled={avisos.length <= 1}
+                aria-label="Próximo aviso"
+                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+              >
+                <IconeSeta direcao="direita" className="h-5 w-5" />
+              </button>
+            </div>
+
+            {avisos.length > 1 && (
+              <div className="flex shrink-0 items-center justify-center gap-1.5">
+                {avisos.map((a, i) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setIndice(i)}
+                    aria-label={`Ir para o aviso ${i + 1}`}
+                    className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                      i === indice ? "bg-blue-600" : "bg-gray-300 hover:bg-gray-400"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
