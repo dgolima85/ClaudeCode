@@ -22,8 +22,27 @@ model Analista {
 
   ocorrencias Ocorrencia[] @relation("OcorrenciaAnalista")
   eventos     Evento[]
+  avisos      Aviso[]
 
   @@map("analistas")
+}
+
+// Painel de avisos da Home. "Status" (Ativo/Concluído) não é armazenado —
+// é sempre calculado comparando expiraEm com o horário atual (ver
+// src/lib/aviso.ts). Um aviso some do painel assim que expira.
+model Aviso {
+  id         String   @id @default(cuid())
+  modelo     String
+  descricao  String
+  expiraEm   DateTime
+  analistaId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  analista Analista @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+
+  @@index([expiraEm])
+  @@map("avisos")
 }
 
 model TipoOcorrencia {

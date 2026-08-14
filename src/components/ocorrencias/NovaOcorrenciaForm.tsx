@@ -39,10 +39,10 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
   }
 
   return (
-    <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
-      <h2 className="mb-3 text-sm font-semibold text-gray-700">Nova Ocorrência</h2>
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex min-w-[16rem] flex-1 flex-col gap-1 text-xs text-gray-600">
+    <div className="flex h-full flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
+      <h2 className="text-sm font-semibold text-gray-700">Nova Ocorrência</h2>
+      <div className="flex flex-col gap-3">
+        <label className="flex flex-col gap-1 text-xs text-gray-600">
           Título
           <input
             value={titulo}
@@ -53,27 +53,29 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
           />
         </label>
 
-        <label className="flex min-w-[10rem] flex-col gap-1 text-xs text-gray-600">
-          Ticket
-          <input
-            value={ticket}
-            disabled={pending}
-            onChange={(e) => setTicket(e.target.value)}
-            placeholder="Ticket (opcional)"
-            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-          />
-        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-xs text-gray-600">
+            Ticket
+            <input
+              value={ticket}
+              disabled={pending}
+              onChange={(e) => setTicket(e.target.value)}
+              placeholder="Opcional"
+              className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+            />
+          </label>
 
-        <label className="flex min-w-[12rem] flex-col gap-1 text-xs text-gray-600">
-          Início
-          <input
-            type="datetime-local"
-            value={inicio}
-            disabled={pending}
-            onChange={(e) => setInicio(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-          />
-        </label>
+          <label className="flex flex-col gap-1 text-xs text-gray-600">
+            Início
+            <input
+              type="datetime-local"
+              value={inicio}
+              disabled={pending}
+              onChange={(e) => setInicio(e.target.value)}
+              className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+            />
+          </label>
+        </div>
 
         <button
           type="button"
@@ -84,7 +86,7 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
           Adicionar
         </button>
       </div>
-      {erro && <p className="mt-2 text-xs text-red-600">{erro}</p>}
+      {erro && <p className="text-xs text-red-600">{erro}</p>}
     </div>
   );
 }

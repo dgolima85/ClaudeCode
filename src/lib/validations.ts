@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TURNOS } from "@/lib/turno";
 import { STATUS_OCORRENCIA } from "@/lib/status";
+import { MODELOS_AVISO } from "@/lib/aviso";
 
 export const nomeSchema = z
   .string()
@@ -35,6 +36,17 @@ export const dataHoraLocalSchema = z
   .trim()
   .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Informe data e hora válidas")
   .refine((v) => !Number.isNaN(new Date(`${v}:00-03:00`).getTime()), "Informe data e hora válidas");
+
+export const avisoSchema = z
+  .object({
+    modelo: z.enum(MODELOS_AVISO, { message: "Selecione um modelo válido" }),
+    descricao: z.string().trim().min(1, "Descreva o aviso").max(2000, "Descrição muito longa"),
+    expiraEm: dataHoraLocalSchema,
+  })
+  .refine((d) => new Date(`${d.expiraEm}:00-03:00`).getTime() > Date.now(), {
+    message: "Escolha uma data e hora futura para o aviso expirar.",
+    path: ["expiraEm"],
+  });
 
 export const novaOcorrenciaSchema = z.object({
   tipoId: z.string().trim().min(1, "Selecione um tipo"),

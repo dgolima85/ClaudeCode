@@ -2,14 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
-import NovaOcorrenciaForm from "./NovaOcorrenciaForm";
 import StatusSelect from "./StatusSelect";
 import EditableCell from "@/components/ui/EditableCell";
 import OcorrenciaModal from "./OcorrenciaModal";
 import NormalizacaoOcorrenciaModal from "./NormalizacaoOcorrenciaModal";
 import type { StatusOcorrencia } from "@/lib/status";
 import {
-  criarOcorrencia,
   atualizarStatusOcorrencia,
   atualizarTituloOcorrencia,
   atualizarTicketOcorrencia,
@@ -80,8 +78,6 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
 
   return (
     <>
-      <NovaOcorrenciaForm tipos={tipos} onCriar={criarOcorrencia} />
-
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50">
