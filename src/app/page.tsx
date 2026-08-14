@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 
 export default async function HomePage({
   searchParams,
@@ -14,7 +15,7 @@ export default async function HomePage({
     Array.isArray(statusParamBruto) ? statusParamBruto : statusParamBruto ? [statusParamBruto] : []
   ).filter(isStatusOcorrencia);
 
-  const [ocorrencias, tipos] = await Promise.all([
+  const [ocorrencias, tiposBrutos] = await Promise.all([
     prisma.ocorrencia.findMany({
       where: statusFiltro.length > 0 ? { status: { in: statusFiltro } } : undefined,
       include: { tipo: true, analista: true },
@@ -22,6 +23,7 @@ export default async function HomePage({
     }),
     prisma.tipoOcorrencia.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
   ]);
+  const tipos = ordenarComNaPrimeiro(tiposBrutos);
 
   const linhas = ocorrencias.map((o) => ({
     id: o.id,

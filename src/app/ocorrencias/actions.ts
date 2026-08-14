@@ -10,6 +10,7 @@ import {
 } from "@/lib/validations";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { deInputDataHoraBR } from "@/lib/dataHoraBR";
+import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 
 export async function criarOcorrencia(dados: {
   tipoId: string;
@@ -315,18 +316,20 @@ export async function buscarListasReferenciaOcorrencia() {
   ]);
 
   return {
-    tipos: tipos.map((t) => ({ id: t.id, nome: t.nome, ativo: t.ativo })),
+    tipos: ordenarComNaPrimeiro(tipos.map((t) => ({ id: t.id, nome: t.nome, ativo: t.ativo }))),
     parcerias: parcerias.map((p) => ({ id: p.id, nome: p.nome, ativo: p.ativo })),
     empresas: empresas.map((e) => ({ id: e.id, nome: e.nome, parceriaId: e.parceriaId, ativo: e.ativo })),
     servicos: servicos.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
     sistemasOperacionais: sistemasOperacionais.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
     ambientesInfra: ambientesInfra.map((a) => ({ id: a.id, nome: a.nome, ativo: a.ativo })),
-    recursos: recursos.map((r) => ({
-      id: r.id,
-      nome: r.nome,
-      ambienteInfraId: r.ambienteInfraId,
-      ativo: r.ativo,
-    })),
+    recursos: ordenarComNaPrimeiro(
+      recursos.map((r) => ({
+        id: r.id,
+        nome: r.nome,
+        ambienteInfraId: r.ambienteInfraId,
+        ativo: r.ativo,
+      })),
+    ),
     cdns: cdns.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
     plataformas: plataformas.map((p) => ({ id: p.id, nome: p.nome, ativo: p.ativo })),
     canais: canais.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
