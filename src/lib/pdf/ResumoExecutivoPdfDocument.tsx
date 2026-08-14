@@ -61,7 +61,7 @@ export function ResumoExecutivoPdfDocument({
         <Text style={estilos.subtitulo}>{titulo}</Text>
 
         <View style={estilos.grade}>
-          <Campo label="Afiliada" valor={tipo} />
+          <Campo label="Origem" valor={tipo} />
           <Campo label="Ticket" valor={ticket ?? "—"} />
           <Campo label="Analista" valor={analista} />
           <Campo label="Parceria / Empresa" valor={parceriaEmpresa ?? "—"} />

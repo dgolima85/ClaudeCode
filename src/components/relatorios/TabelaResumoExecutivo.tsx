@@ -25,7 +25,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
         <thead className="bg-gray-50">
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Afiliada</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Origem</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Parceria / Empresa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Causa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Solução</th>

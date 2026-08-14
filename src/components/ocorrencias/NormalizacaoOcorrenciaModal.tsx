@@ -92,7 +92,7 @@ export default function NormalizacaoOcorrenciaModal({
         <div className="flex flex-col gap-5">
           <section className="grid grid-cols-1 gap-3 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Afiliada</span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Origem</span>
               <p className="mt-1 text-sm text-gray-700">{dados.afiliada}</p>
             </div>
             <div className="sm:col-span-2">

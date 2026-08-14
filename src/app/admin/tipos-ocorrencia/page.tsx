@@ -9,7 +9,7 @@ export default async function TiposOcorrenciaPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Afiliadas</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Origens</h1>
         <p className="text-sm text-gray-500">
           Categorias usadas para classificar as ocorrências registradas.
         </p>

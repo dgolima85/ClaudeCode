@@ -24,7 +24,7 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
       <table className="min-w-full divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Afiliada</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600">Origem</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>

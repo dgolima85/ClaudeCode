@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   ]);
 
   const csv = toCsv(
-    ["Afiliada", "Status", "Início", "Fim", "Analista", "Turno", "Título", "Ticket"],
+    ["Origem", "Status", "Início", "Fim", "Analista", "Turno", "Título", "Ticket"],
     linhas,
   );
 

@@ -107,7 +107,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
         <div className="flex flex-col gap-5">
           <section className="grid grid-cols-1 gap-4 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Afiliada</span>
+              <span className="block text-xs font-medium uppercase text-gray-500">Origem</span>
               <select
                 value={detalhe.tipoId}
                 disabled={pending}
