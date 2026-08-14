@@ -148,6 +148,17 @@ model Plataforma {
   @@map("plataformas")
 }
 
+model Canal {
+  id          String       @id @default(cuid())
+  nome        String       @unique
+  ativo       Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ocorrencias Ocorrencia[]
+
+  @@map("canais")
+}
+
 model Causa {
   id          String       @id @default(cuid())
   nome        String       @unique
@@ -186,6 +197,7 @@ model Ocorrencia {
   recursoId            String?
   cdnId                String?
   plataformaId         String?
+  canalId              String?
   resolvidoEm          DateTime?
   causaId              String?
   causaOutraDescricao  String?
@@ -205,6 +217,7 @@ model Ocorrencia {
   recurso             Recurso?           @relation(fields: [recursoId], references: [id], onDelete: Restrict)
   cdn                 Cdn?               @relation(fields: [cdnId], references: [id], onDelete: Restrict)
   plataforma          Plataforma?        @relation(fields: [plataformaId], references: [id], onDelete: Restrict)
+  canal               Canal?             @relation(fields: [canalId], references: [id], onDelete: Restrict)
   causa               Causa?             @relation(fields: [causaId], references: [id], onDelete: Restrict)
   solucao             Solucao?           @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
   eventos             Evento[]

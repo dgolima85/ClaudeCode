@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/recursos", label: "Recurso" },
   { href: "/admin/cdns", label: "CDN" },
   { href: "/admin/plataformas", label: "Plataforma" },
+  { href: "/admin/canais", label: "Canal" },
   { href: "/admin/causas", label: "Causas" },
   { href: "/admin/solucoes", label: "Soluções" },
 ];

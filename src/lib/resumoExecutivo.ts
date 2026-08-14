@@ -12,6 +12,7 @@ const includeCompleto = {
   recurso: true,
   cdn: true,
   plataforma: true,
+  canal: true,
   causa: true,
   solucao: true,
 } as const;

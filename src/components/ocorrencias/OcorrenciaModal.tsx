@@ -36,6 +36,7 @@ type Listas = {
   recursos: Recurso[];
   cdns: ItemReferencia[];
   plataformas: ItemReferencia[];
+  canais: ItemReferencia[];
 };
 
 type CamposDetalhe = Pick<
@@ -48,6 +49,7 @@ type CamposDetalhe = Pick<
   | "recursoId"
   | "cdnId"
   | "plataformaId"
+  | "canalId"
 >;
 
 type OcorrenciaModalProps = {
@@ -95,6 +97,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
         recursoId: atualizado.recursoId,
         cdnId: atualizado.cdnId,
         plataformaId: atualizado.plataformaId,
+        canalId: atualizado.canalId,
       });
     });
   }
@@ -241,6 +244,23 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                 {listas.plataformas.map((p) => (
                   <option key={p.id} value={p.id}>
                     {rotulo(p)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <span className="block text-xs font-medium uppercase text-gray-500">Canal</span>
+              <select
+                value={detalhe.canalId ?? ""}
+                disabled={pending}
+                onChange={(e) => salvarCamposDetalhe({ canalId: e.target.value || null })}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              >
+                <option value="">Nenhum</option>
+                {listas.canais.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {rotulo(c)}
                   </option>
                 ))}
               </select>

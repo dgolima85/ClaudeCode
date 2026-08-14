@@ -23,6 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       recurso={o.recurso?.nome ?? null}
       cdn={o.cdn?.nome ?? null}
       plataforma={o.plataforma?.nome ?? null}
+      canal={o.canal?.nome ?? null}
       servico={o.servico?.nome ?? null}
       sistemaOperacional={o.sistemaOperacional?.nome ?? null}
       analista={o.analista.nome}

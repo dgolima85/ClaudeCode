@@ -230,6 +230,7 @@ export type OcorrenciaDetalhe = {
   recursoId: string | null;
   cdnId: string | null;
   plataformaId: string | null;
+  canalId: string | null;
   eventos: {
     id: string;
     comentario: string;
@@ -274,6 +275,7 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
     recursoId: o.recursoId,
     cdnId: o.cdnId,
     plataformaId: o.plataformaId,
+    canalId: o.canalId,
     eventos: o.eventos.map((e) => ({
       id: e.id,
       comentario: e.comentario,
@@ -298,6 +300,7 @@ export async function buscarListasReferenciaOcorrencia() {
     recursos,
     cdns,
     plataformas,
+    canais,
   ] = await Promise.all([
     prisma.tipoOcorrencia.findMany({ orderBy: { nome: "asc" } }),
     prisma.parceria.findMany({ orderBy: { nome: "asc" } }),
@@ -308,6 +311,7 @@ export async function buscarListasReferenciaOcorrencia() {
     prisma.recurso.findMany({ orderBy: { nome: "asc" } }),
     prisma.cdn.findMany({ orderBy: { nome: "asc" } }),
     prisma.plataforma.findMany({ orderBy: { nome: "asc" } }),
+    prisma.canal.findMany({ orderBy: { nome: "asc" } }),
   ]);
 
   return {
@@ -325,6 +329,7 @@ export async function buscarListasReferenciaOcorrencia() {
     })),
     cdns: cdns.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
     plataformas: plataformas.map((p) => ({ id: p.id, nome: p.nome, ativo: p.ativo })),
+    canais: canais.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
   };
 }
 
@@ -339,6 +344,7 @@ export async function atualizarDetalhesOcorrencia(
     recursoId?: string | null;
     cdnId?: string | null;
     plataformaId?: string | null;
+    canalId?: string | null;
   },
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
@@ -354,6 +360,7 @@ export async function atualizarDetalhesOcorrencia(
       recursoId: dados.recursoId || null,
       cdnId: dados.cdnId || null,
       plataformaId: dados.plataformaId || null,
+      canalId: dados.canalId || null,
     },
   });
 

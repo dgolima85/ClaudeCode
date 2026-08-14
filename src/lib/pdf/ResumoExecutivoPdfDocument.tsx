@@ -17,6 +17,7 @@ type ResumoExecutivoPdfDocumentProps = {
   recurso: string | null;
   cdn: string | null;
   plataforma: string | null;
+  canal: string | null;
   servico: string | null;
   sistemaOperacional: string | null;
   analista: string;
@@ -45,6 +46,7 @@ export function ResumoExecutivoPdfDocument({
   recurso,
   cdn,
   plataforma,
+  canal,
   servico,
   sistemaOperacional,
   analista,
@@ -69,6 +71,7 @@ export function ResumoExecutivoPdfDocument({
           <Campo label="Recurso" valor={recurso ?? "—"} />
           <Campo label="CDN" valor={cdn ?? "—"} />
           <Campo label="Plataforma" valor={plataforma ?? "—"} />
+          <Campo label="Canal" valor={canal ?? "—"} />
           <Campo label="Serviço" valor={servico ?? "—"} />
           <Campo label="Devices" valor={sistemaOperacional ?? "—"} />
           <Campo label="Início" valor={formatarDataHoraBR(inicio)} />
