@@ -26,7 +26,7 @@ export default function StatusSelect({ value, onChange }: StatusSelectProps) {
             await onChange(novoStatus);
           });
         }}
-        className="rounded border border-gray-300 bg-transparent px-1.5 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
+        className="rounded border border-gray-300 bg-transparent px-1.5 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
       >
         {STATUS_OCORRENCIA.map((status) => (
           <option key={status} value={status}>

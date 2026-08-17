@@ -127,7 +127,7 @@ export default function NormalizacaoOcorrenciaModal({
                 value={fim}
                 disabled={pending}
                 onChange={(e) => setFim(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               />
             </div>
 
@@ -137,7 +137,7 @@ export default function NormalizacaoOcorrenciaModal({
                 value={causaId}
                 disabled={pending}
                 onChange={(e) => setCausaId(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 <option value="" disabled>
                   Selecione a causa
@@ -167,7 +167,7 @@ export default function NormalizacaoOcorrenciaModal({
                 value={solucaoId}
                 disabled={pending}
                 onChange={(e) => setSolucaoId(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 <option value="" disabled>
                   Selecione a solução

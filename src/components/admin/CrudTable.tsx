@@ -114,7 +114,7 @@ export default function CrudTable({
                             onChange={(e) =>
                               setEditValores((v) => ({ ...v, [campo.key]: e.target.value }))
                             }
-                            className="rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+                            className="rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
                           >
                             {campo.options.map((o) => (
                               <option key={o.value} value={o.value}>
@@ -214,7 +214,7 @@ export default function CrudTable({
                     <select
                       value={novo[campo.key] ?? ""}
                       onChange={(e) => setNovo((v) => ({ ...v, [campo.key]: e.target.value }))}
-                      className="rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+                      className="rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
                     >
                       <option value="" disabled>
                         Selecione

@@ -58,7 +58,7 @@ export default async function PassagemTurnoPage({
           <select
             name="turno"
             defaultValue={turnoSelecionado}
-            className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+            className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
           >
             {TURNOS.map((t) => (
               <option key={t} value={t}>

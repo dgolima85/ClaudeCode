@@ -122,7 +122,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                     await atualizarTipoDaOcorrencia(detalhe.id, novoTipoId);
                   });
                 }}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 {listas.tipos.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -175,7 +175,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                     await atualizarInicioOcorrencia(detalhe.id, valor);
                   });
                 }}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               />
             </div>
 
@@ -195,7 +195,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                       await atualizarFimOcorrencia(detalhe.id, valor);
                     });
                   }}
-                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
+                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
                 />
               ) : (
                 <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">—</p>
@@ -222,7 +222,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                 value={detalhe.cdnId ?? ""}
                 disabled={pending}
                 onChange={(e) => salvarCamposDetalhe({ cdnId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 <option value="">Nenhum</option>
                 {listas.cdns.map((c) => (

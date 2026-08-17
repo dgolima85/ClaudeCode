@@ -37,7 +37,7 @@ export default function AmbienteRecursoSelect({
           const novoAmbienteId = e.target.value || null;
           onChange({ ambienteInfraId: novoAmbienteId, recursoIds: [] });
         }}
-        className="flex-1 rounded border border-gray-300 bg-transparent px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+        className="flex-1 rounded border border-gray-300 bg-transparent px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
       >
         <option value="">Sem ambiente</option>
         {ambientes.map((a) => (

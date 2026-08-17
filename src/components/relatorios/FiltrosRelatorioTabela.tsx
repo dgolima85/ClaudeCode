@@ -45,7 +45,7 @@ export default function FiltrosRelatorioTabela({
         <select
           name="analistaId"
           defaultValue={filtros.analistaId ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todos</option>
           {analistas.map((a) => (
@@ -60,7 +60,7 @@ export default function FiltrosRelatorioTabela({
         <select
           name="turno"
           defaultValue={filtros.turno ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todos</option>
           {TURNOS.map((t) => (
@@ -75,7 +75,7 @@ export default function FiltrosRelatorioTabela({
         <select
           name="tipoId"
           defaultValue={filtros.tipoId ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todos</option>
           {tipos.map((t) => (
@@ -90,7 +90,7 @@ export default function FiltrosRelatorioTabela({
         <select
           name="parceriaId"
           defaultValue={filtros.parceriaId ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todas</option>
           {parcerias.map((p) => (
