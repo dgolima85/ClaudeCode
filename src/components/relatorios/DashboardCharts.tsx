@@ -36,25 +36,25 @@ export default function DashboardCharts({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-gray-500">Total de Ocorrências</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">{totalOcorrencias}</p>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Total de Ocorrências</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">{totalOcorrencias}</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-gray-500">Tempo Médio de Resolução</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Tempo Médio de Resolução</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {tempoMedioResolucaoMinutos !== null ? formatarMinutos(tempoMedioResolucaoMinutos) : "—"}
           </p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-gray-500">Ocorrências Resolvidas</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">{resolvidas}</p>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <p className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Ocorrências Resolvidas</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">{resolvidas}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-700">Por Status</h3>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Por Status</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={porStatus}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -73,8 +73,8 @@ export default function DashboardCharts({
           </ResponsiveContainer>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-700">Por Tipo</h3>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Por Tipo</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={porTipo}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -86,8 +86,8 @@ export default function DashboardCharts({
           </ResponsiveContainer>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-700">Por Analista</h3>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Por Analista</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={porAnalista}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -99,8 +99,8 @@ export default function DashboardCharts({
           </ResponsiveContainer>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-700">Volume ao Longo do Tempo</h3>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+          <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Volume ao Longo do Tempo</h3>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={porDia}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -114,7 +114,7 @@ export default function DashboardCharts({
       </div>
 
       {totalOcorrencias === 0 && (
-        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
           Nenhuma ocorrência registrada ainda. Os gráficos aparecerão conforme os dados forem inseridos.
         </p>
       )}

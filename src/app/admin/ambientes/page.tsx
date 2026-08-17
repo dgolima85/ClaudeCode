@@ -9,8 +9,8 @@ export default async function AmbientesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Ambientes</h1>
-        <p className="text-sm text-gray-500">Ex: Produção, Homologação, Desenvolvimento.</p>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ambientes</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Ex: Produção, Homologação, Desenvolvimento.</p>
       </div>
       <CrudTable
         campos={[{ key: "nome", label: "Nome", type: "text", required: true }]}

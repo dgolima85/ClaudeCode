@@ -36,8 +36,8 @@ export default async function RelatoriosDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">Visão geral das ocorrências registradas.</p>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Visão geral das ocorrências registradas.</p>
       </div>
 
       <DashboardCharts

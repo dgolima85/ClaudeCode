@@ -20,21 +20,21 @@ type TabelaOcorrenciasFiltravelProps = {
 
 export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrenciasFiltravelProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Origem</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Analista</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Turno</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Ticket</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Origem</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Início</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Fim</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Turno</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Título</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
           {linhas.map((l) => (
             <tr key={l.id}>
               <td className="px-3 py-2">{l.tipo}</td>
@@ -44,21 +44,21 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
                   {STATUS_LABELS[l.status]}
                 </span>
               </td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                 {formatarDataHoraBR(l.createdAt)}
               </td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                 {l.resolvidoEm ? formatarDataHoraBR(l.resolvidoEm) : "—"}
               </td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">{l.analista}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">{TURNO_LABELS[l.turno]}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{l.analista}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{TURNO_LABELS[l.turno]}</td>
               <td className="px-3 py-2">{l.titulo}</td>
               <td className="px-3 py-2">{l.ticket ?? "—"}</td>
             </tr>
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={8} className="px-3 py-6 text-center text-gray-400">
+              <td colSpan={8} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>

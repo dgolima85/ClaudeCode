@@ -24,15 +24,15 @@ const ICONE_MODELO: Record<ModeloAviso, typeof IconeInformativo> = {
 };
 
 const COR_MODELO: Record<ModeloAviso, string> = {
-  INFORMATIVO: "text-blue-600",
-  ACOMPANHAMENTO: "text-yellow-600",
-  ATUACAO: "text-red-600",
+  INFORMATIVO: "text-blue-600 dark:text-blue-400",
+  ACOMPANHAMENTO: "text-yellow-600 dark:text-yellow-400",
+  ATUACAO: "text-red-600 dark:text-red-400",
 };
 
 const ESTILO_BOTAO_MODELO: Record<ModeloAviso, string> = {
-  INFORMATIVO: "border-blue-500 bg-blue-50 text-blue-700",
-  ACOMPANHAMENTO: "border-yellow-500 bg-yellow-50 text-yellow-700",
-  ATUACAO: "border-red-500 bg-red-50 text-red-700",
+  INFORMATIVO: "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  ACOMPANHAMENTO: "border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+  ATUACAO: "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
 const ROTACAO_AUTOMATICA_MS = 7000;
@@ -122,9 +122,9 @@ function AvisoCard({
 
   if (editando) {
     return (
-      <div className="flex flex-col gap-2 rounded-md border border-gray-200 bg-gray-50 p-2.5">
+      <div className="flex flex-col gap-2 rounded-md border border-gray-200 bg-gray-50 p-2.5 dark:border-gray-700 dark:bg-gray-800">
         <div>
-          <span className="block text-xs text-gray-600">Modelo</span>
+          <span className="block text-xs text-gray-600 dark:text-gray-400">Modelo</span>
           <div className="mt-1 flex gap-2">
             {MODELOS_AVISO.map((m) => {
               const IconeM = ICONE_MODELO[m];
@@ -136,7 +136,7 @@ function AvisoCard({
                   disabled={pending}
                   onClick={() => setModelo(m)}
                   className={`flex flex-1 flex-col items-center gap-1 rounded border px-2 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
-                    ativo ? ESTILO_BOTAO_MODELO[m] : "border-gray-300 text-gray-500 hover:bg-gray-100"
+                    ativo ? ESTILO_BOTAO_MODELO[m] : "border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                   }`}
                 >
                   <IconeM className="h-5 w-5" />
@@ -147,7 +147,7 @@ function AvisoCard({
           </div>
         </div>
 
-        <label className="flex flex-col gap-1 text-xs text-gray-600">
+        <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
           Descrição
           <textarea
             value={descricao}
@@ -155,29 +155,29 @@ function AvisoCard({
             onChange={(e) => setDescricao(e.target.value)}
             placeholder="Conteúdo do comunicado"
             rows={3}
-            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-gray-600">
+        <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
           Expira em
           <input
             type="datetime-local"
             value={expiraEm}
             disabled={pending}
             onChange={(e) => setExpiraEm(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
           />
         </label>
 
-        {erro && <p className="text-xs text-red-600">{erro}</p>}
+        {erro && <p className="text-xs text-red-600 dark:text-red-400">{erro}</p>}
 
         <div className="flex justify-end gap-2">
           <button
             type="button"
             disabled={pending}
             onClick={() => setEditando(false)}
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             Cancelar
           </button>
@@ -195,18 +195,18 @@ function AvisoCard({
   }
 
   return (
-    <div className="flex items-start gap-3 rounded-md border border-gray-200 p-2.5">
-      <CampoIcone Icone={IconeAtivo} label="Ativo" className="text-green-600" />
+    <div className="flex items-start gap-3 rounded-md border border-gray-200 p-2.5 dark:border-gray-700">
+      <CampoIcone Icone={IconeAtivo} label="Ativo" className="text-green-600 dark:text-green-400" />
       <CampoIcone
         Icone={IconeModelo}
         label={MODELO_AVISO_LABELS[aviso.modelo]}
         className={COR_MODELO[aviso.modelo]}
       />
       <div className="min-w-0 flex-1">
-        <p className="max-h-28 overflow-y-auto whitespace-pre-wrap break-words pr-1 text-sm text-gray-700">
+        <p className="max-h-28 overflow-y-auto whitespace-pre-wrap break-words pr-1 text-sm text-gray-700 dark:text-gray-300">
           {aviso.descricao}
         </p>
-        <p className="mt-1 text-xs text-gray-400">Expira em {formatarDataHoraBR(aviso.expiraEm)}</p>
+        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Expira em {formatarDataHoraBR(aviso.expiraEm)}</p>
       </div>
       <div className="flex shrink-0 flex-col items-center gap-1.5">
         <button
@@ -214,7 +214,7 @@ function AvisoCard({
           disabled={pending}
           onClick={abrirEdicao}
           title="Editar aviso"
-          className="text-gray-400 hover:text-blue-600 disabled:opacity-50"
+          className="text-gray-400 hover:text-blue-600 disabled:opacity-50 dark:text-gray-500 dark:hover:text-blue-400"
         >
           ✎
         </button>
@@ -228,7 +228,7 @@ function AvisoCard({
             })
           }
           title="Excluir aviso"
-          className="text-gray-400 hover:text-red-600 disabled:opacity-50"
+          className="text-gray-400 hover:text-red-600 disabled:opacity-50 dark:text-gray-500 dark:hover:text-red-400"
         >
           ✕
         </button>
@@ -304,12 +304,12 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 ${
+      className={`flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900 ${
         criando || editandoAlgum ? "h-auto" : "h-[240px]"
       }`}
     >
       <div className="flex shrink-0 items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">Avisos</h2>
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Avisos</h2>
         <button
           type="button"
           onClick={() => (criando ? setCriando(false) : abrirForm())}
@@ -321,9 +321,9 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
         {criando ? (
-          <div className="flex shrink-0 flex-col gap-2 rounded-md border border-gray-100 bg-gray-50 p-3">
+          <div className="flex shrink-0 flex-col gap-2 rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
             <div>
-              <span className="block text-xs text-gray-600">Modelo</span>
+              <span className="block text-xs text-gray-600 dark:text-gray-400">Modelo</span>
               <div className="mt-1 flex gap-2">
                 {MODELOS_AVISO.map((m) => {
                   const IconeM = ICONE_MODELO[m];
@@ -337,7 +337,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
                       className={`flex flex-1 flex-col items-center gap-1 rounded border px-2 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
                         ativo
                           ? ESTILO_BOTAO_MODELO[m]
-                          : "border-gray-300 text-gray-500 hover:bg-gray-100"
+                          : "border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                       }`}
                     >
                       <IconeM className="h-5 w-5" />
@@ -348,7 +348,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
               </div>
             </div>
 
-            <label className="flex flex-col gap-1 text-xs text-gray-600">
+            <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
               Descrição
               <textarea
                 value={descricao}
@@ -356,22 +356,22 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
                 onChange={(e) => setDescricao(e.target.value)}
                 placeholder="Conteúdo do comunicado"
                 rows={3}
-                className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+                className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
               />
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-gray-600">
+            <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
               Expira em
               <input
                 type="datetime-local"
                 value={expiraEm}
                 disabled={pending}
                 onChange={(e) => setExpiraEm(e.target.value)}
-                className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+                className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
               />
             </label>
 
-            {erro && <p className="text-xs text-red-600">{erro}</p>}
+            {erro && <p className="text-xs text-red-600 dark:text-red-400">{erro}</p>}
 
             <div className="flex justify-end">
               <button
@@ -385,7 +385,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
             </div>
           </div>
         ) : avisos.length === 0 ? (
-          <p className="py-2 text-center text-sm text-gray-400">Nenhum aviso ativo no momento.</p>
+          <p className="py-2 text-center text-sm text-gray-400 dark:text-gray-500">Nenhum aviso ativo no momento.</p>
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -394,7 +394,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
                 onClick={anterior}
                 disabled={avisos.length <= 1}
                 aria-label="Aviso anterior"
-                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
               >
                 <IconeSeta direcao="esquerda" className="h-5 w-5" />
               </button>
@@ -413,7 +413,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
                 onClick={proximo}
                 disabled={avisos.length <= 1}
                 aria-label="Próximo aviso"
-                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
               >
                 <IconeSeta direcao="direita" className="h-5 w-5" />
               </button>
@@ -428,7 +428,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
                     onClick={() => setIndice(i)}
                     aria-label={`Ir para o aviso ${i + 1}`}
                     className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                      i === indice ? "bg-blue-600" : "bg-gray-300 hover:bg-gray-400"
+                      i === indice ? "bg-blue-600 dark:bg-blue-500" : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500"
                     }`}
                   />
                 ))}

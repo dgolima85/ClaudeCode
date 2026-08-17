@@ -106,12 +106,12 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
   return (
     <Modal open onClose={onClose} title={detalhe?.titulo ?? "Título"}>
       {carregando || !detalhe || !listas ? (
-        <p className="py-6 text-center text-sm text-gray-400">Carregando...</p>
+        <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">Carregando...</p>
       ) : (
         <div className="flex flex-col gap-5">
-          <section className="grid grid-cols-1 gap-4 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
+          <section className="grid grid-cols-1 gap-4 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2 dark:border-gray-700 dark:bg-gray-800">
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Origem</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Origem</span>
               <select
                 value={detalhe.tipoId}
                 disabled={pending}
@@ -122,7 +122,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                     await atualizarTipoDaOcorrencia(detalhe.id, novoTipoId);
                   });
                 }}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 {listas.tipos.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -133,7 +133,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Status</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Status</span>
               <div className="mt-1">
                 <StatusSelect
                   value={detalhe.status}
@@ -156,12 +156,12 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Analista</span>
-              <p className="mt-1 text-sm text-gray-700">{detalhe.analista.nome}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Analista</span>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{detalhe.analista.nome}</p>
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Início</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Início</span>
               <input
                 type="datetime-local"
                 value={paraInputDataHoraBR(detalhe.createdAt)}
@@ -175,12 +175,12 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                     await atualizarInicioOcorrencia(detalhe.id, valor);
                   });
                 }}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
               />
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Fim</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Fim</span>
               {detalhe.resolvidoEm ? (
                 <input
                   type="datetime-local"
@@ -195,15 +195,15 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
                       await atualizarFimOcorrencia(detalhe.id, valor);
                     });
                   }}
-                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
+                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
                 />
               ) : (
-                <p className="mt-1 text-sm text-gray-700">—</p>
+                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">—</p>
               )}
             </div>
 
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500">Ambiente / Recurso</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Ambiente / Recurso</span>
               <div className="mt-1">
                 <AmbienteRecursoSelect
                   ambientes={listas.ambientesInfra}
@@ -217,12 +217,12 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">CDN</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">CDN</span>
               <select
                 value={detalhe.cdnId ?? ""}
                 disabled={pending}
                 onChange={(e) => salvarCamposDetalhe({ cdnId: e.target.value || null })}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-transparent dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 <option value="">Nenhum</option>
                 {listas.cdns.map((c) => (
@@ -234,7 +234,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Plataforma</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Plataforma</span>
               <div className="mt-1">
                 <MultiSelect
                   opcoes={listas.plataformas}
@@ -246,7 +246,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Canal</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Canal</span>
               <div className="mt-1">
                 <MultiSelect
                   opcoes={listas.canais}
@@ -258,7 +258,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500">Título</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Título</span>
               <div className="mt-1">
                 <EditableCell
                   value={detalhe.titulo}
@@ -272,7 +272,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Ticket</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Ticket</span>
               <div className="mt-1">
                 <EditableCell
                   value={detalhe.ticket ?? ""}
@@ -287,7 +287,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500">
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 Parceria / Empresa
               </span>
               <div className="mt-1">
@@ -303,7 +303,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Serviço</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Serviço</span>
               <div className="mt-1">
                 <MultiSelect
                   opcoes={listas.servicos}
@@ -315,7 +315,7 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             </div>
 
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Devices</span>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Devices</span>
               <div className="mt-1">
                 <MultiSelect
                   opcoes={listas.sistemasOperacionais}
@@ -329,19 +329,19 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
             {detalhe.status === "RESOLVIDO" && (
               <>
                 <div>
-                  <span className="block text-xs font-medium uppercase text-gray-500">Causa</span>
-                  <p className="mt-1 text-sm text-gray-700">{detalhe.causa ?? "—"}</p>
+                  <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Causa</span>
+                  <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{detalhe.causa ?? "—"}</p>
                 </div>
                 <div>
-                  <span className="block text-xs font-medium uppercase text-gray-500">Solução</span>
-                  <p className="mt-1 text-sm text-gray-700">{detalhe.solucao ?? "—"}</p>
+                  <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Solução</span>
+                  <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{detalhe.solucao ?? "—"}</p>
                 </div>
               </>
             )}
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
               Eventos ({detalhe.eventos.length})
             </h3>
             <EventosTable

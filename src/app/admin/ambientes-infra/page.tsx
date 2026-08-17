@@ -9,8 +9,8 @@ export default async function AmbientesInfraPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Ambiente</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ambiente</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Ex: AWS, Data Center Lapa, Data Center Campinas. Cada ambiente tem sua própria lista de
           Recursos — cadastre-os em <span className="font-medium">Recurso</span>.
         </p>

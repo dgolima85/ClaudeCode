@@ -44,8 +44,8 @@ export default async function RelatorioTabelaPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Tabela de Ocorrências</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Tabela de Ocorrências</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} encontrada
             {linhas.length === 1 ? "" : "s"}.
           </p>

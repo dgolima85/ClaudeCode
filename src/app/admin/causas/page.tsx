@@ -9,8 +9,8 @@ export default async function CausasPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Causas</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Causas</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Causas disponíveis para a normalização de ocorrências resolvidas.
         </p>
       </div>

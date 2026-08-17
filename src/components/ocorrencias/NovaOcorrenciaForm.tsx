@@ -39,40 +39,40 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
   }
 
   return (
-    <div className="flex h-[240px] flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
-      <h2 className="shrink-0 text-sm font-semibold text-gray-700">Nova Ocorrência</h2>
+    <div className="flex h-[240px] flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+      <h2 className="shrink-0 text-sm font-semibold text-gray-700 dark:text-gray-300">Nova Ocorrência</h2>
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
-        <label className="flex flex-col gap-1 text-xs text-gray-600">
+        <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
           Título
           <input
             value={titulo}
             disabled={pending}
             onChange={(e) => setTitulo(e.target.value)}
             placeholder="Breve descrição da ocorrência"
-            className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100"
           />
         </label>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-gray-600">
+          <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
             Ticket
             <input
               value={ticket}
               disabled={pending}
               onChange={(e) => setTicket(e.target.value)}
               placeholder="Opcional"
-              className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+              className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100"
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-gray-600">
+          <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
             Início
             <input
               type="datetime-local"
               value={inicio}
               disabled={pending}
               onChange={(e) => setInicio(e.target.value)}
-              className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+              className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
             />
           </label>
         </div>
@@ -86,7 +86,7 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
           Adicionar
         </button>
       </div>
-      {erro && <p className="text-xs text-red-600">{erro}</p>}
+      {erro && <p className="text-xs text-red-600 dark:text-red-400">{erro}</p>}
     </div>
   );
 }

@@ -9,8 +9,8 @@ export default async function ServicosPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Serviços</h1>
-        <p className="text-sm text-gray-500">Ex: E-mail, VPN, Banco de Dados, Aplicação Web.</p>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Serviços</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Ex: E-mail, VPN, Banco de Dados, Aplicação Web.</p>
       </div>
       <CrudTable
         campos={[{ key: "nome", label: "Nome", type: "text", required: true }]}

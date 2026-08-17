@@ -20,32 +20,32 @@ export default function FiltrosRelatorioTabela({
   return (
     <form
       method="get"
-      className="flex flex-wrap items-end gap-4 rounded-lg border border-gray-200 bg-white p-4"
+      className="flex flex-wrap items-end gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
     >
-      <label className="flex flex-col gap-1 text-xs text-gray-600">
+      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         De
         <input
           type="date"
           name="de"
           defaultValue={filtros.de ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100"
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600">
+      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         Até
         <input
           type="date"
           name="ate"
           defaultValue={filtros.ate ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100"
         />
       </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600">
+      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         Analista
         <select
           name="analistaId"
           defaultValue={filtros.analistaId ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todos</option>
           {analistas.map((a) => (
@@ -55,12 +55,12 @@ export default function FiltrosRelatorioTabela({
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600">
+      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         Turno
         <select
           name="turno"
           defaultValue={filtros.turno ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todos</option>
           {TURNOS.map((t) => (
@@ -70,12 +70,12 @@ export default function FiltrosRelatorioTabela({
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600">
+      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         Origem
         <select
           name="tipoId"
           defaultValue={filtros.tipoId ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todos</option>
           {tipos.map((t) => (
@@ -85,12 +85,12 @@ export default function FiltrosRelatorioTabela({
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600">
+      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         Parceria
         <select
           name="parceriaId"
           defaultValue={filtros.parceriaId ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
         >
           <option value="">Todas</option>
           {parcerias.map((p) => (
@@ -100,7 +100,7 @@ export default function FiltrosRelatorioTabela({
           ))}
         </select>
       </label>
-      <fieldset className="flex flex-col gap-1 text-xs text-gray-600">
+      <fieldset className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
         <legend className="mb-1">Status</legend>
         <div className="flex gap-3">
           {STATUS_OCORRENCIA.map((s) => (
@@ -120,7 +120,7 @@ export default function FiltrosRelatorioTabela({
         </button>
         <a
           href="/relatorios/tabela"
-          className="flex items-center text-sm text-gray-400 hover:text-gray-600 hover:underline"
+          className="flex items-center text-sm text-gray-400 hover:text-gray-600 hover:underline dark:text-gray-500 dark:hover:text-gray-400"
         >
           Limpar
         </a>

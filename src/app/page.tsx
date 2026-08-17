@@ -55,8 +55,8 @@ export default async function HomePage({
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-4 p-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Ocorrências</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Registre e acompanhe as ocorrências do turno. Clique em ⤢ para abrir os detalhes.
         </p>
       </div>
@@ -64,7 +64,7 @@ export default async function HomePage({
       <FiltroStatus statusSelecionados={statusFiltro} />
 
       {tipos.length === 0 && (
-        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
           Nenhum tipo de ocorrência cadastrado. Cadastre ao menos um em Administração →
           Tipos de Ocorrência antes de registrar ocorrências.
         </p>

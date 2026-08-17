@@ -9,8 +9,8 @@ export default async function ParceriasPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Parcerias</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Parcerias</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Cadastre as parcerias; depois vincule as empresas de cada uma em{" "}
           <span className="font-medium">Empresas</span>.
         </p>
