@@ -32,7 +32,7 @@ export default async function LoginPage({
             name="analistaId"
             required
             defaultValue=""
-            className="rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
+            className="rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
           >
             <option value="" disabled>
               Selecione seu nome

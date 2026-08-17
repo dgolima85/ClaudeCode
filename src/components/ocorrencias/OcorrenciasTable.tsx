@@ -47,7 +47,7 @@ function TipoCell({ ocorrenciaId, tipoId, tipos }: { ocorrenciaId: string; tipoI
           await atualizarTipoDaOcorrencia(ocorrenciaId, novoTipoId);
         });
       }}
-      className="rounded border border-gray-300 bg-transparent px-1.5 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
+      className="rounded border border-gray-300 bg-transparent px-1.5 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
     >
       {tipos.map((t) => (
         <option key={t.id} value={t.id}>
