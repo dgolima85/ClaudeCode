@@ -23,14 +23,14 @@ export default async function EmpresasPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Empresas</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Empresas</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Cada empresa pertence a uma parceria. Cadastre parcerias primeiro em{" "}
           <span className="font-medium">Parcerias</span>.
         </p>
       </div>
       {parcerias.length === 0 ? (
-        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
           Cadastre ao menos uma parceria antes de adicionar empresas.
         </p>
       ) : (

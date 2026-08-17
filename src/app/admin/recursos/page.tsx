@@ -23,14 +23,14 @@ export default async function RecursosPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Recurso</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Recurso</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Cada recurso pertence a um ambiente (ex: recursos de AWS, recursos de Data Center).
           Cadastre ambientes primeiro em <span className="font-medium">Ambiente</span>.
         </p>
       </div>
       {ambientes.length === 0 ? (
-        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
           Cadastre ao menos um ambiente antes de adicionar recursos.
         </p>
       ) : (

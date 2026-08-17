@@ -87,57 +87,57 @@ export default function NormalizacaoOcorrenciaModal({
   return (
     <Modal open onClose={onClose} title="Normalização da Ocorrência" zIndexClassName="z-[60]">
       {carregando || !dados ? (
-        <p className="py-6 text-center text-sm text-gray-400">Carregando...</p>
+        <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">Carregando...</p>
       ) : (
         <div className="flex flex-col gap-5">
-          <section className="grid grid-cols-1 gap-3 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
+          <section className="grid grid-cols-1 gap-3 rounded-md border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2 dark:border-gray-700 dark:bg-gray-800">
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Origem</span>
-              <p className="mt-1 text-sm text-gray-700">{dados.afiliada}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Origem</span>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{dados.afiliada}</p>
             </div>
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500">Título</span>
-              <p className="mt-1 text-sm text-gray-700">{dados.titulo}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Título</span>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{dados.titulo}</p>
             </div>
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 Parceria / Empresa
               </span>
-              <p className="mt-1 text-sm text-gray-700">{dados.parceriaEmpresa ?? "—"}</p>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{dados.parceriaEmpresa ?? "—"}</p>
             </div>
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Ambiente</span>
-              <p className="mt-1 text-sm text-gray-700">{dados.ambiente ?? "—"}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Ambiente</span>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{dados.ambiente ?? "—"}</p>
             </div>
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Recurso</span>
-              <p className="mt-1 text-sm text-gray-700">{dados.recurso ?? "—"}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Recurso</span>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{dados.recurso ?? "—"}</p>
             </div>
             <div>
-              <span className="block text-xs font-medium uppercase text-gray-500">Serviço</span>
-              <p className="mt-1 text-sm text-gray-700">{dados.servico ?? "—"}</p>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Serviço</span>
+              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{dados.servico ?? "—"}</p>
             </div>
           </section>
 
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-xs font-medium uppercase text-gray-500">Fim *</label>
+              <label className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Fim *</label>
               <input
                 type="datetime-local"
                 value={fim}
                 disabled={pending}
                 onChange={(e) => setFim(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm disabled:opacity-50"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium uppercase text-gray-500">Causa *</label>
+              <label className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Causa *</label>
               <select
                 value={causaId}
                 disabled={pending}
                 onChange={(e) => setCausaId(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm disabled:opacity-50"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 <option value="" disabled>
                   Selecione a causa
@@ -156,18 +156,18 @@ export default function NormalizacaoOcorrenciaModal({
                   value={causaOutra}
                   onChange={(e) => setCausaOutra(e.target.value)}
                   placeholder="Descreva a causa"
-                  className="mt-2 w-full rounded border border-gray-300 px-2 py-1.5 text-sm disabled:opacity-50"
+                  className="mt-2 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
                 />
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-medium uppercase text-gray-500">Solução *</label>
+              <label className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Solução *</label>
               <select
                 value={solucaoId}
                 disabled={pending}
                 onChange={(e) => setSolucaoId(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm disabled:opacity-50"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
               >
                 <option value="" disabled>
                   Selecione a solução
@@ -185,20 +185,20 @@ export default function NormalizacaoOcorrenciaModal({
                   value={solucaoOutra}
                   onChange={(e) => setSolucaoOutra(e.target.value)}
                   placeholder="Descreva a solução"
-                  className="mt-2 w-full rounded border border-gray-300 px-2 py-1.5 text-sm disabled:opacity-50"
+                  className="mt-2 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
                 />
               )}
             </div>
           </div>
 
-          {erro && <p className="text-sm text-red-600">{erro}</p>}
+          {erro && <p className="text-sm text-red-600 dark:text-red-400">{erro}</p>}
 
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+          <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
             <button
               type="button"
               disabled={pending}
               onClick={onClose}
-              className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+              className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-gray-800"
             >
               Cancelar
             </button>

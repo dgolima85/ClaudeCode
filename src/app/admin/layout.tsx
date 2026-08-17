@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="mx-auto flex max-w-6xl gap-8 p-6">
       <aside className="w-56 shrink-0">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Administração
         </h2>
         <nav className="flex flex-col gap-1 text-sm">
@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={link.href}
               href={link.href}
-              className="rounded px-2 py-1.5 text-gray-700 hover:bg-gray-100"
+              className="rounded px-2 py-1.5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               {link.label}
             </Link>

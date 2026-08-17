@@ -47,7 +47,7 @@ function TipoCell({ ocorrenciaId, tipoId, tipos }: { ocorrenciaId: string; tipoI
           await atualizarTipoDaOcorrencia(ocorrenciaId, novoTipoId);
         });
       }}
-      className="rounded border border-gray-300 bg-transparent px-1.5 py-1 text-sm disabled:opacity-50"
+      className="rounded border border-gray-300 bg-transparent px-1.5 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
     >
       {tipos.map((t) => (
         <option key={t.id} value={t.id}>
@@ -78,22 +78,22 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
 
   return (
     <>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Origem</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Analista</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Ticket</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Origem</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Início</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Fim</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Analista</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Título</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Ticket</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {ocorrencias.map((o) => (
-              <tr key={o.id} className="hover:bg-gray-50/70">
+              <tr key={o.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-800/70">
                 <td className="px-3 py-2">
                   <TipoCell ocorrenciaId={o.id} tipoId={o.tipo.id} tipos={tipos} />
                 </td>
@@ -109,20 +109,20 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
                     }}
                   />
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+                <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                   {formatarDataHoraBR(o.createdAt)}
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+                <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                   {o.resolvidoEm ? formatarDataHoraBR(o.resolvidoEm) : "—"}
                 </td>
-                <td className="whitespace-nowrap px-3 py-2 text-gray-600">{o.analista.nome}</td>
+                <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{o.analista.nome}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => abrirModal(o.id)}
                       title="Abrir detalhes da ocorrência"
-                      className="shrink-0 text-gray-400 hover:text-blue-600"
+                      className="shrink-0 text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400"
                     >
                       ⤢
                     </button>
@@ -145,7 +145,7 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
             ))}
             {ocorrencias.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
+                <td colSpan={7} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                   Nenhuma ocorrência encontrada para os filtros selecionados.
                 </td>
               </tr>

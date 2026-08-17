@@ -9,7 +9,7 @@ export default async function CdnsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">CDN</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">CDN</h1>
       </div>
       <CrudTable
         campos={[{ key: "nome", label: "Nome", type: "text", required: true }]}

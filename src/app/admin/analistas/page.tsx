@@ -17,8 +17,8 @@ export default async function AnalistasPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Analistas</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Analistas</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Cadastro dos analistas do time: nome, email e turno.
         </p>
       </div>

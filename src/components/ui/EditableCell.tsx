@@ -50,7 +50,7 @@ export default function EditableCell({
         title="Clique para editar"
         className="block w-full max-w-[16rem] truncate text-left hover:underline"
       >
-        {value ? value : <span className="text-gray-400">{emptyLabel}</span>}
+        {value ? value : <span className="text-gray-400 dark:text-gray-500">{emptyLabel}</span>}
       </button>
     );
   }
@@ -67,17 +67,17 @@ export default function EditableCell({
           if (e.key === "Enter") salvar();
           if (e.key === "Escape") cancelar();
         }}
-        className="w-full rounded border border-blue-400 px-2 py-1 text-sm"
+        className="w-full rounded border border-blue-400 bg-transparent px-2 py-1 text-sm dark:border-blue-500 dark:text-gray-100"
       />
       <div className="flex gap-2 text-xs">
-        <button type="button" disabled={pending} onClick={salvar} className="text-blue-600 hover:underline">
+        <button type="button" disabled={pending} onClick={salvar} className="text-blue-600 hover:underline dark:text-blue-400">
           Salvar
         </button>
-        <button type="button" disabled={pending} onClick={cancelar} className="text-gray-500 hover:underline">
+        <button type="button" disabled={pending} onClick={cancelar} className="text-gray-500 hover:underline dark:text-gray-400">
           Cancelar
         </button>
       </div>
-      {erro && <span className="text-xs text-red-600">{erro}</span>}
+      {erro && <span className="text-xs text-red-600 dark:text-red-400">{erro}</span>}
     </div>
   );
 }

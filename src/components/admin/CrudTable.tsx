@@ -86,24 +86,24 @@ export default function CrudTable({
   return (
     <div className="flex flex-col gap-4">
       {erro && (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{erro}</p>
+        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-300">{erro}</p>
       )}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
               {campos.map((c) => (
-                <th key={c.key} className="px-3 py-2 text-left font-medium text-gray-600">
+                <th key={c.key} className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">
                   {c.label}
                 </th>
               ))}
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Ativo</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600">Ações</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ativo</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {itens.map((item) => (
-              <tr key={item.id} className={!item.ativo ? "bg-gray-50 text-gray-400" : undefined}>
+              <tr key={item.id} className={!item.ativo ? "bg-gray-50 text-gray-400 dark:bg-gray-800 dark:text-gray-500" : undefined}>
                 {editandoId === item.id ? (
                   <>
                     {campos.map((campo) => (
@@ -114,7 +114,7 @@ export default function CrudTable({
                             onChange={(e) =>
                               setEditValores((v) => ({ ...v, [campo.key]: e.target.value }))
                             }
-                            className="rounded border border-gray-300 px-2 py-1"
+                            className="rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
                           >
                             {campo.options.map((o) => (
                               <option key={o.value} value={o.value}>
@@ -129,7 +129,7 @@ export default function CrudTable({
                             onChange={(e) =>
                               setEditValores((v) => ({ ...v, [campo.key]: e.target.value }))
                             }
-                            className="w-full rounded border border-gray-300 px-2 py-1"
+                            className="w-full rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:text-gray-100"
                           />
                         )}
                       </td>
@@ -149,7 +149,7 @@ export default function CrudTable({
                           type="button"
                           disabled={pending}
                           onClick={() => salvarEdicao(item.id)}
-                          className="text-blue-600 hover:underline disabled:opacity-50"
+                          className="text-blue-600 hover:underline disabled:opacity-50 dark:text-blue-400"
                         >
                           Salvar
                         </button>
@@ -157,7 +157,7 @@ export default function CrudTable({
                           type="button"
                           disabled={pending}
                           onClick={cancelarEdicao}
-                          className="text-gray-500 hover:underline"
+                          className="text-gray-500 hover:underline dark:text-gray-400"
                         >
                           Cancelar
                         </button>
@@ -180,7 +180,7 @@ export default function CrudTable({
                         <button
                           type="button"
                           onClick={() => iniciarEdicao(item)}
-                          className="text-blue-600 hover:underline"
+                          className="text-blue-600 hover:underline dark:text-blue-400"
                         >
                           Editar
                         </button>
@@ -188,7 +188,7 @@ export default function CrudTable({
                           type="button"
                           disabled={pending}
                           onClick={() => handleExcluir(item.id)}
-                          className="text-red-600 hover:underline disabled:opacity-50"
+                          className="text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
                         >
                           Excluir
                         </button>
@@ -200,13 +200,13 @@ export default function CrudTable({
             ))}
             {itens.length === 0 && (
               <tr>
-                <td colSpan={campos.length + 2} className="px-3 py-4 text-center text-gray-400">
+                <td colSpan={campos.length + 2} className="px-3 py-4 text-center text-gray-400 dark:text-gray-500">
                   Nenhum item cadastrado.
                 </td>
               </tr>
             )}
           </tbody>
-          <tfoot className="border-t border-gray-200 bg-gray-50">
+          <tfoot className="border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
             <tr>
               {campos.map((campo) => (
                 <td key={campo.key} className="px-3 py-2">
@@ -214,7 +214,7 @@ export default function CrudTable({
                     <select
                       value={novo[campo.key] ?? ""}
                       onChange={(e) => setNovo((v) => ({ ...v, [campo.key]: e.target.value }))}
-                      className="rounded border border-gray-300 px-2 py-1"
+                      className="rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
                     >
                       <option value="" disabled>
                         Selecione
@@ -231,7 +231,7 @@ export default function CrudTable({
                       placeholder={campo.label}
                       value={novo[campo.key] ?? ""}
                       onChange={(e) => setNovo((v) => ({ ...v, [campo.key]: e.target.value }))}
-                      className="w-full rounded border border-gray-300 px-2 py-1"
+                      className="w-full rounded border border-gray-300 bg-transparent px-2 py-1 dark:border-gray-600 dark:text-gray-100"
                     />
                   )}
                 </td>

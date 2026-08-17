@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import HeaderAnalistaLogado from "@/components/layout/HeaderAnalistaLogado";
+import ThemeScript from "@/components/layout/ThemeScript";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,9 +23,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-gray-50 text-gray-900">
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="flex min-h-full flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
         <HeaderAnalistaLogado />
         <main className="flex-1">{children}</main>
       </body>

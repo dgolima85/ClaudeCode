@@ -39,8 +39,8 @@ export default async function PassagemTurnoPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Passagem de Turno</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Passagem de Turno</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Resumo para repasse entre turnos: ocorrências em aberto e atividade do período selecionado.
           </p>
         </div>
@@ -51,14 +51,14 @@ export default async function PassagemTurnoPage({
 
       <form
         method="get"
-        className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4"
+        className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
       >
-        <label className="flex flex-col gap-1 text-xs text-gray-600">
+        <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
           Turno
           <select
             name="turno"
             defaultValue={turnoSelecionado}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100 dark:[color-scheme:dark]"
           >
             {TURNOS.map((t) => (
               <option key={t} value={t}>
@@ -67,13 +67,13 @@ export default async function PassagemTurnoPage({
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs text-gray-600">
+        <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
           Data
           <input
             type="date"
             name="data"
             defaultValue={dataSelecionada}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100"
           />
         </label>
         <button

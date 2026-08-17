@@ -22,24 +22,24 @@ type TabelaResumoExecutivoProps = {
 
 export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Título</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Origem</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Parceria / Empresa</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Causa</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Solução</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Início</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Fim</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Analista</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Ticket</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600">Relatório</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Título</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Origem</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Parceria / Empresa</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Causa</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Solução</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Início</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Fim</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Relatório</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
           {linhas.map((l) => (
             <tr key={l.id}>
               <td className="px-3 py-2">{l.titulo}</td>
@@ -53,18 +53,18 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
               <td className="px-3 py-2 whitespace-nowrap">{l.parceriaEmpresa ?? "—"}</td>
               <td className="px-3 py-2">{l.causa}</td>
               <td className="px-3 py-2">{l.solucao}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">{formatarDataHoraBR(l.createdAt)}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{formatarDataHoraBR(l.createdAt)}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                 {l.resolvidoEm ? formatarDataHoraBR(l.resolvidoEm) : "—"}
               </td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600">{l.analista}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{l.analista}</td>
               <td className="px-3 py-2">{l.ticket ?? "—"}</td>
               <td className="whitespace-nowrap px-3 py-2">
                 <a
                   href={`/relatorios/executivo/${l.id}/pdf`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 hover:underline dark:text-blue-400"
                 >
                   Baixar PDF
                 </a>
@@ -73,7 +73,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={11} className="px-3 py-6 text-center text-gray-400">
+              <td colSpan={11} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>
