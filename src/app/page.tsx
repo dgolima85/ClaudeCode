@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
@@ -7,6 +8,8 @@ import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
 import { criarOcorrencia } from "@/app/ocorrencias/actions";
+import { buscarPendentesPassagemTurno } from "@/app/passagem-turno/actions";
+import { TURNO_LABELS } from "@/lib/turno";
 
 export default async function HomePage({
   searchParams,
@@ -19,7 +22,7 @@ export default async function HomePage({
     Array.isArray(statusParamBruto) ? statusParamBruto : statusParamBruto ? [statusParamBruto] : []
   ).filter(isStatusOcorrencia);
 
-  const [ocorrencias, tiposBrutos, avisosBrutos] = await Promise.all([
+  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno] = await Promise.all([
     prisma.ocorrencia.findMany({
       where: statusFiltro.length > 0 ? { status: { in: statusFiltro } } : undefined,
       include: { tipo: true, analista: true },
@@ -30,6 +33,7 @@ export default async function HomePage({
       where: { expiraEm: { gt: new Date() } },
       orderBy: { createdAt: "desc" },
     }),
+    buscarPendentesPassagemTurno(),
   ]);
   const tipos = ordenarComNaPrimeiro(tiposBrutos);
   const avisos = avisosBrutos
@@ -54,6 +58,22 @@ export default async function HomePage({
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-4 p-6">
+      {pendentesPassagemTurno.length > 0 && (
+        <Link
+          href="/passagem-turno"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-yellow-500 bg-yellow-50 p-3 text-sm hover:bg-yellow-100 dark:bg-yellow-900/40 dark:hover:bg-yellow-900/60"
+        >
+          <span className="font-medium text-yellow-800 dark:text-yellow-300">
+            {pendentesPassagemTurno.length === 1
+              ? `Você tem uma passagem de turno pendente de confirmação (${TURNO_LABELS[pendentesPassagemTurno[0].turnoOrigem]} → ${TURNO_LABELS[pendentesPassagemTurno[0].turnoDestino]}, de ${pendentesPassagemTurno[0].analistaEntrega})`
+              : `Você tem ${pendentesPassagemTurno.length} passagens de turno pendentes de confirmação`}
+          </span>
+          <span className="text-xs font-medium text-yellow-700 underline dark:text-yellow-400">
+            Revisar e confirmar
+          </span>
+        </Link>
+      )}
+
       <div>
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">

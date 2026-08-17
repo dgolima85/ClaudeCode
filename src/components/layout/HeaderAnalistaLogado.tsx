@@ -19,6 +19,9 @@ export default async function HeaderAnalistaLogado() {
           <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">
             Ocorrências
           </Link>
+          <Link href="/passagem-turno" className="hover:text-blue-600 dark:hover:text-blue-400">
+            Passagem de Turno
+          </Link>
           <Link href="/admin/analistas" className="hover:text-blue-600 dark:hover:text-blue-400">
             Administração
           </Link>

@@ -61,6 +61,11 @@ export const comentarioEventoSchema = z
   .min(1, "Comentário é obrigatório")
   .max(4000, "Comentário muito longo");
 
+export const novaPassagemTurnoSchema = z.object({
+  turnoDestino: turnoSchema,
+  observacoes: z.string().trim().max(4000, "Observações muito longas").optional().or(z.literal("")),
+});
+
 export const normalizacaoOcorrenciaSchema = z
   .object({
     causaId: z.string().trim().nullable(),
