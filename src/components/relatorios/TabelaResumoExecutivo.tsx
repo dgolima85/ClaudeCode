@@ -28,8 +28,6 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Título</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Origem</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Parceria / Empresa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Causa</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Solução</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Início</th>
@@ -49,8 +47,6 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
                   {STATUS_LABELS[l.status]}
                 </span>
               </td>
-              <td className="px-3 py-2 whitespace-nowrap">{l.tipo}</td>
-              <td className="px-3 py-2 whitespace-nowrap">{l.parceriaEmpresa ?? "—"}</td>
               <td className="px-3 py-2">{l.causa}</td>
               <td className="px-3 py-2">{l.solucao}</td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{formatarDataHoraBR(l.createdAt)}</td>
@@ -73,7 +69,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={11} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
+              <td colSpan={9} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>
