@@ -6,6 +6,9 @@ export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
+    // Só roda no cliente, depois do primeiro render, para o ícone bater com o que
+    // o script anti-flash já aplicou no <html> — evita mismatch de hidratação.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 

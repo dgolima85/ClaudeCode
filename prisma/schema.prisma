@@ -24,6 +24,9 @@ model Analista {
   eventos     Evento[]
   avisos      Aviso[]
 
+  passagensTurnoEntregues PassagemTurno[] @relation("PassagemTurnoEntrega")
+  passagensTurnoRecebidas PassagemTurno[] @relation("PassagemTurnoRecebe")
+
   @@map("analistas")
 }
 
@@ -234,6 +237,7 @@ model Ocorrencia {
   recursos             Recurso[]
   plataformas          Plataforma[]
   canais               Canal[]
+  passagensTurno       PassagemTurno[]
 
   @@index([status])
   @@index([createdAt])
@@ -252,4 +256,30 @@ model Evento {
 
   @@index([ocorrenciaId])
   @@map("eventos")
+}
+
+// Fluxo ativo de passagem de turno: quem está saindo registra as ocorrências
+// em aberto no momento e observações; quem assume o turno seguinte precisa
+// confirmar o recebimento. Diferente do relatório em /relatorios/passagem-turno
+// (que é só leitura, calculado on-the-fly), aqui fica um registro permanente
+// e imutável após confirmado — serve de auditoria de que a troca realmente
+// aconteceu. Turno/ocorrências ficam "congelados" no momento da criação.
+model PassagemTurno {
+  id                String    @id @default(cuid())
+  turnoOrigem       String
+  turnoDestino      String
+  status            String    @default("ABERTA")
+  observacoes       String?
+  analistaEntregaId String
+  analistaRecebeId  String?
+  createdAt         DateTime  @default(now())
+  confirmadaEm      DateTime?
+
+  analistaEntrega Analista     @relation("PassagemTurnoEntrega", fields: [analistaEntregaId], references: [id], onDelete: Restrict)
+  analistaRecebe  Analista?    @relation("PassagemTurnoRecebe", fields: [analistaRecebeId], references: [id], onDelete: Restrict)
+  ocorrencias     Ocorrencia[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("passagens_turno")
 }
