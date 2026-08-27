@@ -22,7 +22,8 @@ export default async function PassagemTurnoDetalhePage({
   ]);
   if (!passagem) notFound();
 
-  const podeConfirmar = passagem.status === "ABERTA" && analistaLogado?.id;
+  const podeConfirmar =
+    passagem.status === "ABERTA" && analistaLogado?.turno === passagem.turnoDestino;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
