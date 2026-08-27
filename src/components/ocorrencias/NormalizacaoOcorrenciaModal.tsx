@@ -9,8 +9,6 @@ import {
   type DadosNormalizacaoOcorrencia,
 } from "@/app/ocorrencias/actions";
 
-const OUTRA = "OUTRA";
-
 type NormalizacaoOcorrenciaModalProps = {
   ocorrenciaId: string;
   onClose: () => void;
@@ -24,10 +22,8 @@ export default function NormalizacaoOcorrenciaModal({
 }: NormalizacaoOcorrenciaModalProps) {
   const [dados, setDados] = useState<DadosNormalizacaoOcorrencia | null>(null);
   const [carregando, setCarregando] = useState(true);
-  const [causaId, setCausaId] = useState("");
-  const [causaOutra, setCausaOutra] = useState("");
-  const [solucaoId, setSolucaoId] = useState("");
-  const [solucaoOutra, setSolucaoOutra] = useState("");
+  const [causa, setCausa] = useState("");
+  const [solucao, setSolucao] = useState("");
   const [fim, setFim] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -51,29 +47,19 @@ export default function NormalizacaoOcorrenciaModal({
       setErro("Informe a data e hora de término (Fim).");
       return;
     }
-    if (!causaId) {
-      setErro("Selecione a causa da ocorrência.");
-      return;
-    }
-    if (causaId === OUTRA && !causaOutra.trim()) {
+    if (!causa.trim()) {
       setErro("Descreva a causa da ocorrência.");
       return;
     }
-    if (!solucaoId) {
-      setErro("Selecione a solução da ocorrência.");
-      return;
-    }
-    if (solucaoId === OUTRA && !solucaoOutra.trim()) {
+    if (!solucao.trim()) {
       setErro("Descreva a solução da ocorrência.");
       return;
     }
 
     startTransition(async () => {
       const res = await normalizarOcorrencia(ocorrenciaId, {
-        causaId: causaId === OUTRA ? null : causaId,
-        causaOutra: causaId === OUTRA ? causaOutra.trim() : "",
-        solucaoId: solucaoId === OUTRA ? null : solucaoId,
-        solucaoOutra: solucaoId === OUTRA ? solucaoOutra.trim() : "",
+        causa: causa.trim(),
+        solucao: solucao.trim(),
         fim,
       });
       if (res.error) {
@@ -133,61 +119,27 @@ export default function NormalizacaoOcorrenciaModal({
 
             <div>
               <label className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Causa *</label>
-              <select
-                value={causaId}
+              <textarea
+                autoFocus
+                rows={2}
                 disabled={pending}
-                onChange={(e) => setCausaId(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
-              >
-                <option value="" disabled>
-                  Selecione a causa
-                </option>
-                {dados.causas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-                <option value={OUTRA}>Outra</option>
-              </select>
-              {causaId === OUTRA && (
-                <input
-                  autoFocus
-                  disabled={pending}
-                  value={causaOutra}
-                  onChange={(e) => setCausaOutra(e.target.value)}
-                  placeholder="Descreva a causa"
-                  className="mt-2 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
-                />
-              )}
+                value={causa}
+                onChange={(e) => setCausa(e.target.value)}
+                placeholder="Descreva a causa"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              />
             </div>
 
             <div>
               <label className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Solução *</label>
-              <select
-                value={solucaoId}
+              <textarea
+                rows={2}
                 disabled={pending}
-                onChange={(e) => setSolucaoId(e.target.value)}
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
-              >
-                <option value="" disabled>
-                  Selecione a solução
-                </option>
-                {dados.solucoes.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nome}
-                  </option>
-                ))}
-                <option value={OUTRA}>Outra</option>
-              </select>
-              {solucaoId === OUTRA && (
-                <input
-                  disabled={pending}
-                  value={solucaoOutra}
-                  onChange={(e) => setSolucaoOutra(e.target.value)}
-                  placeholder="Descreva a solução"
-                  className="mt-2 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:text-gray-100"
-                />
-              )}
+                value={solucao}
+                onChange={(e) => setSolucao(e.target.value)}
+                placeholder="Descreva a solução"
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              />
             </div>
           </div>
 
