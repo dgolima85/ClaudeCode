@@ -125,8 +125,8 @@ export default function NormalizacaoOcorrenciaModal({
                 disabled={pending}
                 value={causa}
                 onChange={(e) => setCausa(e.target.value)}
-                placeholder="Descreva a causa"
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                placeholder="Descreva a causa da ocorrência..."
+                className="mt-1 w-full resize-none rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100"
               />
             </div>
 
@@ -137,8 +137,8 @@ export default function NormalizacaoOcorrenciaModal({
                 disabled={pending}
                 value={solucao}
                 onChange={(e) => setSolucao(e.target.value)}
-                placeholder="Descreva a solução"
-                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                placeholder="Descreva a solução aplicada..."
+                className="mt-1 w-full resize-none rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100"
               />
             </div>
           </div>
