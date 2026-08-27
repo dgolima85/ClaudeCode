@@ -66,19 +66,12 @@ export const novaPassagemTurnoSchema = z.object({
   observacoes: z.string().trim().max(4000, "Observações muito longas").optional().or(z.literal("")),
 });
 
-export const normalizacaoOcorrenciaSchema = z
-  .object({
-    causaId: z.string().trim().nullable(),
-    causaOutra: z.string().trim().max(300, "Descrição da causa muito longa"),
-    solucaoId: z.string().trim().nullable(),
-    solucaoOutra: z.string().trim().max(300, "Descrição da solução muito longa"),
-    fim: dataHoraLocalSchema,
-  })
-  .refine((d) => Boolean(d.causaId) || d.causaOutra.length > 0, {
-    message: "Informe a causa da ocorrência.",
-    path: ["causaId"],
-  })
-  .refine((d) => Boolean(d.solucaoId) || d.solucaoOutra.length > 0, {
-    message: "Informe a solução da ocorrência.",
-    path: ["solucaoId"],
-  });
+export const normalizacaoOcorrenciaSchema = z.object({
+  causa: z.string().trim().min(1, "Informe a causa da ocorrência.").max(300, "Descrição da causa muito longa"),
+  solucao: z
+    .string()
+    .trim()
+    .min(1, "Informe a solução da ocorrência.")
+    .max(300, "Descrição da solução muito longa"),
+  fim: dataHoraLocalSchema,
+});
