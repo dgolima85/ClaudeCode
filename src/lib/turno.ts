@@ -21,3 +21,12 @@ export const TURNO_HORARIOS: Record<Turno, { inicio: string; fim: string }> = {
 export function isTurno(value: string): value is Turno {
   return (TURNOS as readonly string[]).includes(value);
 }
+
+// Regra de negócio: a passagem de turno só acontece entre turnos que se
+// relacionam diretamente. Intermediário só troca passagem com o próprio
+// Intermediário (do turno seguinte); Manhã e Noite só trocam entre si.
+export const TURNO_DESTINO_PASSAGEM: Record<Turno, Turno> = {
+  MANHA: "NOITE",
+  NOITE: "MANHA",
+  INTERMEDIARIO: "INTERMEDIARIO",
+};

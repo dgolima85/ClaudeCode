@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
-import { TURNO_LABELS } from "@/lib/turno";
+import { TURNO_LABELS, TURNO_DESTINO_PASSAGEM, type Turno } from "@/lib/turno";
+import { exigirAnalistaLogado } from "@/lib/session";
 import { buscarPendentesPassagemTurno, buscarOcorrenciasEmAbertoPreview } from "./actions";
 import NovaPassagemTurnoForm from "@/components/passagemTurno/NovaPassagemTurnoForm";
 import TabelaOcorrenciasFiltravel from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
 export default async function PassagemTurnoPage() {
+  const analista = await exigirAnalistaLogado();
   const [pendentes, ocorrenciasEmAberto] = await Promise.all([
     buscarPendentesPassagemTurno(),
     buscarOcorrenciasEmAbertoPreview(),
   ]);
+  const turnoDestino = TURNO_DESTINO_PASSAGEM[analista.turno as Turno];
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
@@ -54,7 +57,7 @@ export default async function PassagemTurnoPage() {
           automaticamente para quem assumir o próximo turno revisar e confirmar o recebimento.
         </p>
         <TabelaOcorrenciasFiltravel linhas={ocorrenciasEmAberto} />
-        <NovaPassagemTurnoForm />
+        <NovaPassagemTurnoForm turnoDestino={turnoDestino} />
       </section>
     </div>
   );
