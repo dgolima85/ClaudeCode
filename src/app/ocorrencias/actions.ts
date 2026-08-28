@@ -362,21 +362,41 @@ export async function atualizarDetalhesOcorrencia(
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
 
+  // Só inclui no update as relações realmente enviadas: cada `set` num
+  // relacionamento m-n implícito do Prisma refaz a tabela de junção inteira
+  // (desconecta tudo e reconecta), então tocar nas 7 relações a cada
+  // alteração de um único multi-select (ex.: Plataforma) multiplicava por 7
+  // o custo de cada clique.
   await prisma.ocorrencia.update({
     where: { id },
     data: {
-      parcerias: { set: (dados.parceriaIds ?? []).map((id) => ({ id })) },
-      empresas: { set: (dados.empresaIds ?? []).map((id) => ({ id })) },
-      servicos: { set: (dados.servicoIds ?? []).map((id) => ({ id })) },
-      sistemasOperacionais: { set: (dados.sistemaOperacionalIds ?? []).map((id) => ({ id })) },
-      recursos: { set: (dados.recursoIds ?? []).map((id) => ({ id })) },
-      plataformas: { set: (dados.plataformaIds ?? []).map((id) => ({ id })) },
-      canais: { set: (dados.canalIds ?? []).map((id) => ({ id })) },
-      ambienteInfraId: dados.ambienteInfraId || null,
-      cdnId: dados.cdnId || null,
+      ...(dados.parceriaIds !== undefined && {
+        parcerias: { set: dados.parceriaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.empresaIds !== undefined && {
+        empresas: { set: dados.empresaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.servicoIds !== undefined && {
+        servicos: { set: dados.servicoIds.map((id) => ({ id })) },
+      }),
+      ...(dados.sistemaOperacionalIds !== undefined && {
+        sistemasOperacionais: { set: dados.sistemaOperacionalIds.map((id) => ({ id })) },
+      }),
+      ...(dados.recursoIds !== undefined && {
+        recursos: { set: dados.recursoIds.map((id) => ({ id })) },
+      }),
+      ...(dados.plataformaIds !== undefined && {
+        plataformas: { set: dados.plataformaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.canalIds !== undefined && {
+        canais: { set: dados.canalIds.map((id) => ({ id })) },
+      }),
+      ...(dados.ambienteInfraId !== undefined && { ambienteInfraId: dados.ambienteInfraId || null }),
+      ...(dados.cdnId !== undefined && { cdnId: dados.cdnId || null }),
     },
   });
 
-  revalidatePath("/");
+  // Nenhum destes campos aparece na listagem de "/" (ver OcorrenciasTable),
+  // então revalidar aquela rota aqui só invalidava cache sem necessidade.
   return {};
 }
