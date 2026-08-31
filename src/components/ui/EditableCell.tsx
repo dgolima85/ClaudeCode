@@ -47,7 +47,7 @@ export default function EditableCell({
           setValor(value);
           setEditando(true);
         }}
-        title="Clique para editar"
+        title={value || "Clique para editar"}
         className="block w-full max-w-[16rem] truncate text-left hover:underline"
       >
         {value ? value : <span className="text-gray-400 dark:text-gray-500">{emptyLabel}</span>}

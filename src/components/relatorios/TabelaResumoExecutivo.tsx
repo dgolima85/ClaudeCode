@@ -33,7 +33,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Início</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Fim</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
+            <th className="w-40 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Relatório</th>
           </tr>
         </thead>
@@ -54,7 +54,9 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
                 {l.resolvidoEm ? formatarDataHoraBR(l.resolvidoEm) : "—"}
               </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{l.analista}</td>
-              <td className="px-3 py-2">{l.ticket ?? "—"}</td>
+              <td className="max-w-40 truncate px-3 py-2" title={l.ticket ?? undefined}>
+                {l.ticket ?? "—"}
+              </td>
               <td className="whitespace-nowrap px-3 py-2">
                 <a
                   href={`/relatorios/executivo/${l.id}/pdf`}
