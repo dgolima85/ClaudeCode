@@ -5,9 +5,13 @@ import { STATUS_OCORRENCIA, STATUS_LABELS, type StatusOcorrencia } from "@/lib/s
 
 type FiltroStatusProps = {
   statusSelecionados: StatusOcorrencia[];
+  filtroAlteradoPeloUsuario?: boolean;
 };
 
-export default function FiltroStatus({ statusSelecionados }: FiltroStatusProps) {
+export default function FiltroStatus({
+  statusSelecionados,
+  filtroAlteradoPeloUsuario = true,
+}: FiltroStatusProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -50,7 +54,7 @@ export default function FiltroStatus({ statusSelecionados }: FiltroStatusProps) 
           </button>
         );
       })}
-      {statusSelecionados.length > 0 && (
+      {filtroAlteradoPeloUsuario && statusSelecionados.length > 0 && (
         <button
           type="button"
           onClick={limpar}

@@ -18,9 +18,12 @@ export default async function HomePage({
 }) {
   const sp = await searchParams;
   const statusParamBruto = sp.status;
-  const statusFiltro = (
-    Array.isArray(statusParamBruto) ? statusParamBruto : statusParamBruto ? [statusParamBruto] : []
-  ).filter(isStatusOcorrencia);
+  const statusFiltro: StatusOcorrencia[] =
+    statusParamBruto === undefined
+      ? ["EM_ANDAMENTO", "AGUARDANDO_VALIDACAO"]
+      : (Array.isArray(statusParamBruto) ? statusParamBruto : [statusParamBruto]).filter(
+          isStatusOcorrencia,
+        );
 
   const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno] = await Promise.all([
     prisma.ocorrencia.findMany({
@@ -81,7 +84,10 @@ export default async function HomePage({
         </p>
       </div>
 
-      <FiltroStatus statusSelecionados={statusFiltro} />
+      <FiltroStatus
+        statusSelecionados={statusFiltro}
+        filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
+      />
 
       {tipos.length === 0 && (
         <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
