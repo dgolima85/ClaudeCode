@@ -1,4 +1,3 @@
-import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { STATUS_LABELS, STATUS_DOT_COLOR, type StatusOcorrencia } from "@/lib/status";
 
 export type LinhaResumoExecutivo = {
@@ -30,8 +29,6 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
             <th className="w-40 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Causa</th>
             <th className="w-40 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Solução</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Início</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Fim</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
             <th className="w-32 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Relatório</th>
@@ -55,10 +52,6 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
               <td className="max-w-40 truncate px-3 py-2" title={l.solucao}>
                 {l.solucao}
               </td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{formatarDataHoraBR(l.createdAt)}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
-                {l.resolvidoEm ? formatarDataHoraBR(l.resolvidoEm) : "—"}
-              </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{l.analista}</td>
               <td className="max-w-32 truncate px-3 py-2" title={l.ticket ?? undefined}>
                 {l.ticket ?? "—"}
@@ -77,7 +70,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={9} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
+              <td colSpan={7} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>
