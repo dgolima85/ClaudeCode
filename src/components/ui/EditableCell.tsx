@@ -6,6 +6,7 @@ type EditableCellProps = {
   value: string;
   placeholder?: string;
   emptyLabel?: string;
+  widthClassName?: string;
   onSave: (novoValor: string) => Promise<{ error?: string } | void>;
 };
 
@@ -13,6 +14,7 @@ export default function EditableCell({
   value,
   placeholder,
   emptyLabel = "—",
+  widthClassName = "max-w-[16rem]",
   onSave,
 }: EditableCellProps) {
   const [editando, setEditando] = useState(false);
@@ -48,7 +50,7 @@ export default function EditableCell({
           setEditando(true);
         }}
         title={value || "Clique para editar"}
-        className="block w-full max-w-[16rem] truncate text-left hover:underline"
+        className={`block w-full truncate text-left hover:underline ${widthClassName}`}
       >
         {value ? value : <span className="text-gray-400 dark:text-gray-500">{emptyLabel}</span>}
       </button>

@@ -34,7 +34,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Fim</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
             <th className="w-40 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Relatório</th>
+            <th className="px-3 py-2 pr-6 text-left font-medium text-gray-600 dark:text-gray-400">Relatório</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -57,7 +57,7 @@ export default function TabelaResumoExecutivo({ linhas }: TabelaResumoExecutivoP
               <td className="max-w-40 truncate px-3 py-2" title={l.ticket ?? undefined}>
                 {l.ticket ?? "—"}
               </td>
-              <td className="whitespace-nowrap px-3 py-2">
+              <td className="whitespace-nowrap px-3 py-2 pr-6">
                 <a
                   href={`/relatorios/executivo/${l.id}/pdf`}
                   target="_blank"

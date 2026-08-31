@@ -88,7 +88,7 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Fim</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Analista</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Título</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Ticket</th>
+              <th className="w-32 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Ticket</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -138,6 +138,7 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
                     value={o.ticket ?? ""}
                     emptyLabel="Adicionar ticket"
                     placeholder="Número do ticket"
+                    widthClassName="max-w-32"
                     onSave={(novo) => atualizarTicketOcorrencia(o.id, novo)}
                   />
                 </td>
