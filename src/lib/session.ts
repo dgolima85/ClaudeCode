@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
 const COOKIE_NAME = "analistaId";
 
@@ -19,6 +20,14 @@ export async function limparSessao() {
 }
 
 export async function getAnalistaLogado() {
+  const sessaoMicrosoft = await auth();
+  if (sessaoMicrosoft?.analistaId) {
+    const analista = await prisma.analista.findUnique({
+      where: { id: sessaoMicrosoft.analistaId },
+    });
+    if (analista?.ativo) return analista;
+  }
+
   const cookieStore = await cookies();
   const id = cookieStore.get(COOKIE_NAME)?.value;
   if (!id) return null;

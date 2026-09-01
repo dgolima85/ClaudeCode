@@ -1,13 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import { TURNO_LABELS, type Turno } from "@/lib/turno";
-import { login } from "./actions";
+import { entrarComMicrosoft, login } from "./actions";
+
+const ERROS_LOGIN_MICROSOFT: Record<string, string> = {
+  AccessDenied:
+    "Sua conta Microsoft não está associada a um analista ativo cadastrado neste sistema. Peça para o administrador cadastrar seu e-mail em Administração → Analistas.",
+};
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; error?: string }>;
 }) {
-  const { redirect } = await searchParams;
+  const { redirect, error } = await searchParams;
   const analistas = await prisma.analista.findMany({
     where: { ativo: true },
     orderBy: { nome: "asc" },
@@ -22,6 +27,29 @@ export default async function LoginPage({
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Identifique-se para registrar e acompanhar as ocorrências do seu turno.
         </p>
+      </div>
+
+      {error && (
+        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/40 dark:text-red-300">
+          {ERROS_LOGIN_MICROSOFT[error] ??
+            "Não foi possível entrar com a Microsoft. Tente novamente ou use a lista de analistas abaixo."}
+        </p>
+      )}
+
+      <form action={entrarComMicrosoft}>
+        <input type="hidden" name="redirect" value={redirect ?? ""} />
+        <button
+          type="submit"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-black dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
+        >
+          Entrar com Microsoft
+        </button>
+      </form>
+
+      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
+        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        ou entre selecionando seu nome
+        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
       </div>
 
       <form action={login} className="flex flex-col gap-4">
