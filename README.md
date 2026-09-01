@@ -24,15 +24,17 @@ O login por senha nunca existiu neste sistema — hoje dá pra entrar de duas fo
 
 ### 1. Peça ao Administrador do Azure (App Registration no Entra ID)
 
-Se ainda não existe um App Registration para este sistema, peça para o administrador criar um e te passar:
+O App Registration usado aqui é do tipo mais restrito possível — **cliente público (SPA)**, autentica só com PKCE, sem client secret, sem permissão de aplicativo, sem acessar nada do Microsoft 365. O único uso é confirmar que a pessoa está autenticada no Entra ID da empresa e ler nome/e-mail para casar com o Analista já cadastrado.
+
+Peça para o administrador criar o App Registration (se ainda não existir) e te passar:
 
 - **Application (client) ID**
 - **Directory (tenant) ID**
-- Um **Client secret** (Certificates & secrets → New client secret) — copie o *value* na hora, ele some depois
-- Que ele cadastre o **Redirect URI** (tipo **Web**, não SPA) em Authentication → Add a platform:
+- Que ele cadastre o **Redirect URI** — tipo **Single-page application (SPA)**, não Web — em Authentication → Add a platform:
   - Produção: `https://<seu-domínio>/api/auth/callback/microsoft-entra-id`
   - Desenvolvimento local: `http://localhost:3000/api/auth/callback/microsoft-entra-id`
-- Permissão de API `User.Read` (Microsoft Graph, delegada) — geralmente já vem por padrão no App Registration; se pedir consentimento do admin, ele precisa aprovar.
+
+Não é preciso client secret, nem permissão de API além do OIDC básico (`openid`, `profile`, `email`, já inclusos por padrão), nem consentimento de admin.
 
 ### 2. Configure as variáveis de ambiente
 
@@ -41,7 +43,6 @@ No `.env` local e/ou nas Environment Variables da Vercel:
 ```bash
 AUTH_SECRET="..."                     # gere com: npx auth secret
 AUTH_MICROSOFT_ENTRA_ID_ID="..."                 # Application (client) ID
-AUTH_MICROSOFT_ENTRA_ID_SECRET="..."             # Client secret value
 AUTH_MICROSOFT_ENTRA_ID_ISSUER="https://login.microsoftonline.com/<Directory (tenant) ID>/v2.0"
 ```
 

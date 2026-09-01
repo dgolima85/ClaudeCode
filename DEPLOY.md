@@ -20,6 +20,8 @@ Copie a connection string (formato `postgresql://usuario:senha@host:5432/banco?s
 2. A Vercel detecta Next.js automaticamente — não precisa mudar comandos de build.
 3. Em **Environment Variables**, adicione:
    - `DATABASE_URL` = a connection string do passo 1 (marcar para Production, Preview e Development, ou pelo menos Production).
+   - `AUTH_SECRET` = obrigatória (a aplicação usa Auth.js para o login com Microsoft Entra ID — sem essa variável ela não builda/roda, mesmo se você não for usar o Entra ID ainda). Gere com `npx auth secret` ou `openssl rand -base64 33`.
+   - `AUTH_MICROSOFT_ENTRA_ID_ID` e `AUTH_MICROSOFT_ENTRA_ID_ISSUER` = opcionais, só para habilitar o botão "Entrar com Microsoft" — veja o [README](./README.md#login-com-microsoft-entra-id-azure-ad) para o passo a passo com o Administrador do Azure.
 4. Clique em **Deploy**.
 
 No build, a Vercel roda `npm install` (que já dispara `prisma generate` via `postinstall`) e depois `npm run build`, que executa `prisma migrate deploy && next build` — ou seja, o schema do banco é criado/atualizado automaticamente a cada deploy, sem passo manual.

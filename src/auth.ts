@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
-import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
+import MicrosoftEntraID, {
+  type MicrosoftEntraIDProfile,
+} from "next-auth/providers/microsoft-entra-id";
 import { prisma } from "@/lib/prisma";
 
 // Vincula a conta Microsoft ao Analista já cadastrado pelo mesmo e-mail
@@ -14,7 +16,23 @@ async function buscarAnalistaAtivoPorEmail(email: string) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [MicrosoftEntraID],
+  providers: [
+    MicrosoftEntraID({
+      // App Registration do tipo "cliente público" (SPA), sem client secret:
+      // autentica só com PKCE. Sem isso, o Auth.js tentaria enviar um
+      // client_secret que não existe e o Entra ID recusaria a troca do code
+      // por token.
+      client: { token_endpoint_auth_method: "none" },
+      // Só identidade (claims do id_token: nome, e-mail): sem "User.Read",
+      // que é o que faz o provider por padrão chamar o Microsoft Graph para
+      // buscar a foto de perfil — não é o combinado com o Azure (acesso
+      // restrito, sem nada de Microsoft 365).
+      authorization: { params: { scope: "openid profile email" } },
+      profile(profile: MicrosoftEntraIDProfile) {
+        return { id: profile.sub, name: profile.name, email: profile.email, image: null };
+      },
+    }),
+  ],
   pages: {
     signIn: "/login",
     error: "/login",
