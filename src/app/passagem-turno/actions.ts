@@ -108,6 +108,7 @@ export type PassagemTurnoDetalhe = {
   turnoOrigem: Turno;
   turnoDestino: Turno;
   observacoes: string | null;
+  analistaEntregaId: string;
   analistaEntrega: string;
   analistaRecebe: string | null;
   createdAt: string;
@@ -134,6 +135,7 @@ export async function buscarPassagemTurno(id: string): Promise<PassagemTurnoDeta
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
     observacoes: p.observacoes,
+    analistaEntregaId: p.analistaEntregaId,
     analistaEntrega: p.analistaEntrega.nome,
     analistaRecebe: p.analistaRecebe?.nome ?? null,
     createdAt: p.createdAt.toISOString(),
@@ -148,6 +150,9 @@ export async function confirmarPassagemTurno(id: string): Promise<{ error?: stri
   const passagem = await prisma.passagemTurno.findUnique({ where: { id } });
   if (!passagem) return { error: "Passagem de turno não encontrada." };
   if (passagem.status !== "ABERTA") return { error: "Esta passagem de turno já foi confirmada." };
+  if (passagem.analistaEntregaId === analista.id) {
+    return { error: "Quem entregou a passagem não pode confirmar o próprio recebimento." };
+  }
 
   await prisma.passagemTurno.update({
     where: { id },

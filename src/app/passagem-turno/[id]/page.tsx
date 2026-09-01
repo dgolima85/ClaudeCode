@@ -22,7 +22,9 @@ export default async function PassagemTurnoDetalhePage({
   ]);
   if (!passagem) notFound();
 
-  const podeConfirmar = passagem.status === "ABERTA" && analistaLogado?.id;
+  const isAberta = passagem.status === "ABERTA";
+  const isQuemEntregou = analistaLogado?.id === passagem.analistaEntregaId;
+  const podeConfirmar = isAberta && !!analistaLogado?.id && !isQuemEntregou;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
@@ -77,6 +79,12 @@ export default async function PassagemTurnoDetalhePage({
       </section>
 
       {podeConfirmar && <ConfirmarPassagemTurnoButton id={passagem.id} />}
+      {isAberta && isQuemEntregou && (
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Aguardando quem assumir o turno seguinte confirmar o recebimento. Você entregou esta
+          passagem e não pode confirmá-la.
+        </p>
+      )}
     </div>
   );
 }
