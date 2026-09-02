@@ -45,6 +45,12 @@ Se isso acontecer com frequência (não só numa sobreposição pontual de deplo
 
 `DATABASE_URL` continua sendo a usada pela aplicação em tempo de execução (pode continuar pooled, é o ideal para ambiente serverless).
 
+#### Login com Microsoft Entra ID falha com "invalid_grant" mesmo com tudo certo no Azure
+
+Se a empresa tem uma política de Conditional Access no Entra ID restringindo login por IP/país, o login pode falhar mesmo com o App Registration configurado corretamente (Redirect URI certo, "Allow public client flows" habilitado). O motivo: as Vercel Functions rodam, por padrão, na região de Washington D.C. (`iad1`), e é de lá que sai a chamada do nosso servidor para trocar o código de autorização por token — não da região de quem está acessando o site.
+
+Solução: em **Vercel → Settings → Functions → Function Region**, mude para a região exigida pela política (ex: "São Paulo, Brazil" / `gru1`, para políticas restritas a IPs do Brasil) e faça um novo deploy. Regiões fora do padrão exigem plano **Pro** da Vercel. Mais detalhes no [README](./README.md), seção "Login com Microsoft Entra ID".
+
 ### 3. Popular os dados iniciais (uma vez)
 
 O login não usa senha — depende de já existir pelo menos um Analista cadastrado. Rode o seed uma única vez, apontando para o banco de produção, a partir da sua máquina:
