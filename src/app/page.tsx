@@ -20,7 +20,7 @@ export default async function HomePage({
   const statusParamBruto = sp.status;
   const statusFiltro: StatusOcorrencia[] =
     statusParamBruto === undefined
-      ? ["EM_ANDAMENTO", "AGUARDANDO_VALIDACAO"]
+      ? ["EM_ANDAMENTO", "AGUARDANDO_VALIDACAO", "PENDENTE_CAUSA"]
       : (Array.isArray(statusParamBruto) ? statusParamBruto : [statusParamBruto]).filter(
           isStatusOcorrencia,
         );
