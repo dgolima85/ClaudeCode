@@ -101,10 +101,8 @@ export async function atualizarStatusOcorrencia(
 export async function normalizarOcorrencia(
   id: string,
   dados: {
-    causaId: string | null;
-    causaOutra: string;
-    solucaoId: string | null;
-    solucaoOutra: string;
+    causa: string;
+    solucao: string;
     fim: string;
   },
 ): Promise<{ error?: string }> {
@@ -117,10 +115,10 @@ export async function normalizarOcorrencia(
     data: {
       status: "RESOLVIDO",
       resolvidoEm: deInputDataHoraBR(parsed.data.fim),
-      causaId: parsed.data.causaId || null,
-      causaOutraDescricao: parsed.data.causaId ? null : parsed.data.causaOutra,
-      solucaoId: parsed.data.solucaoId || null,
-      solucaoOutraDescricao: parsed.data.solucaoId ? null : parsed.data.solucaoOutra,
+      causaId: null,
+      causaOutraDescricao: parsed.data.causa,
+      solucaoId: null,
+      solucaoOutraDescricao: parsed.data.solucao,
     },
   });
 
@@ -136,8 +134,6 @@ export type DadosNormalizacaoOcorrencia = {
   ambiente: string | null;
   recurso: string | null;
   servico: string | null;
-  causas: ItemReferencia[];
-  solucoes: ItemReferencia[];
 };
 
 export async function buscarDadosNormalizacaoOcorrencia(
@@ -145,21 +141,17 @@ export async function buscarDadosNormalizacaoOcorrencia(
 ): Promise<DadosNormalizacaoOcorrencia | null> {
   await exigirAnalistaLogado();
 
-  const [o, causas, solucoes] = await Promise.all([
-    prisma.ocorrencia.findUnique({
-      where: { id },
-      include: {
-        tipo: true,
-        parcerias: true,
-        empresas: true,
-        ambienteInfra: true,
-        recursos: true,
-        servicos: true,
-      },
-    }),
-    prisma.causa.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
-    prisma.solucao.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
-  ]);
+  const o = await prisma.ocorrencia.findUnique({
+    where: { id },
+    include: {
+      tipo: true,
+      parcerias: true,
+      empresas: true,
+      ambienteInfra: true,
+      recursos: true,
+      servicos: true,
+    },
+  });
   if (!o) return null;
 
   const parceriaEmpresa =
@@ -175,8 +167,6 @@ export async function buscarDadosNormalizacaoOcorrencia(
     ambiente: o.ambienteInfra?.nome ?? null,
     recurso: o.recursos.map((r) => r.nome).join(", ") || null,
     servico: o.servicos.map((s) => s.nome).join(", ") || null,
-    causas: causas.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
-    solucoes: solucoes.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
   };
 }
 
@@ -362,21 +352,41 @@ export async function atualizarDetalhesOcorrencia(
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
 
+  // Só inclui no update as relações realmente enviadas: cada `set` num
+  // relacionamento m-n implícito do Prisma refaz a tabela de junção inteira
+  // (desconecta tudo e reconecta), então tocar nas 7 relações a cada
+  // alteração de um único multi-select (ex.: Plataforma) multiplicava por 7
+  // o custo de cada clique.
   await prisma.ocorrencia.update({
     where: { id },
     data: {
-      parcerias: { set: (dados.parceriaIds ?? []).map((id) => ({ id })) },
-      empresas: { set: (dados.empresaIds ?? []).map((id) => ({ id })) },
-      servicos: { set: (dados.servicoIds ?? []).map((id) => ({ id })) },
-      sistemasOperacionais: { set: (dados.sistemaOperacionalIds ?? []).map((id) => ({ id })) },
-      recursos: { set: (dados.recursoIds ?? []).map((id) => ({ id })) },
-      plataformas: { set: (dados.plataformaIds ?? []).map((id) => ({ id })) },
-      canais: { set: (dados.canalIds ?? []).map((id) => ({ id })) },
-      ambienteInfraId: dados.ambienteInfraId || null,
-      cdnId: dados.cdnId || null,
+      ...(dados.parceriaIds !== undefined && {
+        parcerias: { set: dados.parceriaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.empresaIds !== undefined && {
+        empresas: { set: dados.empresaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.servicoIds !== undefined && {
+        servicos: { set: dados.servicoIds.map((id) => ({ id })) },
+      }),
+      ...(dados.sistemaOperacionalIds !== undefined && {
+        sistemasOperacionais: { set: dados.sistemaOperacionalIds.map((id) => ({ id })) },
+      }),
+      ...(dados.recursoIds !== undefined && {
+        recursos: { set: dados.recursoIds.map((id) => ({ id })) },
+      }),
+      ...(dados.plataformaIds !== undefined && {
+        plataformas: { set: dados.plataformaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.canalIds !== undefined && {
+        canais: { set: dados.canalIds.map((id) => ({ id })) },
+      }),
+      ...(dados.ambienteInfraId !== undefined && { ambienteInfraId: dados.ambienteInfraId || null }),
+      ...(dados.cdnId !== undefined && { cdnId: dados.cdnId || null }),
     },
   });
 
-  revalidatePath("/");
+  // Nenhum destes campos aparece na listagem de "/" (ver OcorrenciasTable),
+  // então revalidar aquela rota aqui só invalidava cache sem necessidade.
   return {};
 }

@@ -24,7 +24,8 @@ export default async function PassagemTurnoDetalhePage({
 
   const isAberta = passagem.status === "ABERTA";
   const isQuemEntregou = analistaLogado?.id === passagem.analistaEntregaId;
-  const podeConfirmar = isAberta && !!analistaLogado?.id && !isQuemEntregou;
+  const isTurnoDestino = analistaLogado?.turno === passagem.turnoDestino;
+  const podeConfirmar = isAberta && isTurnoDestino && !isQuemEntregou;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">

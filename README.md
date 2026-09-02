@@ -61,6 +61,10 @@ Sem essas variáveis configuradas, o botão "Entrar com Microsoft" continua apar
 
 Veja [`DEPLOY.md`](./DEPLOY.md) para o passo a passo de hospedagem na Vercel (recomendado) ou em Docker em um servidor próprio.
 
+## Acesso em produção
+
+Por questão de segurança, a URL de produção (Vercel) é restrita: só aceita requisições vindas dos IPs de saída do ZTNA da empresa. Isso é configurado no dashboard da Vercel em **Project Settings → Firewall (Custom Rules)**, com uma regra de allow para os IPs de origem do ZTNA seguida de uma regra de deny para todo o restante. Quem não estiver conectado ao ZTNA corporativo recebe bloqueio ao tentar acessar a URL.
+
 ## Stack
 
 - [Next.js](https://nextjs.org) (App Router, Server Actions)

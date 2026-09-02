@@ -2,12 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { TURNOS, TURNO_LABELS, type Turno } from "@/lib/turno";
+import { TURNO_LABELS, type Turno } from "@/lib/turno";
 import { criarPassagemTurno } from "@/app/passagem-turno/actions";
 
-export default function NovaPassagemTurnoForm() {
+type NovaPassagemTurnoFormProps = {
+  turnoDestino: Turno;
+};
+
+export default function NovaPassagemTurnoForm({ turnoDestino }: NovaPassagemTurnoFormProps) {
   const router = useRouter();
-  const [turnoDestino, setTurnoDestino] = useState<Turno | "">("");
   const [observacoes, setObservacoes] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -15,7 +18,7 @@ export default function NovaPassagemTurnoForm() {
   function enviar() {
     setErro(null);
     startTransition(async () => {
-      const res = await criarPassagemTurno({ turnoDestino, observacoes });
+      const res = await criarPassagemTurno({ observacoes });
       if (res.error) {
         setErro(res.error);
         return;
@@ -26,25 +29,11 @@ export default function NovaPassagemTurnoForm() {
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
-          Passando o turno para
-          <select
-            value={turnoDestino}
-            disabled={pending}
-            onChange={(e) => setTurnoDestino(e.target.value as Turno)}
-            className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
-          >
-            <option value="" disabled>
-              Selecione o turno
-            </option>
-            {TURNOS.map((t) => (
-              <option key={t} value={t}>
-                {TURNO_LABELS[t]}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div>
+        <span className="block text-xs text-gray-600 dark:text-gray-400">Passando o turno para</span>
+        <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+          {TURNO_LABELS[turnoDestino]}
+        </p>
       </div>
 
       <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
@@ -64,7 +53,7 @@ export default function NovaPassagemTurnoForm() {
       <div>
         <button
           type="button"
-          disabled={pending || !turnoDestino}
+          disabled={pending}
           onClick={enviar}
           className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
