@@ -31,7 +31,7 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Turno</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Título</th>
-            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
+            <th className="w-40 px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Ticket</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -53,7 +53,9 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{l.analista}</td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{TURNO_LABELS[l.turno]}</td>
               <td className="px-3 py-2">{l.titulo}</td>
-              <td className="px-3 py-2">{l.ticket ?? "—"}</td>
+              <td className="max-w-40 truncate px-3 py-2" title={l.ticket ?? undefined}>
+                {l.ticket ?? "—"}
+              </td>
             </tr>
           ))}
           {linhas.length === 0 && (
