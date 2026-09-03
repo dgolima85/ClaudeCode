@@ -40,7 +40,7 @@ export default async function HeaderAnalistaLogado() {
         </span>
         <form action={sair}>
           <button type="submit" className="text-blue-600 hover:underline dark:text-blue-400">
-            Trocar analista
+            Logout
           </button>
         </form>
         <ThemeToggle />
