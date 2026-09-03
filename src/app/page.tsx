@@ -137,7 +137,7 @@ export default async function HomePage({
         </Link>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-3">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências</h1>
