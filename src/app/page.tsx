@@ -4,7 +4,10 @@ import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
 import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
-import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import IndicadoresOcorrenciasPanel, {
+  type IndicadoresOcorrencias,
+} from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
+import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
 import { criarOcorrencia } from "@/app/ocorrencias/actions";
@@ -25,18 +28,40 @@ export default async function HomePage({
           isStatusOcorrencia,
         );
 
-  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno] = await Promise.all([
+  const [
+    ocorrencias,
+    tiposBrutos,
+    todosOsTipos,
+    avisosBrutos,
+    pendentesPassagemTurno,
+    statusCounts,
+    origemCounts,
+    ocorrenciasEmAbertoResumo,
+  ] = await Promise.all([
     prisma.ocorrencia.findMany({
       where: statusFiltro.length > 0 ? { status: { in: statusFiltro } } : undefined,
       include: { tipo: true, analista: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.tipoOcorrencia.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+    prisma.tipoOcorrencia.findMany({ select: { id: true, nome: true } }),
     prisma.aviso.findMany({
       where: { expiraEm: { gt: new Date() } },
       orderBy: { createdAt: "desc" },
     }),
     buscarPendentesPassagemTurno(),
+    // Indicadores da Home: independem do filtro de status aplicado à tabela
+    // abaixo, então são buscados à parte, sempre sobre todas as ocorrências.
+    prisma.ocorrencia.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.ocorrencia.groupBy({
+      by: ["tipoId"],
+      where: { status: { not: "RESOLVIDO" } },
+      _count: { _all: true },
+    }),
+    prisma.ocorrencia.findMany({
+      where: { status: { not: "RESOLVIDO" } },
+      select: { createdAt: true, ticket: true },
+    }),
   ]);
   const tipos = ordenarComNaPrimeiro(tiposBrutos);
   const avisos = avisosBrutos
@@ -47,6 +72,41 @@ export default async function HomePage({
       descricao: a.descricao,
       expiraEm: a.expiraEm.toISOString(),
     }));
+
+  const porStatus = Object.fromEntries(
+    STATUS_OCORRENCIA.map((status) => [status, 0]),
+  ) as Record<StatusOcorrencia, number>;
+  for (const c of statusCounts) {
+    if (isStatusOcorrencia(c.status)) porStatus[c.status] = c._count._all;
+  }
+  const emAberto = porStatus.EM_ANDAMENTO + porStatus.AGUARDANDO_VALIDACAO + porStatus.PENDENTE_CAUSA;
+
+  const nomeTipoPorId = new Map(todosOsTipos.map((t) => [t.id, t.nome]));
+  const porOrigem = origemCounts
+    .map((c) => ({ nome: nomeTipoPorId.get(c.tipoId) ?? "—", quantidade: c._count._all }))
+    .sort((a, b) => b.quantidade - a.quantidade);
+
+  const agora = new Date().getTime();
+  const idade = { ateTresDias: 0, quatroASeteDias: 0, maisDeUmaSemana: 0 };
+  let semTicket = 0;
+  let maisAntigaDias: number | null = null;
+  for (const o of ocorrenciasEmAbertoResumo) {
+    const dias = Math.floor((agora - o.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+    if (dias <= 3) idade.ateTresDias += 1;
+    else if (dias <= 7) idade.quatroASeteDias += 1;
+    else idade.maisDeUmaSemana += 1;
+    if (!o.ticket) semTicket += 1;
+    if (maisAntigaDias === null || dias > maisAntigaDias) maisAntigaDias = dias;
+  }
+
+  const indicadores: IndicadoresOcorrencias = {
+    emAberto,
+    porStatus,
+    porOrigem,
+    idade,
+    semTicket,
+    maisAntigaDias,
+  };
 
   const linhas = ocorrencias.map((o) => ({
     id: o.id,
@@ -77,17 +137,23 @@ export default async function HomePage({
         </Link>
       )}
 
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Registre e acompanhe as ocorrências do turno. Clique em ⤢ para abrir os detalhes.
-        </p>
-      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="flex flex-col gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Registre e acompanhe as ocorrências do turno. Clique em ⤢ para abrir os detalhes.
+            </p>
+          </div>
 
-      <FiltroStatus
-        statusSelecionados={statusFiltro}
-        filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
-      />
+          <FiltroStatus
+            statusSelecionados={statusFiltro}
+            filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
+          />
+        </div>
+
+        <IndicadoresOcorrenciasPanel dados={indicadores} />
+      </div>
 
       {tipos.length === 0 && (
         <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
