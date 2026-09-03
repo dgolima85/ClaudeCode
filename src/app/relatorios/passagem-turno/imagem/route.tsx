@@ -19,7 +19,8 @@ const ALTURA_CABECALHO = 246;
 const ALTURA_KPIS = 112;
 const ALTURA_RODAPE = 84;
 const ALTURA_TITULO_SECAO = 56;
-const ALTURA_ITEM_RESOLVIDA = 80;
+const ALTURA_ITEM_RESOLVIDA_BASE = 50;
+const ALTURA_LINHA_DETALHE = 28;
 const ALTURA_ITEM_REPASSADA = 50;
 const ALTURA_LINHA_OVERFLOW = 30;
 const ALTURA_ESTADO_VAZIO = 54;
@@ -110,12 +111,19 @@ export async function GET(request: NextRequest) {
   const semTicket = emAberto.filter((o) => !o.ticket).length;
   const horario = TURNO_HORARIOS[turno];
 
+  const alturaResolvidas = resolvidas.reduce((soma, o) => {
+    let alturaItem = ALTURA_ITEM_RESOLVIDA_BASE;
+    if (o.causaOutraDescricao) alturaItem += ALTURA_LINHA_DETALHE;
+    if (o.solucaoOutraDescricao) alturaItem += ALTURA_LINHA_DETALHE;
+    return soma + alturaItem;
+  }, 0);
+
   const altura = Math.max(
     ALTURA_MINIMA,
     ALTURA_CABECALHO +
       ALTURA_KPIS +
       ALTURA_TITULO_SECAO +
-      (resolvidas.length > 0 ? resolvidas.length * ALTURA_ITEM_RESOLVIDA : ALTURA_ESTADO_VAZIO) +
+      (resolvidas.length > 0 ? alturaResolvidas : ALTURA_ESTADO_VAZIO) +
       (resolvidasRestantes > 0 ? ALTURA_LINHA_OVERFLOW : 0) +
       ALTURA_TITULO_SECAO +
       (repassadas.length > 0 ? repassadas.length * ALTURA_ITEM_REPASSADA : ALTURA_ESTADO_VAZIO) +
@@ -257,14 +265,14 @@ export async function GET(request: NextRequest) {
                     {truncar(o.titulo, 58)}
                   </div>
                 </div>
-                {(causa || solucao) && (
+                {causa && (
                   <div style={{ display: "flex", fontSize: 19, color: COR.muted, marginTop: 3 }}>
-                    {truncar(
-                      [causa ? `Causa: ${causa}` : null, solucao ? `Solução: ${solucao}` : null]
-                        .filter(Boolean)
-                        .join("  ·  "),
-                      92,
-                    )}
+                    {truncar(`Causa: ${causa}`, 82)}
+                  </div>
+                )}
+                {solucao && (
+                  <div style={{ display: "flex", fontSize: 19, color: COR.muted, marginTop: 3 }}>
+                    {truncar(`Solução: ${solucao}`, 82)}
                   </div>
                 )}
               </div>
