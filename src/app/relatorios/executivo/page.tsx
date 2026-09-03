@@ -2,7 +2,12 @@ import { prisma } from "@/lib/prisma";
 import FiltrosResumoExecutivo from "@/components/relatorios/FiltrosResumoExecutivo";
 import TabelaResumoExecutivo from "@/components/relatorios/TabelaResumoExecutivo";
 import ExportCsvButton from "@/components/relatorios/ExportCsvButton";
-import { parseFiltros, buildQueryString, type SearchParamsRelatorio } from "@/lib/relatorios";
+import {
+  parseFiltros,
+  buildQueryString,
+  temAlgumFiltro,
+  type SearchParamsRelatorio,
+} from "@/lib/relatorios";
 import { listarResumosExecutivos, nomeCausa, nomeSolucao, parceriaEmpresaLabel } from "@/lib/resumoExecutivo";
 import type { StatusOcorrencia } from "@/lib/status";
 
@@ -45,7 +50,8 @@ export default async function ResumosExecutivosPage({
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Resumos Executivos</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} encontrada
-            {linhas.length === 1 ? "" : "s"}, de qualquer status.
+            {linhas.length === 1 ? "" : "s"}, de qualquer status
+            {!temAlgumFiltro(filtros) && " (últimos 7 dias — use os filtros para ver ocorrências mais antigas)"}.
           </p>
         </div>
         <ExportCsvButton href="/relatorios/executivo/export" queryString={queryString} />

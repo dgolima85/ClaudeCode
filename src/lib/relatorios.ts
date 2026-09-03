@@ -36,6 +36,28 @@ export function parseFiltros(sp: SearchParamsRelatorio): FiltrosRelatorio {
   };
 }
 
+const IDADE_MAXIMA_PADRAO_DIAS = 7;
+
+export function temAlgumFiltro(filtros: FiltrosRelatorio): boolean {
+  return Boolean(
+    filtros.de ||
+      filtros.ate ||
+      filtros.analistaId ||
+      filtros.turno ||
+      filtros.status.length > 0 ||
+      filtros.tipoId ||
+      filtros.parceriaId,
+  );
+}
+
+function haDiasAtras(dias: number): Date {
+  return new Date(new Date().getTime() - dias * 24 * 60 * 60 * 1000);
+}
+
+// Sem nenhum filtro escolhido, limita a listagem às ocorrências mais
+// recentes (últimos 7 dias) para manter os relatórios enxutos por padrão.
+// Assim que qualquer filtro é aplicado (inclusive um período específico),
+// esse limite deixa de valer e ocorrências mais antigas voltam a aparecer.
 export function montarWhereOcorrencia(filtros: FiltrosRelatorio) {
   return {
     ...(filtros.de || filtros.ate
@@ -45,7 +67,9 @@ export function montarWhereOcorrencia(filtros: FiltrosRelatorio) {
             ...(filtros.ate ? { lte: fimDoDiaBR(filtros.ate) } : {}),
           },
         }
-      : {}),
+      : !temAlgumFiltro(filtros)
+        ? { createdAt: { gte: haDiasAtras(IDADE_MAXIMA_PADRAO_DIAS) } }
+        : {}),
     ...(filtros.analistaId ? { analistaId: filtros.analistaId } : {}),
     ...(filtros.turno ? { analista: { turno: filtros.turno } } : {}),
     ...(filtros.status.length > 0 ? { status: { in: filtros.status } } : {}),

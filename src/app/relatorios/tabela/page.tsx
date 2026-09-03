@@ -2,7 +2,13 @@ import { prisma } from "@/lib/prisma";
 import FiltrosRelatorioTabela from "@/components/relatorios/FiltrosRelatorioTabela";
 import ExportCsvButton from "@/components/relatorios/ExportCsvButton";
 import TabelaOcorrenciasFiltravel from "@/components/relatorios/TabelaOcorrenciasFiltravel";
-import { parseFiltros, montarWhereOcorrencia, buildQueryString, type SearchParamsRelatorio } from "@/lib/relatorios";
+import {
+  parseFiltros,
+  montarWhereOcorrencia,
+  buildQueryString,
+  temAlgumFiltro,
+  type SearchParamsRelatorio,
+} from "@/lib/relatorios";
 import type { StatusOcorrencia } from "@/lib/status";
 import { isCriticidade } from "@/lib/criticidade";
 import type { Turno } from "@/lib/turno";
@@ -49,7 +55,8 @@ export default async function RelatorioTabelaPage({
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Tabela de Ocorrências</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} encontrada
-            {linhas.length === 1 ? "" : "s"}.
+            {linhas.length === 1 ? "" : "s"}
+            {!temAlgumFiltro(filtros) && " (últimos 7 dias — use os filtros para ver ocorrências mais antigas)"}.
           </p>
         </div>
         <ExportCsvButton href="/relatorios/tabela/export" queryString={queryString} />
