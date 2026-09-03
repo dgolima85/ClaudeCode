@@ -36,7 +36,7 @@ export function parseFiltros(sp: SearchParamsRelatorio): FiltrosRelatorio {
   };
 }
 
-const IDADE_MAXIMA_PADRAO_DIAS = 7;
+const IDADE_MAXIMA_PADRAO_DIAS = 5;
 
 export function temAlgumFiltro(filtros: FiltrosRelatorio): boolean {
   return Boolean(

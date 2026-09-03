@@ -56,7 +56,7 @@ export default async function RelatorioTabelaPage({
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} encontrada
             {linhas.length === 1 ? "" : "s"}
-            {!temAlgumFiltro(filtros) && " (últimos 7 dias — use os filtros para ver ocorrências mais antigas)"}.
+            {!temAlgumFiltro(filtros) && " (últimos 5 dias — use os filtros para ver ocorrências mais antigas)"}.
           </p>
         </div>
         <ExportCsvButton href="/relatorios/tabela/export" queryString={queryString} />
