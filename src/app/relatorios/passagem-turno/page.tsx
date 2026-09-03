@@ -46,9 +46,15 @@ export default async function PassagemTurnoPage({
             Resumo para repasse entre turnos: ocorrências em aberto e atividade do período selecionado.
           </p>
         </div>
-        <ExportPdfButton
-          href={`/relatorios/passagem-turno/pdf?turno=${turnoSelecionado}&data=${dataSelecionada}`}
-        />
+        <div className="flex gap-2">
+          <ExportPdfButton
+            href={`/relatorios/passagem-turno/imagem?turno=${turnoSelecionado}&data=${dataSelecionada}`}
+            label="Baixar imagem"
+          />
+          <ExportPdfButton
+            href={`/relatorios/passagem-turno/pdf?turno=${turnoSelecionado}&data=${dataSelecionada}`}
+          />
+        </div>
       </div>
 
       <form

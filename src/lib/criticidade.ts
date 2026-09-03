@@ -22,6 +22,14 @@ export const CRITICIDADE_TEXT_COLOR: Record<Criticidade, string> = {
   BAIXA: "text-gray-400 dark:text-gray-500",
 };
 
+// Mesmas cores em hex, para uso fora do Tailwind (ex.: boletim de turno em
+// imagem, gerado com next/og — não processa classes CSS, só estilos inline).
+export const CRITICIDADE_HEX_COLOR: Record<Criticidade, string> = {
+  ALTA: "#dc2626",
+  MEDIA: "#d97706",
+  BAIXA: "#9ca3af",
+};
+
 export function isCriticidade(value: string): value is Criticidade {
   return (CRITICIDADES as readonly string[]).includes(value);
 }

@@ -65,3 +65,13 @@ export function paraInputDataHoraBR(data: Date | string): string {
 export function deInputDataHoraBR(valor: string): Date {
   return new Date(`${valor}:00-03:00`);
 }
+
+/** Idade curta e legível a partir de agora (ex.: "40min", "6h", "3d"), para exibição compacta. */
+export function idadeCurta(data: Date | string): string {
+  const d = typeof data === "string" ? new Date(data) : data;
+  const minutos = Math.floor((new Date().getTime() - d.getTime()) / (1000 * 60));
+  if (minutos < 60) return `${minutos}min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `${horas}h`;
+  return `${Math.floor(horas / 24)}d`;
+}
