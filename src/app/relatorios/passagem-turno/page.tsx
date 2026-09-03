@@ -5,6 +5,7 @@ import { TURNOS, TURNO_LABELS, isTurno, type Turno } from "@/lib/turno";
 import { dataBR } from "@/lib/dataHoraBR";
 import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import type { StatusOcorrencia } from "@/lib/status";
+import { isCriticidade } from "@/lib/criticidade";
 import type { LinhaRelatorio } from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
 export default async function PassagemTurnoPage({
@@ -25,6 +26,7 @@ export default async function PassagemTurnoPage({
     return {
       id: o.id,
       status: o.status as StatusOcorrencia,
+      criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
       titulo: o.titulo,
       ticket: o.ticket,
       createdAt: o.createdAt.toISOString(),

@@ -9,11 +9,13 @@ import {
   dataHoraLocalSchema,
 } from "@/lib/validations";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { isCriticidade, type Criticidade } from "@/lib/criticidade";
 import { deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 
 export async function criarOcorrencia(dados: {
   tipoId: string;
+  criticidade: string;
   titulo: string;
   ticket: string;
   inicio: string;
@@ -27,12 +29,29 @@ export async function criarOcorrencia(dados: {
   await prisma.ocorrencia.create({
     data: {
       tipoId: parsed.data.tipoId,
+      criticidade: parsed.data.criticidade,
       titulo: parsed.data.titulo,
       ticket: parsed.data.ticket ? parsed.data.ticket : null,
       analistaId: analista.id,
       status: "EM_ANDAMENTO",
       createdAt: deInputDataHoraBR(parsed.data.inicio),
     },
+  });
+
+  revalidatePath("/");
+  return {};
+}
+
+export async function atualizarCriticidadeOcorrencia(
+  id: string,
+  criticidade: string,
+): Promise<{ error?: string }> {
+  await exigirAnalistaLogado();
+  if (criticidade && !isCriticidade(criticidade)) return { error: "Criticidade inválida." };
+
+  await prisma.ocorrencia.update({
+    where: { id },
+    data: { criticidade: criticidade || null },
   });
 
   revalidatePath("/");
@@ -103,6 +122,7 @@ export async function normalizarOcorrencia(
   dados: {
     causa: string;
     solucao: string;
+    criticidade: string;
     fim: string;
   },
 ): Promise<{ error?: string }> {
@@ -119,6 +139,7 @@ export async function normalizarOcorrencia(
       causaOutraDescricao: parsed.data.causa,
       solucaoId: null,
       solucaoOutraDescricao: parsed.data.solucao,
+      criticidade: parsed.data.criticidade,
     },
   });
 
@@ -134,6 +155,7 @@ export type DadosNormalizacaoOcorrencia = {
   ambiente: string | null;
   recurso: string | null;
   servico: string | null;
+  criticidade: Criticidade | null;
 };
 
 export async function buscarDadosNormalizacaoOcorrencia(
@@ -167,6 +189,7 @@ export async function buscarDadosNormalizacaoOcorrencia(
     ambiente: o.ambienteInfra?.nome ?? null,
     recurso: o.recursos.map((r) => r.nome).join(", ") || null,
     servico: o.servicos.map((s) => s.nome).join(", ") || null,
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
   };
 }
 

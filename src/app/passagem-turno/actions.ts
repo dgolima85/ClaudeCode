@@ -6,6 +6,7 @@ import { exigirAnalistaLogado } from "@/lib/session";
 import { novaPassagemTurnoSchema } from "@/lib/validations";
 import { TURNO_DESTINO_PASSAGEM, type Turno } from "@/lib/turno";
 import type { StatusOcorrencia } from "@/lib/status";
+import { isCriticidade } from "@/lib/criticidade";
 import type { StatusPassagemTurno } from "@/lib/statusPassagemTurno";
 import type { LinhaRelatorio } from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
@@ -14,6 +15,7 @@ const includeOcorrencia = { tipo: true, analista: true } as const;
 function mapOcorrencia(o: {
   id: string;
   status: string;
+  criticidade: string | null;
   titulo: string;
   ticket: string | null;
   createdAt: Date;
@@ -24,6 +26,7 @@ function mapOcorrencia(o: {
   return {
     id: o.id,
     status: o.status as StatusOcorrencia,
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),

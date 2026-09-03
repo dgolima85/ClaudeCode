@@ -207,6 +207,10 @@ model Ocorrencia {
   id                    String    @id @default(cuid())
   tipoId                String
   status                String    @default("EM_ANDAMENTO")
+  // ALTA / MEDIA / BAIXA (ver src/lib/criticidade.ts). Obrigatória na
+  // criação para ocorrências novas; nula em ocorrências antigas até serem
+  // preenchidas (é exigida antes de marcar como Resolvido).
+  criticidade           String?
   titulo                String
   ticket                String?
   analistaId            String

@@ -8,6 +8,7 @@ import IndicadoresOcorrenciasPanel, {
   type IndicadoresOcorrencias,
 } from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
 import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { isCriticidade } from "@/lib/criticidade";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
 import { criarOcorrencia } from "@/app/ocorrencias/actions";
@@ -111,6 +112,7 @@ export default async function HomePage({
   const linhas = ocorrencias.map((o) => ({
     id: o.id,
     status: o.status as StatusOcorrencia,
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),

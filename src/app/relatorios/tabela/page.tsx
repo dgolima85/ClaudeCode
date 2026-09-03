@@ -4,6 +4,7 @@ import ExportCsvButton from "@/components/relatorios/ExportCsvButton";
 import TabelaOcorrenciasFiltravel from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 import { parseFiltros, montarWhereOcorrencia, buildQueryString, type SearchParamsRelatorio } from "@/lib/relatorios";
 import type { StatusOcorrencia } from "@/lib/status";
+import { isCriticidade } from "@/lib/criticidade";
 import type { Turno } from "@/lib/turno";
 
 export default async function RelatorioTabelaPage({
@@ -29,6 +30,7 @@ export default async function RelatorioTabelaPage({
   const linhas = ocorrencias.map((o) => ({
     id: o.id,
     status: o.status as StatusOcorrencia,
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),

@@ -1,10 +1,13 @@
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { STATUS_LABELS, STATUS_DOT_COLOR, type StatusOcorrencia } from "@/lib/status";
+import { CRITICIDADE_LABELS, CRITICIDADE_TEXT_COLOR, type Criticidade } from "@/lib/criticidade";
 import { TURNO_LABELS, type Turno } from "@/lib/turno";
+import { IconeCriticidade } from "@/components/ocorrencias/icones";
 
 export type LinhaRelatorio = {
   id: string;
   status: StatusOcorrencia;
+  criticidade: Criticidade | null;
   titulo: string;
   ticket: string | null;
   createdAt: string;
@@ -25,6 +28,7 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Origem</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Criticidade</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Início</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Fim</th>
@@ -38,6 +42,18 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
           {linhas.map((l) => (
             <tr key={l.id}>
               <td className="px-3 py-2">{l.tipo}</td>
+              <td className="px-3 py-2">
+                {l.criticidade ? (
+                  <span
+                    className={`inline-flex items-center gap-1.5 ${CRITICIDADE_TEXT_COLOR[l.criticidade]}`}
+                  >
+                    <IconeCriticidade className="h-3.5 w-3.5 shrink-0" />
+                    {CRITICIDADE_LABELS[l.criticidade]}
+                  </span>
+                ) : (
+                  <span className="text-gray-300 dark:text-gray-600">—</span>
+                )}
+              </td>
               <td className="px-3 py-2">
                 <span className="inline-flex items-center gap-2">
                   <span className={`h-2.5 w-2.5 rounded-full ${STATUS_DOT_COLOR[l.status]}`} />
@@ -60,7 +76,7 @@ export default function TabelaOcorrenciasFiltravel({ linhas }: TabelaOcorrencias
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={8} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
+              <td colSpan={9} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma ocorrência encontrada para os filtros selecionados.
               </td>
             </tr>

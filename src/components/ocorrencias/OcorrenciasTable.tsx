@@ -3,12 +3,15 @@
 import { useState, useTransition } from "react";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import StatusSelect from "./StatusSelect";
+import CriticidadeSelect from "./CriticidadeSelect";
 import EditableCell from "@/components/ui/EditableCell";
 import OcorrenciaModal from "./OcorrenciaModal";
 import NormalizacaoOcorrenciaModal from "./NormalizacaoOcorrenciaModal";
 import type { StatusOcorrencia } from "@/lib/status";
+import type { Criticidade } from "@/lib/criticidade";
 import {
   atualizarStatusOcorrencia,
+  atualizarCriticidadeOcorrencia,
   atualizarTituloOcorrencia,
   atualizarTicketOcorrencia,
   atualizarTipoDaOcorrencia,
@@ -17,6 +20,7 @@ import {
 export type OcorrenciaLinha = {
   id: string;
   status: StatusOcorrencia;
+  criticidade: Criticidade | null;
   titulo: string;
   ticket: string | null;
   createdAt: string;
@@ -83,6 +87,7 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Origem</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Criticidade</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Início</th>
               <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Fim</th>
@@ -96,6 +101,12 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
               <tr key={o.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-800/70">
                 <td className="px-3 py-2">
                   <TipoCell ocorrenciaId={o.id} tipoId={o.tipo.id} tipos={tipos} />
+                </td>
+                <td className="px-3 py-2">
+                  <CriticidadeSelect
+                    value={o.criticidade}
+                    onChange={(nova) => atualizarCriticidadeOcorrencia(o.id, nova)}
+                  />
                 </td>
                 <td className="px-3 py-2">
                   <StatusSelect
@@ -146,7 +157,7 @@ export default function OcorrenciasTable({ ocorrencias, tipos, ocorrenciaAbertaI
             ))}
             {ocorrencias.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
+                <td colSpan={8} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                   Nenhuma ocorrência encontrada para os filtros selecionados.
                 </td>
               </tr>

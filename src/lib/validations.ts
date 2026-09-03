@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TURNOS } from "@/lib/turno";
 import { STATUS_OCORRENCIA } from "@/lib/status";
 import { MODELOS_AVISO } from "@/lib/aviso";
+import { CRITICIDADES } from "@/lib/criticidade";
 
 export const nomeSchema = z
   .string()
@@ -48,8 +49,11 @@ export const avisoSchema = z
     path: ["expiraEm"],
   });
 
+export const criticidadeSchema = z.enum(CRITICIDADES, { message: "Selecione a criticidade" });
+
 export const novaOcorrenciaSchema = z.object({
   tipoId: z.string().trim().min(1, "Selecione um tipo"),
+  criticidade: criticidadeSchema,
   titulo: z.string().trim().min(1, "Descreva a ocorrência").max(500),
   ticket: z.string().trim().max(120).optional().or(z.literal("")),
   inicio: dataHoraLocalSchema,
@@ -72,5 +76,6 @@ export const normalizacaoOcorrenciaSchema = z.object({
     .trim()
     .min(1, "Informe a solução da ocorrência.")
     .max(300, "Descrição da solução muito longa"),
+  criticidade: criticidadeSchema,
   fim: dataHoraLocalSchema,
 });

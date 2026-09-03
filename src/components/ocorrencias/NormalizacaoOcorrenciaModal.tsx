@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Modal from "@/components/ui/Modal";
 import { paraInputDataHoraBR } from "@/lib/dataHoraBR";
+import { CRITICIDADES, CRITICIDADE_LABELS, type Criticidade } from "@/lib/criticidade";
 import {
   buscarDadosNormalizacaoOcorrencia,
   normalizarOcorrencia,
@@ -24,6 +25,7 @@ export default function NormalizacaoOcorrenciaModal({
   const [carregando, setCarregando] = useState(true);
   const [causa, setCausa] = useState("");
   const [solucao, setSolucao] = useState("");
+  const [criticidade, setCriticidade] = useState<Criticidade | "">("");
   const [fim, setFim] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -33,6 +35,7 @@ export default function NormalizacaoOcorrenciaModal({
     buscarDadosNormalizacaoOcorrencia(ocorrenciaId).then((d) => {
       if (cancelado) return;
       setDados(d);
+      setCriticidade(d?.criticidade ?? "");
       setFim(paraInputDataHoraBR(new Date()));
       setCarregando(false);
     });
@@ -55,11 +58,16 @@ export default function NormalizacaoOcorrenciaModal({
       setErro("Descreva a solução da ocorrência.");
       return;
     }
+    if (!criticidade) {
+      setErro("Selecione a criticidade da ocorrência.");
+      return;
+    }
 
     startTransition(async () => {
       const res = await normalizarOcorrencia(ocorrenciaId, {
         causa: causa.trim(),
         solucao: solucao.trim(),
+        criticidade,
         fim,
       });
       if (res.error) {
@@ -115,6 +123,27 @@ export default function NormalizacaoOcorrenciaModal({
                 onChange={(e) => setFim(e.target.value)}
                 className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                Criticidade *
+              </label>
+              <select
+                value={criticidade}
+                disabled={pending}
+                onChange={(e) => setCriticidade(e.target.value as Criticidade)}
+                className="mt-1 w-full rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
+              >
+                <option value="" disabled>
+                  Selecione
+                </option>
+                {CRITICIDADES.map((c) => (
+                  <option key={c} value={c}>
+                    {CRITICIDADE_LABELS[c]}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
