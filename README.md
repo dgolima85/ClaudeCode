@@ -18,7 +18,7 @@ Abra [http://localhost:3000](http://localhost:3000) — a tela de login lista os
 
 ## Login com Microsoft Entra ID (Azure AD)
 
-O login por senha nunca existiu neste sistema — hoje dá pra entrar de duas formas: escolhendo o nome numa lista (sem senha) ou, se configurado, pelo botão "Entrar com Microsoft" usando a conta corporativa (SSO via Entra ID). As duas continuam disponíveis ao mesmo tempo; a lista fica como plano B caso o login Microsoft esteja fora do ar ou ainda não configurado no seu ambiente.
+O login por senha nunca existiu neste sistema — hoje a única forma de entrar é pelo botão "Entrar com Microsoft", usando a conta corporativa (SSO via Entra ID). O login antigo, por lista de analistas sem senha, foi desativado e ficou só como backup em `src/components/login/LoginManualForm.tsx` (não usado por nenhuma página) — dá pra reativar rapidamente se for preciso, importando o componente de volta em `src/app/login/page.tsx`.
 
 **Como funciona:** o e-mail da conta Microsoft precisa bater (sem diferenciar maiúsculas/minúsculas) com o e-mail de um Analista já cadastrado e ativo em **Administração → Analistas**. O sistema não cria Analista automaticamente — se o e-mail não estiver cadastrado, o login é recusado com uma mensagem explicando o motivo. Cadastre a pessoa (com o e-mail exato da conta Microsoft dela) antes de ela tentar entrar pela primeira vez.
 
@@ -55,7 +55,57 @@ AUTH_MICROSOFT_ENTRA_ID_ISSUER="https://login.microsoftonline.com/<Directory (te
 
 O `AUTH_MICROSOFT_ENTRA_ID_ISSUER` com o Tenant ID específico da sua organização restringe o login só a contas do seu diretório — sem essa variável, qualquer conta Microsoft (pessoal, escola ou trabalho) conseguiria autenticar.
 
-Sem essas variáveis configuradas, o botão "Entrar com Microsoft" continua aparecendo mas o login falha — a lista de analistas continua funcionando normalmente enquanto isso.
+Sem essas variáveis configuradas, o botão "Entrar com Microsoft" continua aparecendo mas o login falha, e não há como entrar no sistema (o login manual por lista está desativado — veja a seção anterior).
+
+## Painel de Plantonistas (Home)
+
+Um painel só de leitura na Home mostra quem está de plantão hoje (área, analista e telefone), lido direto de uma planilha do SharePoint (`Plantao.xlsx`, aba única) — não é editável por aqui, é só um espelho do que está lá. Ele filtra sozinho as linhas cuja data bate com o dia de hoje (horário de Brasília) a cada carregamento da Home, com os dados em cache por até 5 minutos.
+
+Como isso precisa ler a planilha para qualquer pessoa que abrir a Home (não só quando alguém está logado agora), a leitura acontece no servidor como aplicativo, não como o usuário — um fluxo diferente do login (que só confirma identidade). Isso exige um Client Secret e uma permissão de aplicativo no Entra ID, ao contrário do App Registration do login (que é público, sem secret).
+
+### 1. Peça ao Administrador do Azure
+
+No **mesmo** App Registration já usado no login com Microsoft:
+
+- **API permissions → Add a permission → Microsoft Graph → Application permissions** → adicione `Sites.Selected` → **Grant admin consent**.
+- **Certificates & secrets → New client secret** → copie o **Value** assim que ele aparecer (só é exibido uma vez) — esse valor é a `AUTH_MICROSOFT_ENTRA_ID_CLIENT_SECRET`.
+
+### 2. Libere o acesso a esse site específico do SharePoint
+
+`Sites.Selected` sozinho não dá acesso a nenhum site — cada site precisa ser liberado explicitamente pra esse App Registration, e isso não tem botão no Azure Portal: é uma chamada ao Graph API, feita uma única vez por um administrador do SharePoint pelo [Graph Explorer](https://developer.microsoft.com/graph/graph-explorer) (ou qualquer cliente HTTP autenticado com uma conta de admin):
+
+1. Descubra o ID do site:
+   `GET https://graph.microsoft.com/v1.0/sites/brwatchtv.sharepoint.com:/sites/WatchLabsVOC`
+   → copie o campo `id` da resposta.
+2. Libere o acesso de leitura pra esse App Registration:
+   `POST https://graph.microsoft.com/v1.0/sites/{id-do-passo-anterior}/permissions`
+   ```json
+   {
+     "roles": ["read"],
+     "grantedToIdentities": [
+       { "application": { "id": "<Application (client) ID>", "displayName": "<nome do App Registration>" } }
+     ]
+   }
+   ```
+
+### 3. Configure a variável de ambiente
+
+```bash
+AUTH_MICROSOFT_ENTRA_ID_CLIENT_SECRET="..."   # Value copiado no passo 1
+```
+
+Sem essa variável (ou sem o passo 2 feito), o painel simplesmente não aparece na Home — mostra um aviso discreto no lugar, sem quebrar o resto da página.
+
+### Sobre o layout da planilha
+
+O painel lê a **primeira aba** da planilha e reconhece colunas pelo nome do cabeçalho (sem diferenciar maiúsculas/acentos), aceitando algumas variações comuns:
+
+- Data do plantão: `Data` ou `Dia`
+- Área/equipe: `Área`, `Equipe` ou `Time`
+- Analista de plantão: `Analista`, `Nome` ou `Plantonista`
+- Telefone: `Telefone`, `Contato`, `Celular`, `Fone` ou `Ramal`
+
+Uma linha por pessoa de plantão, por área, por dia. O local do arquivo (`https://brwatchtv.sharepoint.com/sites/WatchLabsVOC` → `Plantao.xlsx`) está fixo em `src/lib/plantao.ts` — se ele algum dia mudar de lugar, é só editar as constantes no topo desse arquivo.
 
 ## Deploy
 

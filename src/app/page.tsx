@@ -4,6 +4,7 @@ import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
 import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
+import PlantonistasPanel from "@/components/plantao/PlantonistasPanel";
 import IndicadoresOcorrenciasPanel, {
   type IndicadoresOcorrencias,
 } from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
@@ -152,6 +153,8 @@ export default async function HomePage({
             statusSelecionados={statusFiltro}
             filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
           />
+
+          <PlantonistasPanel />
         </div>
 
         <IndicadoresOcorrenciasPanel dados={indicadores} />
