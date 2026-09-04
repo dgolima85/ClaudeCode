@@ -1,12 +1,14 @@
 import { prisma } from "@/lib/prisma";
-import type { Turno } from "@/lib/turno";
-import { inicioDoDiaBR, fimDoDiaBR } from "@/lib/dataHoraBR";
+import { janelaTurno, type Turno } from "@/lib/turno";
 
 const includeBasico = { tipo: true, analista: true } as const;
 
 export async function buscarDadosPassagemTurno(turno: Turno, dataSelecionada: string) {
-  const inicio = inicioDoDiaBR(dataSelecionada);
-  const fim = fimDoDiaBR(dataSelecionada);
+  // O turno Noite cruza a meia-noite (20:00 de um dia até 08:00 do
+  // seguinte): filtrar pelo dia corrido (00:00–23:59) partia a atividade
+  // desse turno em dois dias diferentes. janelaTurno() usa o horário real
+  // do turno em vez do dia corrido.
+  const { inicio, fim } = janelaTurno(turno, dataSelecionada);
 
   const [emAberto, atividade] = await Promise.all([
     prisma.ocorrencia.findMany({

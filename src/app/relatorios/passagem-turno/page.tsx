@@ -1,8 +1,7 @@
 import { getAnalistaLogado } from "@/lib/session";
 import PassagemTurnoResumo from "@/components/relatorios/PassagemTurnoResumo";
 import ExportPdfButton from "@/components/relatorios/ExportPdfButton";
-import { TURNOS, TURNO_LABELS, isTurno, type Turno } from "@/lib/turno";
-import { dataBR } from "@/lib/dataHoraBR";
+import { TURNOS, TURNO_LABELS, isTurno, diaInicioTurnoAtual, type Turno } from "@/lib/turno";
 import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import type { StatusOcorrencia } from "@/lib/status";
 import { isCriticidade } from "@/lib/criticidade";
@@ -18,7 +17,7 @@ export default async function PassagemTurnoPage({
 
   const turnoSelecionado: Turno =
     sp.turno && isTurno(sp.turno) ? sp.turno : ((analistaLogado?.turno as Turno) ?? "MANHA");
-  const dataSelecionada = sp.data || dataBR();
+  const dataSelecionada = sp.data || diaInicioTurnoAtual(turnoSelecionado);
 
   const { emAberto, atividade } = await buscarDadosPassagemTurno(turnoSelecionado, dataSelecionada);
 

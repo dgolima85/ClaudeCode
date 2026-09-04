@@ -3,7 +3,15 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { exigirAnalistaLogado } from "@/lib/session";
-import { TURNOS, TURNO_LABELS, TURNO_HORARIOS, isTurno, type Turno } from "@/lib/turno";
+import {
+  TURNOS,
+  TURNO_LABELS,
+  TURNO_HORARIOS,
+  isTurno,
+  diaInicioTurnoAtual,
+  janelaTurno,
+  type Turno,
+} from "@/lib/turno";
 import { dataBR, idadeCurta } from "@/lib/dataHoraBR";
 import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import { CRITICIDADE_PESO, CRITICIDADE_HEX_COLOR, type Criticidade } from "@/lib/criticidade";
@@ -88,7 +96,7 @@ export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const turnoParam = sp.get("turno");
   const turno: Turno = turnoParam && isTurno(turnoParam) ? turnoParam : ((analista.turno as Turno) ?? TURNOS[0]);
-  const data = sp.get("data") || dataBR();
+  const data = sp.get("data") || diaInicioTurnoAtual(turno);
 
   const { emAberto, atividade } = await buscarDadosPassagemTurno(turno, data);
 
@@ -110,6 +118,9 @@ export async function GET(request: NextRequest) {
 
   const semTicket = emAberto.filter((o) => !o.ticket).length;
   const horario = TURNO_HORARIOS[turno];
+  // Turno Noite cruza a meia-noite: o boletim cobre dois dias corridos, então
+  // o cabeçalho mostra a data de início e a de fim quando forem diferentes.
+  const diaFim = dataBR(janelaTurno(turno, data).fim);
 
   const alturaResolvidas = resolvidas.reduce((soma, o) => {
     let alturaItem = ALTURA_ITEM_RESOLVIDA_BASE;
@@ -160,6 +171,7 @@ export async function GET(request: NextRequest) {
             </div>
             <div style={{ display: "flex", fontSize: 20, color: COR.headerText }}>
               {formatarDataCurta(data)}
+              {diaFim !== data ? ` → ${formatarDataCurta(diaFim)}` : ""}
             </div>
           </div>
           <div

@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { exigirAnalistaLogado } from "@/lib/session";
-import { TURNOS, isTurno, type Turno } from "@/lib/turno";
-import { dataBR } from "@/lib/dataHoraBR";
+import { TURNOS, isTurno, diaInicioTurnoAtual, type Turno } from "@/lib/turno";
 import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import { PassagemTurnoPdfDocument, type LinhaPassagemTurnoPdf } from "@/lib/pdf/PassagemTurnoPdfDocument";
 import type { StatusOcorrencia } from "@/lib/status";
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
   const turnoParam = sp.get("turno");
   const turnoSelecionado: Turno =
     turnoParam && isTurno(turnoParam) ? turnoParam : ((analista.turno as Turno) ?? TURNOS[0]);
-  const dataSelecionada = sp.get("data") || dataBR();
+  const dataSelecionada = sp.get("data") || diaInicioTurnoAtual(turnoSelecionado);
 
   const { emAberto, atividade } = await buscarDadosPassagemTurno(turnoSelecionado, dataSelecionada);
 
