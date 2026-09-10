@@ -59,7 +59,7 @@ Sem essas variáveis configuradas, o botão "Entrar com Microsoft" continua apar
 
 ## Painel de Plantonistas (Home)
 
-Um painel só de leitura na Home mostra quem está de plantão hoje (área, analista e telefone), lido direto de uma planilha do SharePoint (`Plantao.xlsx`, aba única) — não é editável por aqui, é só um espelho do que está lá. Ele filtra sozinho as linhas cuja data bate com o dia de hoje (horário de Brasília) a cada carregamento da Home, com os dados em cache por até 5 minutos.
+Um painel só de leitura na Home mostra quem está de plantão agora (área, analista e telefone), lido direto de uma planilha do SharePoint (`Plantao.xlsx`) — não é editável por aqui, é só um espelho do que está lá. Ele filtra sozinho quem está no horário de plantão certo pro momento em que a Home é carregada (dia do mês e horário, sempre em Brasília), com os dados em cache por até 5 minutos.
 
 Como isso precisa ler a planilha para qualquer pessoa que abrir a Home (não só quando alguém está logado agora), a leitura acontece no servidor como aplicativo, não como o usuário — um fluxo diferente do login (que só confirma identidade). Isso exige um Client Secret e uma permissão de aplicativo no Entra ID, ao contrário do App Registration do login (que é público, sem secret).
 
@@ -98,26 +98,19 @@ Sem essa variável (ou sem o passo 2 feito), o painel simplesmente não aparece 
 
 ### Sobre o layout da planilha
 
-O painel lê a **primeira aba** da planilha. O layout não é uma tabela (cabeçalho numa linha, um plantonista por linha) — é um **bloco vertical de rótulo/valor por área**, com o rótulo numa coluna e o valor na coluna seguinte, um bloco por área, exatamente como no modelo já usado:
+O painel lê a **primeira aba** da planilha, no mesmo formato de grade tipo calendário que os analistas já usam pra preencher a escala:
 
-| | |
-|---|---|
-| **Data** | 10/09/2026 |
-| Horario | 21:00 as 00:00 |
-| **Área** | Engª de Vídeo |
-| **Analista** | Renato Aleixo |
-| **Telefone** | (11) 97415-0504 |
-| Escalonamento | Filipe Santos |
-| Celular Escalonamento | (11) 97445-0205 |
+- Uma coluna **"Recursos"** com o nome de cada pessoa.
+- Uma coluna **"Contato"** logo em seguida, com o telefone (opcional — se não existir, o painel simplesmente não mostra telefone).
+- A partir daí, **uma coluna por dia do mês**, com o número do dia no cabeçalho (a linha com os nomes dos dias da semana logo abaixo é ignorada). O mês/ano (ex.: `set/26`) fica numa célula mesclada na mesma linha de "Recursos", começando na mesma coluna do dia 1.
+- Em cada célula (pessoa × dia), um ou mais **códigos de plantão** (ex.: `P3`, `P1/P2`) indicando os horários em que aquela pessoa está de plantão naquele dia.
+- Uma **legenda**, em qualquer lugar da planilha, no formato `<código> - <hora início> as <hora fim>` (ex.: `P1 - 05h00 as 07:00`) — é dali que o sistema aprende o que cada código significa; não precisa estar numa posição fixa.
 
-A leitura varre a planilha inteira procurando toda célula **"Data"** como início de um bloco nesse formato — funciona com quantos blocos forem necessários (um por área), empilhados abaixo um do outro ou lado a lado em colunas diferentes, sem precisar avisar o sistema de quantas áreas existem. Só os rótulos **Data**, **Área** e **Analista** são obrigatórios em cada bloco (sem eles o bloco é ignorado); **Telefone** é opcional. Outros rótulos no bloco (como `Horario`, `Escalonamento`, `Celular Escalonamento`) são ignorados — não atrapalham a leitura, mas também não aparecem no painel, que mostra só Área, Analista e Telefone.
+A "Área" não é uma coluna — é o **nome da própria aba**. Todo mundo listado numa aba entra no painel com essa aba como área.
 
-Os rótulos são reconhecidos sem diferenciar maiúsculas/acentos, aceitando algumas variações comuns:
+O painel mostra uma pessoa quando, ao mesmo tempo: (1) é o dia de hoje na planilha (comparando o mês/ano do bloco e o número do dia com a data atual, sempre em horário de Brasília) e (2) pelo menos um dos códigos na célula daquela pessoa/dia bate com o horário atual, segundo a legenda — ou seja, o painel troca sozinho ao longo do dia conforme a pessoa passa de um código pro outro (ex.: de `P1` pra `P2`).
 
-- Data do plantão: `Data` ou `Dia`
-- Área/equipe: `Área`, `Equipe` ou `Time`
-- Analista de plantão: `Analista`, `Nome` ou `Plantonista`
-- Telefone: `Telefone`, `Contato`, `Fone` ou `Ramal`
+A leitura varre a planilha inteira procurando toda célula "Recursos" como início de uma grade nesse formato — funciona com quantas grades forem necessárias, uma por área, em qualquer posição da planilha (útil se um dia isso virar uma aba por área, por exemplo). Um bloco cujo mês/ano não bate com o mês atual é ignorado inteiro (dá pra manter meses antigos na planilha sem atrapalhar).
 
 O local do arquivo (`https://brwatchtv.sharepoint.com/sites/WatchLabsVOC` → `Plantao.xlsx`) está fixo em `src/lib/plantao.ts` — se ele algum dia mudar de lugar, é só editar as constantes no topo desse arquivo.
 

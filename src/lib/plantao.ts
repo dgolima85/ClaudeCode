@@ -1,11 +1,12 @@
-import { dataBR } from "@/lib/dataHoraBR";
+import { dataBR, horaBR } from "@/lib/dataHoraBR";
 
 // Lê, via Microsoft Graph, a planilha de plantão mantida no SharePoint (fora
-// do nosso banco de dados) e devolve só quem está de plantão hoje. Autentica
+// do nosso banco de dados) e devolve só quem está de plantão agora. Autentica
 // como aplicativo (client credentials), reaproveitando o mesmo App
 // Registration do login com Microsoft — não depende de nenhum analista estar
 // logado. Veja o README ("Painel de Plantonistas") para o passo a passo de
-// configuração no Azure (permissão Sites.Selected + Client Secret).
+// configuração no Azure (permissão Sites.Selected + Client Secret) e para a
+// descrição do layout esperado da planilha.
 
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
 
@@ -20,7 +21,7 @@ const SHAREPOINT_ARQUIVO = "Plantao.xlsx";
 // evitando pedir um token novo no Entra ID a cada carregamento da Home.
 let tokenCache: { token: string; expiraEm: number } | null = null;
 let siteIdCache: string | null = null;
-let worksheetIdCache: string | null = null;
+let worksheetCache: { id: string; name: string } | null = null;
 
 export type PlantaoLinha = {
   area: string;
@@ -73,7 +74,7 @@ async function graphFetch(token: string, url: string): Promise<Response> {
   const resposta = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     // Evita bater no Graph a cada carregamento da Home; 5 minutos é
-    // suficiente pra sentir a troca de plantonista do dia sem sobrecarregar.
+    // suficiente pra sentir a troca de plantonista sem sobrecarregar.
     next: { revalidate: 300 },
   });
   if (!resposta.ok) {
@@ -91,18 +92,19 @@ async function resolverSiteId(token: string): Promise<string> {
   return site.id;
 }
 
-async function resolverPrimeiraAba(token: string, siteId: string): Promise<string> {
-  if (worksheetIdCache) return worksheetIdCache;
+// O nome da aba é usado como "Área" de todo mundo listado nela.
+async function resolverPrimeiraAba(token: string, siteId: string): Promise<{ id: string; name: string }> {
+  if (worksheetCache) return worksheetCache;
   const resposta = await graphFetch(
     token,
     `${GRAPH_BASE}/sites/${siteId}/drive/root:/${encodeURIComponent(SHAREPOINT_ARQUIVO)}:/workbook/worksheets`,
   );
-  const dados = (await resposta.json()) as { value: { id: string }[] };
+  const dados = (await resposta.json()) as { value: { id: string; name: string }[] };
   if (dados.value.length === 0) {
     throw new Error("A planilha de plantão não tem nenhuma aba.");
   }
-  worksheetIdCache = dados.value[0].id;
-  return worksheetIdCache;
+  worksheetCache = { id: dados.value[0].id, name: dados.value[0].name };
+  return worksheetCache;
 }
 
 async function buscarUsedRange(
@@ -117,7 +119,7 @@ async function buscarUsedRange(
   return (await resposta.json()) as { text: string[][]; values: unknown[][] };
 }
 
-function normalizarRotulo(texto: string): string {
+function normalizarTexto(texto: string): string {
   return texto
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -126,123 +128,188 @@ function normalizarRotulo(texto: string): string {
     .trim();
 }
 
-// A planilha n\u00e3o \u00e9 uma tabela (cabe\u00e7alho em cima, uma linha por plantonista);
-// \u00e9 um bloco vertical de "r\u00f3tulo: valor" por \u00e1rea \u2014 r\u00f3tulos numa coluna,
-// valores na coluna seguinte, repetido quantas vezes forem necess\u00e1rias
-// (uma vez por \u00e1rea, empilhado abaixo ou ao lado do bloco anterior). Por
-// isso a leitura varre a planilha inteira procurando toda c\u00e9lula "Data" como
-// \u00e2ncora de um novo bloco, em vez de assumir cabe\u00e7alhos fixos numa linha 1.
-const ALIASES_ROTULO = {
-  data: ["data", "dia"],
-  area: ["area", "equipe", "time"],
-  analista: ["analista", "nome", "plantonista"],
-  telefone: ["telefone", "contato", "fone", "ramal"],
+// Layout real da planilha (confirmado pelo usuário): uma grade tipo
+// calendário — coluna "Recursos" com o nome de cada pessoa, uma coluna
+// "Contato" logo em seguida (telefone), e a partir daí uma coluna por dia
+// do mês (cabeçalho com o número do dia), com códigos de plantão (P1, P2,
+// P3 — ou combinações tipo "P1/P2") nas células de cada pessoa/dia. Uma
+// legenda em algum lugar da planilha mapeia cada código pra uma faixa de
+// horário (ex.: "P1 - 05h00 as 07:00"). "Área" não está na planilha — é o
+// nome da própria aba.
+const AREA_RECURSO_LABEL = ["recursos", "recurso"];
+const AREA_CONTATO_LABEL = ["contato", "telefone"];
+
+const MESES_ABREV: Record<string, number> = {
+  jan: 1,
+  fev: 2,
+  mar: 3,
+  abr: 4,
+  mai: 5,
+  jun: 6,
+  jul: 7,
+  ago: 8,
+  set: 9,
+  out: 10,
+  nov: 11,
+  dez: 12,
 };
 
-function ehRotulo(texto: string | undefined, aliases: string[]): boolean {
-  return texto !== undefined && aliases.includes(normalizarRotulo(texto));
+function parseMesAno(texto: string | undefined): { mes: number; ano: number } | null {
+  if (!texto) return null;
+  const m = normalizarTexto(texto).match(/^([a-z]{3})\/(\d{2,4})$/);
+  if (!m) return null;
+  const mes = MESES_ABREV[m[1]];
+  if (!mes) return null;
+  const anoBruto = parseInt(m[2], 10);
+  return { mes, ano: anoBruto < 100 ? 2000 + anoBruto : anoBruto };
 }
 
-function classificarRotulo(texto: string): keyof typeof ALIASES_ROTULO | null {
-  const normalizado = normalizarRotulo(texto);
-  for (const chave of Object.keys(ALIASES_ROTULO) as (keyof typeof ALIASES_ROTULO)[]) {
-    if (ALIASES_ROTULO[chave].includes(normalizado)) return chave;
+// Procura, na linha do cabeçalho, a primeira célula (a partir de
+// colInicio) que pareça um "mmm/aa" — é aí que o "set/26" mesclado costuma
+// cair, na mesma coluna onde começa o dia 1.
+function localizarMesAno(linhaTexto: string[] | undefined, colInicio: number): { mes: number; ano: number } | null {
+  for (let c = colInicio; c < (linhaTexto?.length ?? 0); c++) {
+    const parsed = parseMesAno(linhaTexto?.[c]);
+    if (parsed) return parsed;
   }
   return null;
 }
 
-type BlocoPlantao = { dataISO: string | null; area: string; analista: string; telefone: string };
+type FaixaCodigo = { codigo: string; inicio: string; fim: string };
 
-// A partir de uma c\u00e9lula "Data" (linha rAncora, coluna cRotulo), l\u00ea os pares
-// r\u00f3tulo/valor abaixo dela na mesma coluna de r\u00f3tulos, at\u00e9 uma linha vazia
-// ou outra c\u00e9lula "Data" (in\u00edcio do pr\u00f3ximo bloco).
-function lerBloco(
-  texto: string[][],
-  valores: unknown[][],
-  rAncora: number,
-  cRotulo: number,
-): BlocoPlantao {
-  const cValor = cRotulo + 1;
-  const campos: Partial<Record<keyof typeof ALIASES_ROTULO, string>> = {};
-  let dataISO: string | null = null;
-
-  for (let r = rAncora; r < texto.length; r++) {
-    const rotulo = texto[r]?.[cRotulo]?.trim();
-    if (!rotulo) break;
-    if (r > rAncora && ehRotulo(rotulo, ALIASES_ROTULO.data)) break;
-
-    const chave = classificarRotulo(rotulo);
-    if (!chave) continue;
-    const valorTexto = texto[r]?.[cValor]?.trim() ?? "";
-    campos[chave] = valorTexto;
-    if (chave === "data") {
-      dataISO = celulaParaDataISO(valores[r]?.[cValor], valorTexto);
+// Procura por células no formato da legenda ("P1 - 05h00 as 07:00") em
+// qualquer lugar da planilha, sem depender de onde ela está posicionada.
+function extrairLegenda(texto: string[][]): FaixaCodigo[] {
+  const legenda: FaixaCodigo[] = [];
+  const padrao = /^(\S+)\s*-\s*(\d{1,2})[h:](\d{2})\s*(?:as|à)\s*(\d{1,2})[h:](\d{2})/i;
+  for (const linha of texto) {
+    for (const celula of linha) {
+      if (!celula) continue;
+      const m = celula.trim().match(padrao);
+      if (!m) continue;
+      legenda.push({
+        codigo: normalizarTexto(m[1]),
+        inicio: `${m[2].padStart(2, "0")}:${m[3]}`,
+        fim: `${m[4].padStart(2, "0")}:${m[5]}`,
+      });
     }
   }
-
-  return {
-    dataISO,
-    area: campos.area ?? "",
-    analista: campos.analista ?? "",
-    telefone: campos.telefone ?? "",
-  };
+  return legenda;
 }
 
-function extrairBlocosPlantao(texto: string[][], valores: unknown[][]): BlocoPlantao[] {
-  const blocos: BlocoPlantao[] = [];
+type AncoraRecursos = { rHeader: number; cRecurso: number };
+
+function localizarAncorasRecursos(texto: string[][]): AncoraRecursos[] {
+  const ancoras: AncoraRecursos[] = [];
   for (let r = 0; r < texto.length; r++) {
     for (let c = 0; c < texto[r].length; c++) {
-      if (ehRotulo(texto[r][c], ALIASES_ROTULO.data)) {
-        blocos.push(lerBloco(texto, valores, r, c));
+      const celula = texto[r][c];
+      if (celula && AREA_RECURSO_LABEL.includes(normalizarTexto(celula))) {
+        ancoras.push({ rHeader: r, cRecurso: c });
       }
     }
   }
-  return blocos;
+  return ancoras;
 }
 
-// Data de uma célula pode vir como número de série do Excel (célula
-// realmente formatada como data) ou como texto (dd/mm/yyyy, yyyy-mm-dd,
-// dd/mm/yy...). Convertida sempre pra yyyy-MM-dd, pra comparar direto com
-// dataBR().
-function celulaParaDataISO(valorBruto: unknown, textoFormatado: string): string | null {
-  if (typeof valorBruto === "number") {
-    // Excel usa 30/12/1899 como "dia zero" (compensa o bug histórico do
-    // 29/02/1900, que nunca existiu, mas o Excel trata como se existisse).
-    const ms = Date.UTC(1899, 11, 30) + Math.round(valorBruto) * 86_400_000;
-    const d = new Date(ms);
-    const ano = d.getUTCFullYear();
-    const mes = String(d.getUTCMonth() + 1).padStart(2, "0");
-    const dia = String(d.getUTCDate()).padStart(2, "0");
-    return `${ano}-${mes}-${dia}`;
+// Colunas de código de plantão começam logo após "Recursos" (e depois de
+// "Contato", se essa coluna existir nessa posição).
+function localizarColunaContatoEInicioDias(texto: string[][], rHeader: number, cRecurso: number) {
+  const possivelContato = texto[rHeader]?.[cRecurso + 1];
+  const temContato = possivelContato !== undefined && AREA_CONTATO_LABEL.includes(normalizarTexto(possivelContato));
+  return {
+    cContato: temContato ? cRecurso + 1 : null,
+    colInicioDias: temContato ? cRecurso + 2 : cRecurso + 1,
+  };
+}
+
+// A linha de números do dia (1, 2, 3...) fica logo abaixo do cabeçalho
+// "Recursos"/"Contato"/mês-ano.
+function localizarColunasPorDia(texto: string[][], rDias: number, colInicio: number): Map<number, number> {
+  const mapa = new Map<number, number>();
+  const linha = texto[rDias] ?? [];
+  for (let c = colInicio; c < linha.length; c++) {
+    const n = Number((linha[c] ?? "").trim());
+    if (Number.isInteger(n) && n >= 1 && n <= 31) mapa.set(n, c);
   }
+  return mapa;
+}
 
-  const bruto = (typeof valorBruto === "string" ? valorBruto : textoFormatado).trim();
-
-  let m = bruto.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-
-  m = bruto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
-
-  m = bruto.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2})$/);
-  if (m) return `20${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-
-  return null;
+// Linhas de pessoa: da linha seguinte ao cabeçalho em diante, toda linha com
+// algo escrito na coluna "Recursos" — pulando as linhas de número do dia e
+// de dia da semana (que não têm nada nessa coluna) — até uma linha
+// completamente vazia (fim do bloco) ou outra âncora "Recursos" (próximo bloco).
+function localizarLinhasRecurso(texto: string[][], rHeader: number, cRecurso: number): number[] {
+  const linhas: number[] = [];
+  for (let r = rHeader + 1; r < texto.length; r++) {
+    const linha = texto[r] ?? [];
+    const nome = linha[cRecurso]?.trim();
+    if (nome && AREA_RECURSO_LABEL.includes(normalizarTexto(nome))) break;
+    const linhaVazia = linha.every((v) => !v || !v.trim());
+    if (linhaVazia) {
+      if (linhas.length > 0) break;
+      continue;
+    }
+    if (nome) linhas.push(r);
+  }
+  return linhas;
 }
 
 export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
   const token = await obterTokenAppOnly();
   const siteId = await resolverSiteId(token);
-  const worksheetId = await resolverPrimeiraAba(token, siteId);
-  const range = await buscarUsedRange(token, siteId, worksheetId);
+  const aba = await resolverPrimeiraAba(token, siteId);
+  const range = await buscarUsedRange(token, siteId, aba.id);
 
-  const blocos = extrairBlocosPlantao(range.text, range.values);
-  if (blocos.length === 0) {
-    throw new Error('Não foi encontrado nenhum bloco com rótulo "Data" na planilha de plantão.');
+  const ancoras = localizarAncorasRecursos(range.text);
+  if (ancoras.length === 0) {
+    throw new Error('Não foi encontrada nenhuma coluna "Recursos" na planilha de plantão.');
   }
 
-  const hoje = dataBR();
-  return blocos
-    .filter((b) => b.dataISO === hoje && b.area && b.analista)
-    .map((b) => ({ area: b.area, analista: b.analista, telefone: b.telefone }));
+  const legenda = extrairLegenda(range.text);
+  if (legenda.length === 0) {
+    throw new Error("Não foi possível ler a legenda de horários (ex.: \"P1 - 05h00 as 07:00\") na planilha.");
+  }
+
+  const [anoAtual, mesAtual, diaAtualStr] = dataBR().split("-");
+  const diaAtual = Number(diaAtualStr);
+  const mesAtualNum = Number(mesAtual);
+  const anoAtualNum = Number(anoAtual);
+  const horaAtual = horaBR();
+
+  const resultado: PlantaoLinha[] = [];
+
+  for (const { rHeader, cRecurso } of ancoras) {
+    const { cContato, colInicioDias } = localizarColunaContatoEInicioDias(range.text, rHeader, cRecurso);
+
+    const mesAno = localizarMesAno(range.text[rHeader], colInicioDias);
+    if (mesAno && (mesAno.mes !== mesAtualNum || mesAno.ano !== anoAtualNum)) continue;
+
+    const rDias = rHeader + 1;
+    const colunasPorDia = localizarColunasPorDia(range.text, rDias, colInicioDias);
+    const colDiaAtual = colunasPorDia.get(diaAtual);
+    if (colDiaAtual === undefined) continue;
+
+    const linhasRecurso = localizarLinhasRecurso(range.text, rHeader, cRecurso);
+
+    for (const r of linhasRecurso) {
+      const codigoCelula = range.text[r]?.[colDiaAtual]?.trim();
+      if (!codigoCelula) continue;
+
+      const codigos = codigoCelula.split("/").map(normalizarTexto).filter(Boolean);
+      const ativoAgora = codigos.some((codigo) => {
+        const faixa = legenda.find((f) => f.codigo === codigo);
+        return faixa && horaAtual >= faixa.inicio && horaAtual <= faixa.fim;
+      });
+      if (!ativoAgora) continue;
+
+      resultado.push({
+        area: aba.name,
+        analista: range.text[r][cRecurso].trim(),
+        telefone: cContato !== null ? (range.text[r][cContato]?.trim() ?? "") : "",
+      });
+    }
+  }
+
+  return resultado;
 }
