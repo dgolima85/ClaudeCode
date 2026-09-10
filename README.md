@@ -59,7 +59,7 @@ Sem essas variáveis configuradas, o botão "Entrar com Microsoft" continua apar
 
 ## Painel de Plantonistas (Home)
 
-Um painel só de leitura na Home mostra quem está de plantão agora (área, analista e telefone), lido direto de uma planilha do SharePoint (`Plantao.xlsx`) — não é editável por aqui, é só um espelho do que está lá. Ele filtra sozinho quem está no horário de plantão certo pro momento em que a Home é carregada (dia do mês e horário, sempre em Brasília), com os dados em cache por até 5 minutos.
+Um painel só de leitura na Home mostra quem está de plantão hoje (área, analista, telefone e os horários do dia, com o vigente agora em destaque), lido direto de uma planilha do SharePoint (`Plantao.xlsx`) — não é editável por aqui, é só um espelho do que está lá. Ele filtra sozinho quem está escalado no dia em que a Home é carregada (sempre em horário de Brasília), com os dados em cache por até 5 minutos.
 
 Como isso precisa ler a planilha para qualquer pessoa que abrir a Home (não só quando alguém está logado agora), a leitura acontece no servidor como aplicativo, não como o usuário — um fluxo diferente do login (que só confirma identidade). Isso exige um Client Secret e uma permissão de aplicativo no Entra ID, ao contrário do App Registration do login (que é público, sem secret).
 
@@ -108,7 +108,7 @@ O painel lê a **primeira aba** da planilha, no mesmo formato de grade tipo cale
 
 A "Área" não é uma coluna — é o **nome da própria aba**. Todo mundo listado numa aba entra no painel com essa aba como área.
 
-O painel mostra uma pessoa quando, ao mesmo tempo: (1) é o dia de hoje na planilha (comparando o mês/ano do bloco e o número do dia com a data atual, sempre em horário de Brasília) e (2) pelo menos um dos códigos na célula daquela pessoa/dia bate com o horário atual, segundo a legenda — ou seja, o painel troca sozinho ao longo do dia conforme a pessoa passa de um código pro outro (ex.: de `P1` pra `P2`).
+O painel mostra uma pessoa quando é o dia de hoje na planilha (comparando o mês/ano do bloco e o número do dia com a data atual, sempre em horário de Brasília) — com **todos** os horários de plantão dela nesse dia, não só o que está em andamento agora (isso já confundiu analista achando que "ninguém estava de plantão" quando na real só o horário específico ainda não tinha começado ou já tinha passado). Cada horário aparece marcado como já passou, está em andamento ou ainda vai começar (comparando com a legenda), pra deixar claro o que é "agora" sem esconder o resto do dia.
 
 A leitura varre a planilha inteira procurando toda célula "Recursos" como início de uma grade nesse formato — funciona com quantas grades forem necessárias, uma por área, em qualquer posição da planilha (útil se um dia isso virar uma aba por área, por exemplo). Um bloco cujo mês/ano não bate com o mês atual é ignorado inteiro (dá pra manter meses antigos na planilha sem atrapalhar).
 

@@ -1,5 +1,26 @@
-import { buscarPlantaoHoje } from "@/lib/plantao";
-import { dataBR } from "@/lib/dataHoraBR";
+import { buscarPlantaoHoje, type FaixaPlantao } from "@/lib/plantao";
+import { dataBR, formatarHoraCurta } from "@/lib/dataHoraBR";
+
+const ESTILO_STATUS: Record<FaixaPlantao["status"], string> = {
+  atual: "font-semibold text-blue-700 dark:text-blue-400",
+  futuro: "text-gray-600 dark:text-gray-400",
+  passado: "text-gray-400 dark:text-gray-600",
+};
+
+function HorariosDoDia({ horarios }: { horarios: FaixaPlantao[] }) {
+  return (
+    <span>
+      {horarios.map((h, i) => (
+        <span key={`${h.inicio}-${h.fim}`}>
+          {i > 0 && <span className="mx-1.5 text-gray-300 dark:text-gray-700">|</span>}
+          <span className={ESTILO_STATUS[h.status]}>
+            {formatarHoraCurta(h.inicio)} as {formatarHoraCurta(h.fim)}
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+}
 
 // Painel só de leitura: mostra quem está de plantão hoje, lido direto da
 // planilha do SharePoint (nunca editável por aqui — ver src/lib/plantao.ts).
@@ -37,7 +58,8 @@ export default async function PlantonistasPanel() {
               <tr className="text-left text-xs text-gray-400 dark:text-gray-500">
                 <th className="pb-1.5 pr-3 font-medium">Área</th>
                 <th className="pb-1.5 pr-3 font-medium">Analista</th>
-                <th className="pb-1.5 font-medium">Telefone</th>
+                <th className="pb-1.5 pr-3 font-medium">Telefone</th>
+                <th className="pb-1.5 font-medium">Horário</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -45,7 +67,10 @@ export default async function PlantonistasPanel() {
                 <tr key={`${p.area}-${p.analista}-${i}`}>
                   <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-300">{p.area}</td>
                   <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-300">{p.analista}</td>
-                  <td className="py-1.5 text-gray-500 dark:text-gray-400">{p.telefone || "—"}</td>
+                  <td className="py-1.5 pr-3 text-gray-500 dark:text-gray-400">{p.telefone || "—"}</td>
+                  <td className="py-1.5 whitespace-nowrap">
+                    <HorariosDoDia horarios={p.horarios} />
+                  </td>
                 </tr>
               ))}
             </tbody>

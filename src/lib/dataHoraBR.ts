@@ -65,6 +65,13 @@ export function horaBR(data: Date = new Date()): string {
   return formatterHoraBR.format(data);
 }
 
+/** Formata um horário HH:mm de forma curta e coloquial (ex.: "05:00" -> "5h", "23:59" -> "23h59min"). */
+export function formatarHoraCurta(horaHHmm: string): string {
+  const [hora, minuto] = horaHHmm.split(":");
+  const horaNum = Number(hora);
+  return minuto === "00" ? `${horaNum}h` : `${horaNum}h${minuto}min`;
+}
+
 /** Soma (ou subtrai, com número negativo) dias a um dia (yyyy-MM-dd), sempre em Brasília. */
 export function somarDiasBR(diaBR: string, dias: number): string {
   return dataBR(new Date(inicioDoDiaBR(diaBR).getTime() + dias * 24 * 60 * 60 * 1000));

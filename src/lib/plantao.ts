@@ -1,8 +1,10 @@
 import { dataBR, horaBR } from "@/lib/dataHoraBR";
 
 // Lê, via Microsoft Graph, a planilha de plantão mantida no SharePoint (fora
-// do nosso banco de dados) e devolve só quem está de plantão agora. Autentica
-// como aplicativo (client credentials), reaproveitando o mesmo App
+// do nosso banco de dados) e devolve quem está de plantão hoje, com todos os
+// horários do dia de cada pessoa (não só o vigente agora) e se cada um já
+// passou, está em andamento ou ainda vai começar. Autentica como aplicativo
+// (client credentials), reaproveitando o mesmo App
 // Registration do login com Microsoft — não depende de nenhum analista estar
 // logado. Veja o README ("Painel de Plantonistas") para o passo a passo de
 // configuração no Azure (permissão Sites.Selected + Client Secret) e para a
@@ -23,10 +25,19 @@ let tokenCache: { token: string; expiraEm: number } | null = null;
 let siteIdCache: string | null = null;
 let worksheetCache: { id: string; name: string } | null = null;
 
+export type StatusFaixaPlantao = "passado" | "atual" | "futuro";
+
+export type FaixaPlantao = {
+  inicio: string;
+  fim: string;
+  status: StatusFaixaPlantao;
+};
+
 export type PlantaoLinha = {
   area: string;
   analista: string;
   telefone: string;
+  horarios: FaixaPlantao[];
 };
 
 function extrairTenantId(issuer: string | undefined): string | null {
@@ -177,6 +188,12 @@ function localizarMesAno(linhaTexto: string[] | undefined, colInicio: number): {
 
 type FaixaCodigo = { codigo: string; inicio: string; fim: string };
 
+function statusFaixa(faixa: FaixaCodigo, horaAtual: string): StatusFaixaPlantao {
+  if (horaAtual < faixa.inicio) return "futuro";
+  if (horaAtual > faixa.fim) return "passado";
+  return "atual";
+}
+
 // Procura por células no formato da legenda ("P1 - 05h00 as 07:00") em
 // qualquer lugar da planilha, sem depender de onde ela está posicionada.
 function extrairLegenda(texto: string[][]): FaixaCodigo[] {
@@ -296,17 +313,24 @@ export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
       const codigoCelula = range.text[r]?.[colDiaAtual]?.trim();
       if (!codigoCelula) continue;
 
+      // Mostra TODOS os horários de plantão da pessoa hoje (não só o vigente
+      // agora) — ela continua sendo a plantonista do dia mesmo fora do seu
+      // horário específico, e esconder isso confundia os analistas, que
+      // liam "ninguém de plantão" quando só um dos horários já tinha
+      // passado ou ainda não tinha começado.
       const codigos = codigoCelula.split("/").map(normalizarTexto).filter(Boolean);
-      const ativoAgora = codigos.some((codigo) => {
-        const faixa = legenda.find((f) => f.codigo === codigo);
-        return faixa && horaAtual >= faixa.inicio && horaAtual <= faixa.fim;
-      });
-      if (!ativoAgora) continue;
+      const horarios = codigos
+        .map((codigo) => legenda.find((f) => f.codigo === codigo))
+        .filter((f): f is FaixaCodigo => f !== undefined)
+        .sort((a, b) => a.inicio.localeCompare(b.inicio))
+        .map((faixa) => ({ inicio: faixa.inicio, fim: faixa.fim, status: statusFaixa(faixa, horaAtual) }));
+      if (horarios.length === 0) continue;
 
       resultado.push({
         area: aba.name,
         analista: range.text[r][cRecurso].trim(),
         telefone: cContato !== null ? (range.text[r][cContato]?.trim() ?? "") : "",
+        horarios,
       });
     }
   }
