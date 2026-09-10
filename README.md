@@ -98,14 +98,28 @@ Sem essa variável (ou sem o passo 2 feito), o painel simplesmente não aparece 
 
 ### Sobre o layout da planilha
 
-O painel lê a **primeira aba** da planilha e reconhece colunas pelo nome do cabeçalho (sem diferenciar maiúsculas/acentos), aceitando algumas variações comuns:
+O painel lê a **primeira aba** da planilha. O layout não é uma tabela (cabeçalho numa linha, um plantonista por linha) — é um **bloco vertical de rótulo/valor por área**, com o rótulo numa coluna e o valor na coluna seguinte, um bloco por área, exatamente como no modelo já usado:
+
+| | |
+|---|---|
+| **Data** | 10/09/2026 |
+| Horario | 21:00 as 00:00 |
+| **Área** | Engª de Vídeo |
+| **Analista** | Renato Aleixo |
+| **Telefone** | (11) 97415-0504 |
+| Escalonamento | Filipe Santos |
+| Celular Escalonamento | (11) 97445-0205 |
+
+A leitura varre a planilha inteira procurando toda célula **"Data"** como início de um bloco nesse formato — funciona com quantos blocos forem necessários (um por área), empilhados abaixo um do outro ou lado a lado em colunas diferentes, sem precisar avisar o sistema de quantas áreas existem. Só os rótulos **Data**, **Área** e **Analista** são obrigatórios em cada bloco (sem eles o bloco é ignorado); **Telefone** é opcional. Outros rótulos no bloco (como `Horario`, `Escalonamento`, `Celular Escalonamento`) são ignorados — não atrapalham a leitura, mas também não aparecem no painel, que mostra só Área, Analista e Telefone.
+
+Os rótulos são reconhecidos sem diferenciar maiúsculas/acentos, aceitando algumas variações comuns:
 
 - Data do plantão: `Data` ou `Dia`
 - Área/equipe: `Área`, `Equipe` ou `Time`
 - Analista de plantão: `Analista`, `Nome` ou `Plantonista`
-- Telefone: `Telefone`, `Contato`, `Celular`, `Fone` ou `Ramal`
+- Telefone: `Telefone`, `Contato`, `Fone` ou `Ramal`
 
-Uma linha por pessoa de plantão, por área, por dia. O local do arquivo (`https://brwatchtv.sharepoint.com/sites/WatchLabsVOC` → `Plantao.xlsx`) está fixo em `src/lib/plantao.ts` — se ele algum dia mudar de lugar, é só editar as constantes no topo desse arquivo.
+O local do arquivo (`https://brwatchtv.sharepoint.com/sites/WatchLabsVOC` → `Plantao.xlsx`) está fixo em `src/lib/plantao.ts` — se ele algum dia mudar de lugar, é só editar as constantes no topo desse arquivo.
 
 ## Deploy
 
