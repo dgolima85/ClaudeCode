@@ -100,13 +100,12 @@ Sem essa variável (ou sem o passo 2 feito), o painel simplesmente não aparece 
 
 O painel lê a **primeira aba** da planilha, no mesmo formato de grade tipo calendário que os analistas já usam pra preencher a escala:
 
+- Uma coluna **"Área"** logo antes de "Recursos", com o nome da área/equipe de cada pessoa (opcional — se não existir, o painel usa o nome da própria aba como área pra todo mundo listado nela, já que antes era assim que funcionava).
 - Uma coluna **"Recursos"** com o nome de cada pessoa.
-- Uma coluna **"Contato"** logo em seguida, com o telefone (opcional — se não existir, o painel simplesmente não mostra telefone).
+- Uma coluna **"Contato"** logo em seguida, com o telefone (também opcional — se não existir, o painel simplesmente não mostra telefone).
 - A partir daí, **uma coluna por dia do mês**, com o número do dia no cabeçalho (a linha com os nomes dos dias da semana logo abaixo é ignorada). O mês/ano (ex.: `set/26`) fica numa célula mesclada na mesma linha de "Recursos", começando na mesma coluna do dia 1.
 - Em cada célula (pessoa × dia), um ou mais **códigos de plantão** (ex.: `P3`, `P1/P2`) indicando os horários em que aquela pessoa está de plantão naquele dia.
 - Uma **legenda**, em qualquer lugar da planilha, no formato `<código> - <hora início> as <hora fim>` (ex.: `P1 - 05h00 as 07:00`) — é dali que o sistema aprende o que cada código significa; não precisa estar numa posição fixa.
-
-A "Área" não é uma coluna — é o **nome da própria aba**. Todo mundo listado numa aba entra no painel com essa aba como área.
 
 O painel mostra uma pessoa quando é o dia de hoje na planilha (comparando o mês/ano do bloco e o número do dia com a data atual, sempre em horário de Brasília) — com **todos** os horários de plantão dela nesse dia, não só o que está em andamento agora (isso já confundiu analista achando que "ninguém estava de plantão" quando na real só o horário específico ainda não tinha começado ou já tinha passado). Cada horário aparece marcado como já passou, está em andamento ou ainda vai começar (comparando com a legenda), pra deixar claro o que é "agora" sem esconder o resto do dia.
 

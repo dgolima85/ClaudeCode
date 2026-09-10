@@ -145,10 +145,12 @@ function normalizarTexto(texto: string): string {
 // do mês (cabeçalho com o número do dia), com códigos de plantão (P1, P2,
 // P3 — ou combinações tipo "P1/P2") nas células de cada pessoa/dia. Uma
 // legenda em algum lugar da planilha mapeia cada código pra uma faixa de
-// horário (ex.: "P1 - 05h00 as 07:00"). "Área" não está na planilha — é o
-// nome da própria aba.
-const AREA_RECURSO_LABEL = ["recursos", "recurso"];
-const AREA_CONTATO_LABEL = ["contato", "telefone"];
+// horário (ex.: "P1 - 05h00 as 07:00"). Há também uma coluna "Área" logo
+// antes de "Recursos" — se ela não existir num bloco (compatibilidade com
+// planilhas mais antigas), usa o nome da própria aba como área.
+const ROTULO_RECURSOS = ["recursos", "recurso"];
+const ROTULO_CONTATO = ["contato", "telefone"];
+const ROTULO_AREA = ["area", "equipe", "time"];
 
 const MESES_ABREV: Record<string, number> = {
   jan: 1,
@@ -221,7 +223,7 @@ function localizarAncorasRecursos(texto: string[][]): AncoraRecursos[] {
   for (let r = 0; r < texto.length; r++) {
     for (let c = 0; c < texto[r].length; c++) {
       const celula = texto[r][c];
-      if (celula && AREA_RECURSO_LABEL.includes(normalizarTexto(celula))) {
+      if (celula && ROTULO_RECURSOS.includes(normalizarTexto(celula))) {
         ancoras.push({ rHeader: r, cRecurso: c });
       }
     }
@@ -233,11 +235,18 @@ function localizarAncorasRecursos(texto: string[][]): AncoraRecursos[] {
 // "Contato", se essa coluna existir nessa posição).
 function localizarColunaContatoEInicioDias(texto: string[][], rHeader: number, cRecurso: number) {
   const possivelContato = texto[rHeader]?.[cRecurso + 1];
-  const temContato = possivelContato !== undefined && AREA_CONTATO_LABEL.includes(normalizarTexto(possivelContato));
+  const temContato = possivelContato !== undefined && ROTULO_CONTATO.includes(normalizarTexto(possivelContato));
   return {
     cContato: temContato ? cRecurso + 1 : null,
     colInicioDias: temContato ? cRecurso + 2 : cRecurso + 1,
   };
+}
+
+// "Área" fica logo ANTES de "Recursos", quando existir.
+function localizarColunaArea(texto: string[][], rHeader: number, cRecurso: number): number | null {
+  if (cRecurso - 1 < 0) return null;
+  const possivelArea = texto[rHeader]?.[cRecurso - 1];
+  return possivelArea !== undefined && ROTULO_AREA.includes(normalizarTexto(possivelArea)) ? cRecurso - 1 : null;
 }
 
 // A linha de números do dia (1, 2, 3...) fica logo abaixo do cabeçalho
@@ -261,7 +270,7 @@ function localizarLinhasRecurso(texto: string[][], rHeader: number, cRecurso: nu
   for (let r = rHeader + 1; r < texto.length; r++) {
     const linha = texto[r] ?? [];
     const nome = linha[cRecurso]?.trim();
-    if (nome && AREA_RECURSO_LABEL.includes(normalizarTexto(nome))) break;
+    if (nome && ROTULO_RECURSOS.includes(normalizarTexto(nome))) break;
     const linhaVazia = linha.every((v) => !v || !v.trim());
     if (linhaVazia) {
       if (linhas.length > 0) break;
@@ -298,6 +307,7 @@ export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
 
   for (const { rHeader, cRecurso } of ancoras) {
     const { cContato, colInicioDias } = localizarColunaContatoEInicioDias(range.text, rHeader, cRecurso);
+    const cArea = localizarColunaArea(range.text, rHeader, cRecurso);
 
     const mesAno = localizarMesAno(range.text[rHeader], colInicioDias);
     if (mesAno && (mesAno.mes !== mesAtualNum || mesAno.ano !== anoAtualNum)) continue;
@@ -326,8 +336,10 @@ export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
         .map((faixa) => ({ inicio: faixa.inicio, fim: faixa.fim, status: statusFaixa(faixa, horaAtual) }));
       if (horarios.length === 0) continue;
 
+      const areaDaLinha = cArea !== null ? range.text[r][cArea]?.trim() : "";
+
       resultado.push({
-        area: aba.name,
+        area: areaDaLinha || aba.name,
         analista: range.text[r][cRecurso].trim(),
         telefone: cContato !== null ? (range.text[r][cContato]?.trim() ?? "") : "",
         horarios,
