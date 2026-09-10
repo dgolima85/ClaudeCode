@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { formatarDataHoraBR, paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { MODELOS_AVISO, MODELO_AVISO_LABELS, type ModeloAviso } from "@/lib/aviso";
 import { criarAviso, atualizarAviso, excluirAviso } from "@/app/avisos/actions";
-import { IconeAtivo, IconeInformativo, IconeAcompanhamento, IconeAtuacao } from "./icones";
+import { IconeInformativo, IconeAcompanhamento, IconeAtuacao } from "./icones";
 
 export type AvisoLinha = {
   id: string;
@@ -42,7 +42,7 @@ function CampoIcone({
   label,
   className,
 }: {
-  Icone: typeof IconeAtivo;
+  Icone: typeof IconeInformativo;
   label: string;
   className: string;
 }) {
@@ -196,7 +196,6 @@ function AvisoCard({
 
   return (
     <div className="flex items-start gap-3 rounded-md border border-gray-200 p-2.5 dark:border-gray-700">
-      <CampoIcone Icone={IconeAtivo} label="Ativo" className="text-green-600 dark:text-green-400" />
       <CampoIcone
         Icone={IconeModelo}
         label={MODELO_AVISO_LABELS[aviso.modelo]}
