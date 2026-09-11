@@ -27,24 +27,34 @@ export async function anexarEvidencia(ocorrenciaId: string, formData: FormData) 
     };
   }
 
-  const blob = await put(`evidencias/${ocorrenciaId}/${arquivo.name}`, buffer, {
-    access: "public",
-    addRandomSuffix: true,
-    contentType: validacao.tipo,
-  });
+  // put()/create() chamam serviços externos (Vercel Blob, banco) que podem
+  // falhar por motivos fora do nosso controle (token inválido, rede,
+  // limite de quota) — sem isso, a falha sobe como exceção não tratada e o
+  // Next.js derruba a página inteira em vez de mostrar o erro no modal.
+  let evidencia;
+  try {
+    const blob = await put(`evidencias/${ocorrenciaId}/${arquivo.name}`, buffer, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: validacao.tipo,
+    });
 
-  const evidencia = await prisma.evidenciaOcorrencia.create({
-    data: {
-      ocorrenciaId,
-      analistaId: analista.id,
-      nomeArquivo: arquivo.name,
-      tipo: validacao.tipo,
-      tamanhoBytes: buffer.length,
-      url: blob.url,
-      blobPath: blob.pathname,
-    },
-    include: { analista: true },
-  });
+    evidencia = await prisma.evidenciaOcorrencia.create({
+      data: {
+        ocorrenciaId,
+        analistaId: analista.id,
+        nomeArquivo: arquivo.name,
+        tipo: validacao.tipo,
+        tamanhoBytes: buffer.length,
+        url: blob.url,
+        blobPath: blob.pathname,
+      },
+      include: { analista: true },
+    });
+  } catch (e) {
+    const mensagem = e instanceof Error ? e.message : "Erro desconhecido.";
+    return { error: `Não foi possível enviar a evidência: ${mensagem}` };
+  }
 
   revalidatePath("/");
 

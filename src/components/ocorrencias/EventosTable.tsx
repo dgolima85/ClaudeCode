@@ -4,6 +4,7 @@ import { useRef, useState, useTransition, type ChangeEvent } from "react";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { criarEvento } from "@/app/ocorrencias/eventos-actions";
 import { anexarEvidencia } from "@/app/ocorrencias/evidencias-actions";
+import { TAMANHO_MAXIMO_EVIDENCIA_BYTES, formatarTamanhoArquivo } from "@/lib/evidencias";
 import type { Evidencia } from "./EvidenciasList";
 
 export type Evento = {
@@ -47,6 +48,17 @@ export default function EventosTable({ ocorrenciaId, eventos, onNovoEvento, onNo
     e.target.value = ""; // permite anexar o mesmo arquivo de novo depois, se precisar
     if (!arquivo) return;
     setErro(null);
+
+    // Confere o tamanho já no navegador: mais rápido pro analista, e evita
+    // bater no limite de tamanho de requisição do Next.js (que trava a
+    // página inteira em vez de devolver um erro tratável).
+    if (arquivo.size > TAMANHO_MAXIMO_EVIDENCIA_BYTES) {
+      setErro(
+        `O arquivo tem ${formatarTamanhoArquivo(arquivo.size)}, acima do limite de ${formatarTamanhoArquivo(TAMANHO_MAXIMO_EVIDENCIA_BYTES)}.`,
+      );
+      return;
+    }
+
     startTransitionEvidencia(async () => {
       const formData = new FormData();
       formData.set("arquivo", arquivo);
