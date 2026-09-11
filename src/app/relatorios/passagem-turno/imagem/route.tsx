@@ -288,7 +288,7 @@ export async function GET(request: NextRequest) {
                         flexShrink: 0,
                       }}
                     >
-                      {horaBR(o.createdAt)} → {horaBR(o.resolvidoEm)}
+                      Início {horaBR(o.createdAt)} | Fim {horaBR(o.resolvidoEm)}
                     </div>
                   )}
                 </div>
