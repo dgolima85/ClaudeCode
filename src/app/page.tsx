@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
+import FiltroOrigem from "@/components/ocorrencias/FiltroOrigem";
 import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
 import PlantonistasPanel from "@/components/plantao/PlantonistasPanel";
@@ -9,6 +10,7 @@ import IndicadoresOcorrenciasPanel, {
   type IndicadoresOcorrencias,
 } from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
 import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { isFiltroOrigemValor, NOME_TIPO_MONITORIA_APP, type FiltroOrigemValor } from "@/lib/origemFiltro";
 import { isCriticidade } from "@/lib/criticidade";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
@@ -19,7 +21,7 @@ import { TURNO_LABELS } from "@/lib/turno";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string | string[]; ocorrencia?: string }>;
+  searchParams: Promise<{ status?: string | string[]; origem?: string | string[]; ocorrencia?: string }>;
 }) {
   const sp = await searchParams;
   const statusParamBruto = sp.status;
@@ -29,6 +31,25 @@ export default async function HomePage({
       : (Array.isArray(statusParamBruto) ? statusParamBruto : [statusParamBruto]).filter(
           isStatusOcorrencia,
         );
+
+  const origemParamBruto = sp.origem;
+  const origemSelecionada: FiltroOrigemValor[] = (
+    Array.isArray(origemParamBruto) ? origemParamBruto : origemParamBruto ? [origemParamBruto] : []
+  ).filter(isFiltroOrigemValor);
+
+  // "Monitoria APP" e "Demais Origens" combinam por OR, igual ao filtro de
+  // status: só restringe de verdade quando exatamente um dos dois está
+  // selecionado (os dois juntos, ou nenhum, equivalem a "Todas as Origens").
+  const filtroMonitoriaApp = { tipo: { nome: { equals: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } } };
+  const filtroDemaisOrigens = {
+    tipo: { nome: { not: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } },
+  };
+  const origemWhere =
+    origemSelecionada.length === 1
+      ? origemSelecionada[0] === "MONITORIA_APP"
+        ? filtroMonitoriaApp
+        : filtroDemaisOrigens
+      : {};
 
   const [
     ocorrencias,
@@ -41,7 +62,10 @@ export default async function HomePage({
     ocorrenciasEmAbertoResumo,
   ] = await Promise.all([
     prisma.ocorrencia.findMany({
-      where: statusFiltro.length > 0 ? { status: { in: statusFiltro } } : undefined,
+      where: {
+        ...(statusFiltro.length > 0 ? { status: { in: statusFiltro } } : {}),
+        ...origemWhere,
+      },
       include: { tipo: true, analista: true },
       orderBy: { createdAt: "desc" },
     }),
@@ -153,6 +177,8 @@ export default async function HomePage({
             statusSelecionados={statusFiltro}
             filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
           />
+
+          <FiltroOrigem origemSelecionada={origemSelecionada} />
 
           <PlantonistasPanel />
         </div>
