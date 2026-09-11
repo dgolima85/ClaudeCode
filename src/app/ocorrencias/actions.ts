@@ -254,6 +254,15 @@ export type OcorrenciaDetalhe = {
     createdAt: string;
     analista: { id: string; nome: string };
   }[];
+  evidencias: {
+    id: string;
+    nomeArquivo: string;
+    tipo: string;
+    tamanhoBytes: number;
+    url: string;
+    createdAt: string;
+    analista: { id: string; nome: string };
+  }[];
 };
 
 export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDetalhe | null> {
@@ -273,6 +282,10 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
       plataformas: true,
       canais: true,
       eventos: {
+        include: { analista: true },
+        orderBy: { createdAt: "desc" },
+      },
+      evidencias: {
         include: { analista: true },
         orderBy: { createdAt: "desc" },
       },
@@ -305,6 +318,15 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
       comentario: e.comentario,
       createdAt: e.createdAt.toISOString(),
       analista: { id: e.analista.id, nome: e.analista.nome },
+    })),
+    evidencias: o.evidencias.map((ev) => ({
+      id: ev.id,
+      nomeArquivo: ev.nomeArquivo,
+      tipo: ev.tipo,
+      tamanhoBytes: ev.tamanhoBytes,
+      url: ev.url,
+      createdAt: ev.createdAt.toISOString(),
+      analista: { id: ev.analista.id, nome: ev.analista.nome },
     })),
   };
 }

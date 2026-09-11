@@ -113,6 +113,28 @@ A leitura varre a planilha inteira procurando toda célula "Recursos" como iníc
 
 O local do arquivo (`https://brwatchtv.sharepoint.com/sites/WatchLabsVOC` → `Plantao.xlsx`) está fixo em `src/lib/plantao.ts` — se ele algum dia mudar de lugar, é só editar as constantes no topo desse arquivo.
 
+## Evidências anexadas às ocorrências
+
+Na janela de detalhes de uma ocorrência, o botão "Anexar evidência" (ao lado de "Adicionar evento") permite anexar imagens (PNG/JPEG) ou arquivos `.txt` — útil pra guardar prints e logs que comprovam o que foi feito. Só o link de download de cada evidência aparece na tela (campo "Evidências", junto dos outros dados da ocorrência); não dá pra visualizar/editar o conteúdo pelo sistema.
+
+**O arquivo em si nunca é salvo no Postgres** — só ficaria banco inchado rápido com prints. Os arquivos vão pro [Vercel Blob](https://vercel.com/docs/storage/vercel-blob), um storage de objetos oferecido pela própria Vercel; o banco guarda só o link de download e alguns metadados (nome, tipo, tamanho).
+
+Validações (sempre no servidor, nunca só confiando no que o navegador manda):
+
+- Só PNG, JPEG ou `.txt` — outros formatos são recusados.
+- Pra imagens, confere a assinatura binária do arquivo (os primeiros bytes), não só a extensão — um arquivo renomeado pra fingir ser uma imagem é recusado.
+- Limite de 5MB por arquivo (`TAMANHO_MAXIMO_EVIDENCIA_BYTES` em `src/lib/evidencias.ts`, ajustável).
+
+### Configure o Vercel Blob Store
+
+1. No dashboard da Vercel, vá em **Storage → Create Database → Blob** e crie um store (qualquer nome).
+2. Na tela de criação, **conecte esse Blob Store ao projeto** — a Vercel injeta a variável `BLOB_READ_WRITE_TOKEN` automaticamente em todos os Environments (Production/Preview/Development) do projeto, sem precisar copiar nada manualmente.
+3. Redeploy o projeto pra a variável valer (mudança de env var não afeta um deploy já em execução).
+
+Pra rodar localmente, copie o Token do Blob Store (Storage → seu Store → `.env.local` tab, a própria Vercel mostra o valor pronto pra copiar) e defina `BLOB_READ_WRITE_TOKEN` no seu `.env`.
+
+Sem essa variável configurada, o botão "Anexar evidência" continua aparecendo mas o upload falha com uma mensagem explicando o motivo — não quebra o resto da ocorrência.
+
 ## Deploy
 
 Veja [`DEPLOY.md`](./DEPLOY.md) para o passo a passo de hospedagem na Vercel (recomendado) ou em Docker em um servidor próprio.

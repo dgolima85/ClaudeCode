@@ -23,6 +23,7 @@ model Analista {
   ocorrencias Ocorrencia[] @relation("OcorrenciaAnalista")
   eventos     Evento[]
   avisos      Aviso[]
+  evidencias  EvidenciaOcorrencia[]
 
   passagensTurnoEntregues PassagemTurno[] @relation("PassagemTurnoEntrega")
   passagensTurnoRecebidas PassagemTurno[] @relation("PassagemTurnoRecebe")
@@ -233,6 +234,7 @@ model Ocorrencia {
   causa         Causa?         @relation(fields: [causaId], references: [id], onDelete: Restrict)
   solucao       Solucao?       @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
   eventos       Evento[]
+  evidencias    EvidenciaOcorrencia[]
 
   parcerias            Parceria[]
   empresas             Empresa[]
@@ -260,6 +262,26 @@ model Evento {
 
   @@index([ocorrenciaId])
   @@map("eventos")
+}
+
+// Arquivo em si NÃO fica no Postgres (inflaria o banco) — fica no Vercel
+// Blob (ver src/lib/evidencias.ts). Aqui só o metadado + a URL de download.
+model EvidenciaOcorrencia {
+  id           String   @id @default(cuid())
+  ocorrenciaId String
+  analistaId   String
+  nomeArquivo  String
+  tipo         String
+  tamanhoBytes Int
+  url          String
+  blobPath     String
+  createdAt    DateTime @default(now())
+
+  ocorrencia Ocorrencia @relation(fields: [ocorrenciaId], references: [id], onDelete: Cascade)
+  analista   Analista   @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+
+  @@index([ocorrenciaId])
+  @@map("evidencias_ocorrencia")
 }
 
 // Fluxo ativo de passagem de turno: quem está saindo registra as ocorrências

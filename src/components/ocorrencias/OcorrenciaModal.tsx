@@ -9,6 +9,7 @@ import StatusSelect from "./StatusSelect";
 import ParceriaEmpresaSelect from "./ParceriaEmpresaSelect";
 import AmbienteRecursoSelect from "./AmbienteRecursoSelect";
 import EventosTable from "./EventosTable";
+import EvidenciasList from "./EvidenciasList";
 import NormalizacaoOcorrenciaModal from "./NormalizacaoOcorrenciaModal";
 import {
   buscarOcorrenciaDetalhe,
@@ -264,6 +265,17 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
               </div>
             </div>
 
+            <div>
+              <EvidenciasList
+                evidencias={detalhe.evidencias}
+                onExcluir={(id) =>
+                  setDetalhe((atual) =>
+                    atual ? { ...atual, evidencias: atual.evidencias.filter((e) => e.id !== id) } : atual,
+                  )
+                }
+              />
+            </div>
+
             <div className="sm:col-span-2">
               <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Título</span>
               <div className="mt-1">
@@ -356,6 +368,11 @@ export default function OcorrenciaModal({ ocorrenciaId, onClose }: OcorrenciaMod
               eventos={detalhe.eventos}
               onNovoEvento={(evento) =>
                 setDetalhe((atual) => (atual ? { ...atual, eventos: [evento, ...atual.eventos] } : atual))
+              }
+              onNovaEvidencia={(evidencia) =>
+                setDetalhe((atual) =>
+                  atual ? { ...atual, evidencias: [evidencia, ...atual.evidencias] } : atual,
+                )
               }
             />
           </section>
