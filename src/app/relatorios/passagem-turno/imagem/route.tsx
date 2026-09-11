@@ -12,7 +12,7 @@ import {
   janelaTurno,
   type Turno,
 } from "@/lib/turno";
-import { dataBR, idadeCurta } from "@/lib/dataHoraBR";
+import { dataBR, horaBR, idadeCurta } from "@/lib/dataHoraBR";
 import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import { CRITICIDADE_PESO, CRITICIDADE_HEX_COLOR, type Criticidade } from "@/lib/criticidade";
 
@@ -261,21 +261,36 @@ export async function GET(request: NextRequest) {
                   borderTop: i === 0 ? "none" : `1px solid ${COR.line}`,
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      width: 10,
-                      height: 10,
-                      borderRadius: 2,
-                      backgroundColor: corCriticidade(o.criticidade),
-                      marginRight: 8,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <div style={{ display: "flex", fontSize: 24, fontWeight: 600, color: COR.ink }}>
-                    {truncar(o.titulo, 58)}
+                <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        width: 10,
+                        height: 10,
+                        borderRadius: 2,
+                        backgroundColor: corCriticidade(o.criticidade),
+                        marginRight: 8,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ display: "flex", fontSize: 24, fontWeight: 600, color: COR.ink }}>
+                      {truncar(o.titulo, 58)}
+                    </div>
                   </div>
+                  {o.resolvidoEm && (
+                    <div
+                      style={{
+                        display: "flex",
+                        fontSize: 18,
+                        color: COR.muted,
+                        marginLeft: 12,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {horaBR(o.createdAt)} → {horaBR(o.resolvidoEm)}
+                    </div>
+                  )}
                 </div>
                 {causa && (
                   <div style={{ display: "flex", fontSize: 19, color: COR.muted, marginTop: 3 }}>
