@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { STATUS_OCORRENCIA, STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
 
 type FiltroStatusProps = {
@@ -9,62 +8,46 @@ type FiltroStatusProps = {
   filtroAlteradoPeloUsuario?: boolean;
 };
 
-function mesmosValores<T>(a: T[], b: T[]): boolean {
-  if (a.length !== b.length) return false;
-  const setB = new Set(b);
-  return a.every((v) => setB.has(v));
-}
-
 export default function FiltroStatus({
   statusSelecionados,
   filtroAlteradoPeloUsuario = true,
 }: FiltroStatusProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Estado local otimista: o clique atualiza a UI na hora, sem esperar o
-  // round-trip do servidor. Sem isso, dois cliques em sequência rápida (ou
-  // com alguma latência de rede) calculavam o próximo estado em cima da
-  // prop antiga (a resposta do clique anterior ainda não tinha voltado),
-  // gerando um resultado errado e sem padrão fixo.
-  const [propAnterior, setPropAnterior] = useState(statusSelecionados);
-  const [selecaoLocal, setSelecaoLocal] = useState(statusSelecionados);
-
-  // Sincroniza quando a URL muda por fora (voltar/avançar do navegador,
-  // link direto, etc.) — comparado por valor, não por referência, já que
-  // o array vem novo a cada render do Server Component.
-  if (!mesmosValores(statusSelecionados, propAnterior)) {
-    setPropAnterior(statusSelecionados);
-    setSelecaoLocal(statusSelecionados);
+  function navegar(params: URLSearchParams) {
+    // Navegação "dura" (recarrega a página) em vez de client-side router:
+    // navegações client-side que só trocam querystring na mesma rota, indo
+    // e voltando rápido entre as mesmas URLs, faziam o Next.js reaproveitar
+    // dados de uma navegação anterior por engano — a tabela ficava com um
+    // resultado errado mesmo o servidor sempre respondendo certo. Recarregar
+    // de verdade garante que a tabela nunca fica desatualizada.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- ver comentário acima: é proposital, não um descuido.
+    window.location.assign(`${pathname}?${params.toString()}`);
   }
 
   function alternar(status: StatusOcorrencia) {
-    const atuais = new Set(selecaoLocal);
+    const atuais = new Set(statusSelecionados);
     if (atuais.has(status)) atuais.delete(status);
     else atuais.add(status);
-    const nova = [...atuais];
-    setSelecaoLocal(nova);
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("status");
-    for (const s of nova) params.append("status", s);
-
-    router.push(`${pathname}?${params.toString()}`);
+    for (const s of atuais) params.append("status", s);
+    navegar(params);
   }
 
   function limpar() {
-    setSelecaoLocal([]);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("status");
-    router.push(`${pathname}?${params.toString()}`);
+    navegar(params);
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Filtrar por status:</span>
       {STATUS_OCORRENCIA.map((status) => {
-        const ativo = selecaoLocal.includes(status);
+        const ativo = statusSelecionados.includes(status);
         return (
           <button
             key={status}
@@ -80,7 +63,7 @@ export default function FiltroStatus({
           </button>
         );
       })}
-      {filtroAlteradoPeloUsuario && selecaoLocal.length > 0 && (
+      {filtroAlteradoPeloUsuario && statusSelecionados.length > 0 && (
         <button
           type="button"
           onClick={limpar}

@@ -32,24 +32,23 @@ export default async function HomePage({
           isStatusOcorrencia,
         );
 
-  const origemParamBruto = sp.origem;
-  const origemSelecionada: FiltroOrigemValor[] = (
-    Array.isArray(origemParamBruto) ? origemParamBruto : origemParamBruto ? [origemParamBruto] : []
-  ).filter(isFiltroOrigemValor);
+  const origemParamBruto = Array.isArray(sp.origem) ? sp.origem[0] : sp.origem;
+  const origemSelecionada: FiltroOrigemValor | null =
+    origemParamBruto && isFiltroOrigemValor(origemParamBruto) ? origemParamBruto : null;
 
-  // "Monitoria APP" e "Demais Origens" combinam por OR, igual ao filtro de
-  // status: só restringe de verdade quando exatamente um dos dois está
-  // selecionado (os dois juntos, ou nenhum, equivalem a "Todas as Origens").
+  // Botões mutuamente exclusivos: escolher um substitui a seleção anterior
+  // (não é possível ter "Monitoria APP" e "Demais Origens" ativos ao mesmo
+  // tempo — nenhum dos dois selecionados é que equivale a "Todas as Origens").
   const filtroMonitoriaApp = { tipo: { nome: { equals: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } } };
   const filtroDemaisOrigens = {
     tipo: { nome: { not: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } },
   };
   const origemWhere =
-    origemSelecionada.length === 1
-      ? origemSelecionada[0] === "MONITORIA_APP"
-        ? filtroMonitoriaApp
-        : filtroDemaisOrigens
-      : {};
+    origemSelecionada === "MONITORIA_APP"
+      ? filtroMonitoriaApp
+      : origemSelecionada === "DEMAIS_ORIGENS"
+        ? filtroDemaisOrigens
+        : {};
 
   const [
     ocorrencias,

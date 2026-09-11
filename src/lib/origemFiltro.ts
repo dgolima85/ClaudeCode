@@ -1,8 +1,7 @@
-// Filtro por Origem na Home, com a mesma mecânica de múltipla escolha
-// combinada por OR já usada no filtro de status (ver FiltroStatus.tsx):
-// os dois valores abaixo podem ser ativados juntos ou de forma independente.
-// "Todas as Origens" não é uma condição própria — é o atalho pra nenhum
-// (ou os dois) estar selecionado, ou seja, sem restrição de origem.
+// Filtro por Origem na Home: três botões mutuamente exclusivos (só um
+// ativo por vez — ver FiltroOrigem.tsx). "Todas as Origens" não é uma
+// condição própria — é o atalho pra nenhum dos dois valores abaixo estar
+// selecionado, ou seja, sem restrição de origem.
 export const FILTROS_ORIGEM = ["MONITORIA_APP", "DEMAIS_ORIGENS"] as const;
 
 export type FiltroOrigemValor = (typeof FILTROS_ORIGEM)[number];
