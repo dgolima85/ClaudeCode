@@ -27,8 +27,12 @@ export default function IndicadoresOcorrenciasPanel({ dados }: IndicadoresOcorre
   const temRodape = dados.semTicket > 0 || dados.maisAntigaDias !== null;
 
   return (
-    <div className="flex flex-col rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-      <div className="flex flex-wrap">
+    // A grid na Home estica este card pra acompanhar a altura do painel de
+    // Plantonistas ao lado (que varia com a quantidade de plantonistas do
+    // dia). h-full + flex-1/content-center abaixo fazem o conteúdo ocupar
+    // esse espaço extra em vez de deixar um vão vazio no fim do card.
+    <div className="flex h-full flex-col rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex flex-1 flex-wrap content-center">
         <div className="flex flex-1 basis-40 items-start gap-3 p-3">
           <div className="shrink-0">
             <div className="text-2xl leading-none font-semibold text-gray-900 dark:text-gray-100">
