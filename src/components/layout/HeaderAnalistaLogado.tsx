@@ -17,7 +17,10 @@ export default async function HeaderAnalistaLogado() {
         </Link>
         <nav className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
           <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">
-            Ocorrências
+            Ocorrências Ongoing
+          </Link>
+          <Link href="/ocorrencias-qualidade-app" className="hover:text-blue-600 dark:hover:text-blue-400">
+            Ocorrências Qualidade App
           </Link>
           <Link href="/passagem-turno" className="hover:text-blue-600 dark:hover:text-blue-400">
             Passagem de Turno

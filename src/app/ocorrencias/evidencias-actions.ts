@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
 import { validarEvidencia } from "@/lib/evidencias";
+import { revalidarHomesOcorrencias } from "@/lib/revalidarOcorrencias";
 
 export async function anexarEvidencia(ocorrenciaId: string, formData: FormData) {
   const analista = await exigirAnalistaLogado();
@@ -56,7 +56,7 @@ export async function anexarEvidencia(ocorrenciaId: string, formData: FormData) 
     return { error: `Não foi possível enviar a evidência: ${mensagem}` };
   }
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
 
   return {
     evidencia: {
@@ -82,6 +82,6 @@ export async function excluirEvidencia(evidenciaId: string) {
   await del(evidencia.blobPath).catch(() => {});
   await prisma.evidenciaOcorrencia.delete({ where: { id: evidenciaId } });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }

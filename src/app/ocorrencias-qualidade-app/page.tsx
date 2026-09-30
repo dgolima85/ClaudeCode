@@ -4,27 +4,25 @@ import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
 import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
-import PlantonistasPanel from "@/components/plantao/PlantonistasPanel";
 import IndicadoresOcorrenciasPanel, {
   type IndicadoresOcorrencias,
 } from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
 import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { NOME_TIPO_MONITORIA_APP } from "@/lib/monitoriaApp";
 import { isCriticidade } from "@/lib/criticidade";
-import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
 import { criarOcorrencia } from "@/app/ocorrencias/actions";
 import { buscarPendentesPassagemTurno } from "@/app/passagem-turno/actions";
 import { TURNO_LABELS } from "@/lib/turno";
 
-// Esta home ("Ocorrências Ongoing") nunca mostra ocorrências de origem
-// "Monitoria APP" — essas ficam isoladas na outra home, em
-// /ocorrencias-qualidade-app (ver NOME_TIPO_MONITORIA_APP). Diferente do
-// antigo filtro "Demais Origens" (removido), essa exclusão não é mais uma
-// opção do usuário: é sempre aplicada.
-const excluirMonitoriaApp = { nome: { not: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } };
+// Esta home ("Ocorrências Qualidade App") só existe pra ocorrências de
+// origem "Monitoria APP" — a única por enquanto. Sem painel de Plantonistas
+// (não se aplica a essa origem) e sem "Filtrar por origem"/indicador "Por
+// origem" (não há o que distinguir, é sempre a mesma). Ver a home irmã em
+// src/app/page.tsx ("Ocorrências Ongoing"), que exclui essa origem.
+const apenasMonitoriaApp = { nome: { equals: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } };
 
-export default async function HomePage({
+export default async function OcorrenciasQualidadeAppPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string | string[]; ocorrencia?: string }>;
@@ -38,53 +36,39 @@ export default async function HomePage({
           isStatusOcorrencia,
         );
 
-  const [
-    ocorrencias,
-    tiposBrutos,
-    todosOsTipos,
-    avisosBrutos,
-    pendentesPassagemTurno,
-    statusCounts,
-    origemCounts,
-    ocorrenciasEmAbertoResumo,
-  ] = await Promise.all([
-    prisma.ocorrencia.findMany({
-      where: {
-        ...(statusFiltro.length > 0 ? { status: { in: statusFiltro } } : {}),
-        tipo: excluirMonitoriaApp,
-      },
-      include: { tipo: true, analista: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.tipoOcorrencia.findMany({
-      where: { ativo: true, ...excluirMonitoriaApp },
-      orderBy: { nome: "asc" },
-    }),
-    prisma.tipoOcorrencia.findMany({ select: { id: true, nome: true } }),
-    prisma.aviso.findMany({
-      where: { expiraEm: { gt: new Date() } },
-      orderBy: { createdAt: "desc" },
-    }),
-    buscarPendentesPassagemTurno(),
-    // Indicadores da Home: independem do filtro de status aplicado à tabela
-    // abaixo, então são buscados à parte, sempre sobre todas as ocorrências
-    // (exceto Monitoria APP, que não pertence a esta home).
-    prisma.ocorrencia.groupBy({
-      by: ["status"],
-      where: { tipo: excluirMonitoriaApp },
-      _count: { _all: true },
-    }),
-    prisma.ocorrencia.groupBy({
-      by: ["tipoId"],
-      where: { status: { not: "RESOLVIDO" }, tipo: excluirMonitoriaApp },
-      _count: { _all: true },
-    }),
-    prisma.ocorrencia.findMany({
-      where: { status: { not: "RESOLVIDO" }, tipo: excluirMonitoriaApp },
-      select: { createdAt: true, ticket: true },
-    }),
-  ]);
-  const tipos = ordenarComNaPrimeiro(tiposBrutos);
+  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno, statusCounts, ocorrenciasEmAbertoResumo] =
+    await Promise.all([
+      prisma.ocorrencia.findMany({
+        where: {
+          ...(statusFiltro.length > 0 ? { status: { in: statusFiltro } } : {}),
+          tipo: apenasMonitoriaApp,
+        },
+        include: { tipo: true, analista: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.tipoOcorrencia.findMany({
+        where: { ativo: true, ...apenasMonitoriaApp },
+        orderBy: { nome: "asc" },
+      }),
+      prisma.aviso.findMany({
+        where: { expiraEm: { gt: new Date() } },
+        orderBy: { createdAt: "desc" },
+      }),
+      buscarPendentesPassagemTurno(),
+      // Indicadores da Home: independem do filtro de status aplicado à
+      // tabela abaixo, então são buscados à parte, sempre sobre todas as
+      // ocorrências de Monitoria APP.
+      prisma.ocorrencia.groupBy({
+        by: ["status"],
+        where: { tipo: apenasMonitoriaApp },
+        _count: { _all: true },
+      }),
+      prisma.ocorrencia.findMany({
+        where: { status: { not: "RESOLVIDO" }, tipo: apenasMonitoriaApp },
+        select: { createdAt: true, ticket: true },
+      }),
+    ]);
+  const tipos = tiposBrutos;
   const avisos = avisosBrutos
     .filter((a) => isModeloAviso(a.modelo))
     .map((a) => ({
@@ -102,11 +86,6 @@ export default async function HomePage({
   }
   const emAberto = porStatus.EM_ANDAMENTO + porStatus.AGUARDANDO_VALIDACAO + porStatus.PENDENTE_CAUSA;
 
-  const nomeTipoPorId = new Map(todosOsTipos.map((t) => [t.id, t.nome]));
-  const porOrigem = origemCounts
-    .map((c) => ({ nome: nomeTipoPorId.get(c.tipoId) ?? "—", quantidade: c._count._all }))
-    .sort((a, b) => b.quantidade - a.quantidade);
-
   const agora = new Date().getTime();
   const idade = { ateTresDias: 0, quatroASeteDias: 0, maisDeUmaSemana: 0 };
   let semTicket = 0;
@@ -123,7 +102,7 @@ export default async function HomePage({
   const indicadores: IndicadoresOcorrencias = {
     emAberto,
     porStatus,
-    porOrigem,
+    porOrigem: [],
     idade,
     semTicket,
     maisAntigaDias,
@@ -162,9 +141,10 @@ export default async function HomePage({
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências Ongoing</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências Qualidade App</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Registre e acompanhe as ocorrências do turno. Clique em ⤢ para abrir os detalhes.
+              Registre e acompanhe as ocorrências de Monitoria APP do turno. Clique em ⤢ para abrir os
+              detalhes.
             </p>
           </div>
 
@@ -172,8 +152,6 @@ export default async function HomePage({
             statusSelecionados={statusFiltro}
             filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
           />
-
-          <PlantonistasPanel />
         </div>
 
         <IndicadoresOcorrenciasPanel dados={indicadores} />
@@ -181,8 +159,8 @@ export default async function HomePage({
 
       {tipos.length === 0 && (
         <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
-          Nenhum tipo de ocorrência cadastrado. Cadastre ao menos um em Administração →
-          Tipos de Ocorrência antes de registrar ocorrências.
+          Nenhum tipo de ocorrência &quot;{NOME_TIPO_MONITORIA_APP}&quot; cadastrado ou ativo. Cadastre-o em
+          Administração → Tipos de Ocorrência antes de registrar ocorrências aqui.
         </p>
       )}
 

@@ -100,6 +100,7 @@ export async function criarPassagemTurno(dados: {
   });
 
   revalidatePath("/");
+  revalidatePath("/ocorrencias-qualidade-app");
   revalidatePath("/passagem-turno");
   return { id: passagem.id };
 }
@@ -175,6 +176,7 @@ export async function confirmarPassagemTurno(id: string): Promise<{ error?: stri
   });
 
   revalidatePath("/");
+  revalidatePath("/ocorrencias-qualidade-app");
   revalidatePath("/passagem-turno");
   revalidatePath(`/passagem-turno/${id}`);
   revalidatePath("/relatorios/passagens-turno");

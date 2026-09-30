@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
 import {
@@ -12,6 +11,7 @@ import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { isCriticidade, type Criticidade } from "@/lib/criticidade";
 import { deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
+import { revalidarHomesOcorrencias } from "@/lib/revalidarOcorrencias";
 
 export async function criarOcorrencia(dados: {
   tipoId: string;
@@ -38,7 +38,7 @@ export async function criarOcorrencia(dados: {
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -54,7 +54,7 @@ export async function atualizarCriticidadeOcorrencia(
     data: { criticidade: criticidade || null },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -71,7 +71,7 @@ export async function atualizarInicioOcorrencia(
     data: { createdAt: deInputDataHoraBR(parsed.data) },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -85,7 +85,7 @@ export async function atualizarFimOcorrencia(id: string, fim: string): Promise<{
     data: { resolvidoEm: deInputDataHoraBR(parsed.data) },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -113,7 +113,7 @@ export async function atualizarStatusOcorrencia(
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -143,7 +143,7 @@ export async function normalizarOcorrencia(
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -202,7 +202,7 @@ export async function atualizarTituloOcorrencia(
   if (!tituloLimpo) return { error: "A ocorrência não pode ficar sem título." };
 
   await prisma.ocorrencia.update({ where: { id }, data: { titulo: tituloLimpo } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -212,7 +212,7 @@ export async function atualizarTicketOcorrencia(
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
   await prisma.ocorrencia.update({ where: { id }, data: { ticket: ticket.trim() || null } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -224,7 +224,7 @@ export async function atualizarTipoDaOcorrencia(
   if (!tipoId) return { error: "Selecione um tipo válido." };
 
   await prisma.ocorrencia.update({ where: { id }, data: { tipoId } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 

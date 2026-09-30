@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
 import { avisoSchema } from "@/lib/validations";
 import { deInputDataHoraBR } from "@/lib/dataHoraBR";
+import { revalidarHomesOcorrencias } from "@/lib/revalidarOcorrencias";
 
 export type AvisoCriado = {
   id: string;
@@ -33,7 +33,7 @@ export async function criarAviso(dados: {
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {
     aviso: {
       id: aviso.id,
@@ -63,7 +63,7 @@ export async function atualizarAviso(
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {
     aviso: {
       id: aviso.id,
@@ -77,6 +77,6 @@ export async function atualizarAviso(
 export async function excluirAviso(id: string): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
   await prisma.aviso.delete({ where: { id } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
