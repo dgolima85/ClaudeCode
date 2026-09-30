@@ -22,6 +22,9 @@ export default async function HeaderAnalistaLogado() {
           <Link href="/ocorrencias-qualidade-app" className="hover:text-blue-600 dark:hover:text-blue-400">
             Ocorrências Qualidade App
           </Link>
+          <Link href="/roteiro-testes" className="hover:text-blue-600 dark:hover:text-blue-400">
+            Roteiro de Testes
+          </Link>
           <Link href="/passagem-turno" className="hover:text-blue-600 dark:hover:text-blue-400">
             Passagem de Turno
           </Link>

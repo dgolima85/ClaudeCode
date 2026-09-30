@@ -28,6 +28,9 @@ model Analista {
   passagensTurnoEntregues PassagemTurno[] @relation("PassagemTurnoEntrega")
   passagensTurnoRecebidas PassagemTurno[] @relation("PassagemTurnoRecebe")
 
+  roteiroTesteExecucoes  RoteiroTesteExecucao[]
+  roteiroTesteEvidencias RoteiroTesteEvidencia[]
+
   @@map("analistas")
 }
 
@@ -313,4 +316,67 @@ model PassagemTurno {
   @@index([status])
   @@index([createdAt])
   @@map("passagens_turno")
+}
+
+// Uma execução do "Roteiro de Testes" (checklist diário que os analistas
+// rodam em TV/Web/Mobile) — substitui o formulário que hoje vive no
+// Microsoft Lists, guardando o resultado de cada passo em vez de só o envio
+// do formulário, o que viabiliza relatório e consulta posterior (ver
+// src/lib/roteiroTeste/). "rotina" identifica qual roteiro foi executado
+// (TESTE_WEB, TESTE_TV, TESTE_MOBILE_V4 — ver src/lib/roteiroTeste/rotinas.ts);
+// cada rotina tem seu próprio conjunto de passos, versionado em código, não
+// no banco.
+model RoteiroTesteExecucao {
+  id         String   @id @default(cuid())
+  rotina     String
+  brand      String
+  versao     String
+  anotacao   String?
+  analistaId String
+  createdAt  DateTime @default(now())
+
+  analista   Analista                @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+  itens      RoteiroTesteItem[]
+  evidencias RoteiroTesteEvidencia[]
+
+  @@index([rotina])
+  @@index([createdAt])
+  @@map("roteiro_teste_execucoes")
+}
+
+// Resultado de um passo específico do roteiro (ex.: "AUTH-WEB-001" ->
+// VALIDADO). O texto da instrução do passo não é duplicado aqui — só o
+// código, que é resolvido de volta pra descrição via a definição do roteiro
+// em código (permite corrigir o texto de um passo sem tocar em dados já
+// salvos).
+model RoteiroTesteItem {
+  id         String @id @default(cuid())
+  execucaoId String
+  codigo     String
+  resultado  String
+
+  execucao RoteiroTesteExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
+
+  @@index([execucaoId])
+  @@map("roteiro_teste_itens")
+}
+
+// Mesma lógica de EvidenciaOcorrencia: arquivo vive no Vercel Blob, aqui só
+// o metadado.
+model RoteiroTesteEvidencia {
+  id           String   @id @default(cuid())
+  execucaoId   String
+  analistaId   String
+  nomeArquivo  String
+  tipo         String
+  tamanhoBytes Int
+  url          String
+  blobPath     String
+  createdAt    DateTime @default(now())
+
+  execucao RoteiroTesteExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
+  analista Analista             @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+
+  @@index([execucaoId])
+  @@map("roteiro_teste_evidencias")
 }
