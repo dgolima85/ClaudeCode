@@ -15,6 +15,7 @@ import {
 import { dataBR, horaBR, idadeCurta } from "@/lib/dataHoraBR";
 import { buscarDadosPassagemTurno } from "@/lib/passagemTurno";
 import { CRITICIDADE_PESO, CRITICIDADE_HEX_COLOR, type Criticidade } from "@/lib/criticidade";
+import { isOrigemPassagemTurno, ORIGEM_PASSAGEM_TURNO_LABELS } from "@/lib/origemPassagemTurno";
 
 const LARGURA = 1080;
 const MAX_RESOLVIDAS = 5;
@@ -98,7 +99,15 @@ export async function GET(request: NextRequest) {
   const turno: Turno = turnoParam && isTurno(turnoParam) ? turnoParam : ((analista.turno as Turno) ?? TURNOS[0]);
   const data = sp.get("data") || diaInicioTurnoAtual(turno);
 
-  const { emAberto, atividade } = await buscarDadosPassagemTurno(turno, data);
+  const origemParam = sp.get("origem");
+  if (!origemParam || !isOrigemPassagemTurno(origemParam)) {
+    return new Response("Selecione a origem (Monitoria APP ou Demais Origens) antes de gerar o boletim.", {
+      status: 400,
+    });
+  }
+  const origem = origemParam;
+
+  const { emAberto, atividade } = await buscarDadosPassagemTurno(turno, data, origem);
 
   const resolvidasTodas = atividade
     .filter((o) => o.status === "RESOLVIDO")
@@ -167,7 +176,7 @@ export async function GET(request: NextRequest) {
         >
           <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
             <div style={{ display: "flex", fontSize: 20, letterSpacing: 3, color: COR.headerSub }}>
-              PASSAGEM DE TURNO
+              PASSAGEM DE TURNO · {ORIGEM_PASSAGEM_TURNO_LABELS[origem].toUpperCase()}
             </div>
             <div style={{ display: "flex", fontSize: 20, color: COR.headerText }}>
               {formatarDataCurta(data)}
@@ -409,7 +418,7 @@ export async function GET(request: NextRequest) {
         { name: "IBM Plex Sans", data: dataSemiBold, weight: 600, style: "normal" },
       ],
       headers: {
-        "Content-Disposition": `inline; filename="boletim-turno-${turno.toLowerCase()}-${data}.png"`,
+        "Content-Disposition": `inline; filename="boletim-turno-${turno.toLowerCase()}-${origem.toLowerCase()}-${data}.png"`,
       },
     },
   );
