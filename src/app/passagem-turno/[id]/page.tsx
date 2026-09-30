@@ -6,6 +6,7 @@ import {
   STATUS_PASSAGEM_TURNO_LABELS,
   STATUS_PASSAGEM_TURNO_DOT_COLOR,
 } from "@/lib/statusPassagemTurno";
+import { ORIGEM_PASSAGEM_TURNO_LABELS } from "@/lib/origemPassagemTurno";
 import { buscarPassagemTurno } from "../actions";
 import TabelaOcorrenciasFiltravel from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 import ConfirmarPassagemTurnoButton from "@/components/passagemTurno/ConfirmarPassagemTurnoButton";
@@ -30,8 +31,13 @@ export default async function PassagemTurnoDetalhePage({
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        <h1 className="flex flex-wrap items-center gap-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
           {TURNO_LABELS[passagem.turnoOrigem]} → {TURNO_LABELS[passagem.turnoDestino]}
+          {passagem.origem && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+              {ORIGEM_PASSAGEM_TURNO_LABELS[passagem.origem]}
+            </span>
+          )}
         </h1>
         <span className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <span

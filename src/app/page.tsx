@@ -9,7 +9,7 @@ import IndicadoresOcorrenciasPanel, {
   type IndicadoresOcorrencias,
 } from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
 import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
-import { NOME_TIPO_MONITORIA_APP } from "@/lib/monitoriaApp";
+import { FILTRO_TIPO_DEMAIS_ORIGENS } from "@/lib/monitoriaApp";
 import { isCriticidade } from "@/lib/criticidade";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
@@ -19,10 +19,10 @@ import { TURNO_LABELS } from "@/lib/turno";
 
 // Esta home ("Ocorrências Ongoing") nunca mostra ocorrências de origem
 // "Monitoria APP" — essas ficam isoladas na outra home, em
-// /ocorrencias-qualidade-app (ver NOME_TIPO_MONITORIA_APP). Diferente do
-// antigo filtro "Demais Origens" (removido), essa exclusão não é mais uma
-// opção do usuário: é sempre aplicada.
-const excluirMonitoriaApp = { nome: { not: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } };
+// /ocorrencias-qualidade-app. Diferente do antigo filtro "Demais Origens"
+// (removido), essa exclusão não é mais uma opção do usuário: é sempre
+// aplicada.
+const excluirMonitoriaApp = FILTRO_TIPO_DEMAIS_ORIGENS;
 
 export default async function HomePage({
   searchParams,

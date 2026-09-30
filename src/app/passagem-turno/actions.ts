@@ -8,6 +8,11 @@ import { TURNO_DESTINO_PASSAGEM, type Turno } from "@/lib/turno";
 import type { StatusOcorrencia } from "@/lib/status";
 import { isCriticidade } from "@/lib/criticidade";
 import type { StatusPassagemTurno } from "@/lib/statusPassagemTurno";
+import {
+  isOrigemPassagemTurno,
+  filtroTipoPorOrigemPassagemTurno,
+  type OrigemPassagemTurno,
+} from "@/lib/origemPassagemTurno";
 import type { LinhaRelatorio } from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
 const includeOcorrencia = { tipo: true, analista: true } as const;
@@ -37,11 +42,13 @@ function mapOcorrencia(o: {
   };
 }
 
-export async function buscarOcorrenciasEmAbertoPreview(): Promise<LinhaRelatorio[]> {
+export async function buscarOcorrenciasEmAbertoPreview(
+  origem: OrigemPassagemTurno,
+): Promise<LinhaRelatorio[]> {
   await exigirAnalistaLogado();
 
   const ocorrencias = await prisma.ocorrencia.findMany({
-    where: { status: { not: "RESOLVIDO" } },
+    where: { status: { not: "RESOLVIDO" }, tipo: filtroTipoPorOrigemPassagemTurno(origem) },
     include: includeOcorrencia,
     orderBy: { createdAt: "asc" },
   });
@@ -53,6 +60,7 @@ export type PassagemTurnoPendente = {
   id: string;
   turnoOrigem: Turno;
   turnoDestino: Turno;
+  origem: OrigemPassagemTurno | null;
   analistaEntrega: string;
   createdAt: string;
 };
@@ -70,12 +78,14 @@ export async function buscarPendentesPassagemTurno(): Promise<PassagemTurnoPende
     id: p.id,
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
+    origem: p.origem && isOrigemPassagemTurno(p.origem) ? p.origem : null,
     analistaEntrega: p.analistaEntrega.nome,
     createdAt: p.createdAt.toISOString(),
   }));
 }
 
 export async function criarPassagemTurno(dados: {
+  origem: string;
   observacoes: string;
 }): Promise<{ error?: string; id?: string }> {
   const analista = await exigirAnalistaLogado();
@@ -85,7 +95,7 @@ export async function criarPassagemTurno(dados: {
   }
 
   const ocorrenciasEmAberto = await prisma.ocorrencia.findMany({
-    where: { status: { not: "RESOLVIDO" } },
+    where: { status: { not: "RESOLVIDO" }, tipo: filtroTipoPorOrigemPassagemTurno(parsed.data.origem) },
     select: { id: true },
   });
 
@@ -93,6 +103,7 @@ export async function criarPassagemTurno(dados: {
     data: {
       turnoOrigem: analista.turno,
       turnoDestino: TURNO_DESTINO_PASSAGEM[analista.turno as Turno],
+      origem: parsed.data.origem,
       observacoes: parsed.data.observacoes ? parsed.data.observacoes : null,
       analistaEntregaId: analista.id,
       ocorrencias: { connect: ocorrenciasEmAberto.map((o) => ({ id: o.id })) },
@@ -110,6 +121,7 @@ export type PassagemTurnoDetalhe = {
   status: StatusPassagemTurno;
   turnoOrigem: Turno;
   turnoDestino: Turno;
+  origem: OrigemPassagemTurno | null;
   observacoes: string | null;
   analistaEntregaId: string;
   analistaEntrega: string;
@@ -140,6 +152,7 @@ export async function buscarPassagemTurno(id: string): Promise<PassagemTurnoDeta
     status: p.status as StatusPassagemTurno,
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
+    origem: p.origem && isOrigemPassagemTurno(p.origem) ? p.origem : null,
     observacoes: p.observacoes,
     analistaEntregaId: p.analistaEntregaId,
     analistaEntrega: p.analistaEntrega.nome,
@@ -188,6 +201,7 @@ export type PassagemTurnoLinha = {
   status: StatusPassagemTurno;
   turnoOrigem: Turno;
   turnoDestino: Turno;
+  origem: OrigemPassagemTurno | null;
   analistaEntrega: string;
   analistaRecebe: string | null;
   createdAt: string;
@@ -208,6 +222,7 @@ export async function buscarHistoricoPassagensTurno(): Promise<PassagemTurnoLinh
     status: p.status as StatusPassagemTurno,
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
+    origem: p.origem && isOrigemPassagemTurno(p.origem) ? p.origem : null,
     analistaEntrega: p.analistaEntrega.nome,
     analistaRecebe: p.analistaRecebe?.nome ?? null,
     createdAt: p.createdAt.toISOString(),

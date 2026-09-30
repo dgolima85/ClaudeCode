@@ -3,14 +3,24 @@ import { formatarDataHoraBR } from "@/lib/dataHoraBR";
 import { TURNO_LABELS, TURNO_DESTINO_PASSAGEM, type Turno } from "@/lib/turno";
 import { exigirAnalistaLogado } from "@/lib/session";
 import { buscarPendentesPassagemTurno, buscarOcorrenciasEmAbertoPreview } from "./actions";
+import { isOrigemPassagemTurno, ORIGEM_PASSAGEM_TURNO_LABELS, type OrigemPassagemTurno } from "@/lib/origemPassagemTurno";
+import FiltroOrigemPassagemTurno from "@/components/passagemTurno/FiltroOrigemPassagemTurno";
 import NovaPassagemTurnoForm from "@/components/passagemTurno/NovaPassagemTurnoForm";
 import TabelaOcorrenciasFiltravel from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
-export default async function PassagemTurnoPage() {
+export default async function PassagemTurnoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ origem?: string }>;
+}) {
+  const sp = await searchParams;
+  const origemSelecionada: OrigemPassagemTurno | null =
+    sp.origem && isOrigemPassagemTurno(sp.origem) ? sp.origem : null;
+
   const analista = await exigirAnalistaLogado();
   const [pendentes, ocorrenciasEmAberto] = await Promise.all([
     buscarPendentesPassagemTurno(),
-    buscarOcorrenciasEmAbertoPreview(),
+    origemSelecionada ? buscarOcorrenciasEmAbertoPreview(origemSelecionada) : Promise.resolve(null),
   ]);
   const turnoDestino = TURNO_DESTINO_PASSAGEM[analista.turno as Turno];
 
@@ -20,6 +30,7 @@ export default async function PassagemTurnoPage() {
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Passagem de Turno</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Registre a passagem ao final do seu turno e confirme o recebimento de uma passagem pendente.
+          Monitoria APP e Demais Origens são passagens separadas.
         </p>
       </div>
 
@@ -38,6 +49,11 @@ export default async function PassagemTurnoPage() {
                 <span className="text-yellow-800 dark:text-yellow-300">
                   {TURNO_LABELS[p.turnoOrigem]} → {TURNO_LABELS[p.turnoDestino]} · entregue por{" "}
                   {p.analistaEntrega}
+                  {p.origem && (
+                    <span className="ml-2 rounded-full bg-yellow-200 px-2 py-0.5 text-xs text-yellow-800 dark:bg-yellow-800/60 dark:text-yellow-200">
+                      {ORIGEM_PASSAGEM_TURNO_LABELS[p.origem]}
+                    </span>
+                  )}
                 </span>
                 <span className="text-xs text-yellow-700 dark:text-yellow-400">
                   {formatarDataHoraBR(p.createdAt)}
@@ -48,16 +64,33 @@ export default async function PassagemTurnoPage() {
         </section>
       )}
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Fazer passagem de turno
         </h2>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          As {ocorrenciasEmAberto.length} ocorrências abaixo, ainda em aberto, serão anexadas
-          automaticamente para quem assumir o próximo turno revisar e confirmar o recebimento.
+          Escolha a origem: são duas passagens separadas, uma para Monitoria APP e outra para Demais
+          Origens.
         </p>
-        <TabelaOcorrenciasFiltravel linhas={ocorrenciasEmAberto} />
-        <NovaPassagemTurnoForm turnoDestino={turnoDestino} />
+
+        <FiltroOrigemPassagemTurno origemSelecionada={origemSelecionada} />
+
+        {origemSelecionada ? (
+          <>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              As {ocorrenciasEmAberto?.length ?? 0} ocorrências de {ORIGEM_PASSAGEM_TURNO_LABELS[origemSelecionada]}{" "}
+              abaixo, ainda em aberto, serão anexadas automaticamente para quem assumir o próximo turno
+              revisar e confirmar o recebimento.
+            </p>
+            <TabelaOcorrenciasFiltravel linhas={ocorrenciasEmAberto ?? []} />
+          </>
+        ) : (
+          <p className="rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+            Selecione acima a origem da passagem de turno para ver as ocorrências em aberto e continuar.
+          </p>
+        )}
+
+        <NovaPassagemTurnoForm turnoDestino={turnoDestino} origemSelecionada={origemSelecionada} />
       </section>
     </div>
   );

@@ -8,7 +8,7 @@ import IndicadoresOcorrenciasPanel, {
   type IndicadoresOcorrencias,
 } from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
 import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
-import { NOME_TIPO_MONITORIA_APP } from "@/lib/monitoriaApp";
+import { NOME_TIPO_MONITORIA_APP, FILTRO_TIPO_MONITORIA_APP } from "@/lib/monitoriaApp";
 import { isCriticidade } from "@/lib/criticidade";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
 import { criarOcorrencia } from "@/app/ocorrencias/actions";
@@ -20,7 +20,7 @@ import { TURNO_LABELS } from "@/lib/turno";
 // (não se aplica a essa origem) e sem "Filtrar por origem"/indicador "Por
 // origem" (não há o que distinguir, é sempre a mesma). Ver a home irmã em
 // src/app/page.tsx ("Ocorrências Ongoing"), que exclui essa origem.
-const apenasMonitoriaApp = { nome: { equals: NOME_TIPO_MONITORIA_APP, mode: "insensitive" as const } };
+const apenasMonitoriaApp = FILTRO_TIPO_MONITORIA_APP;
 
 export default async function OcorrenciasQualidadeAppPage({
   searchParams,

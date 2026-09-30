@@ -295,6 +295,11 @@ model PassagemTurno {
   turnoOrigem       String
   turnoDestino      String
   status            String    @default("ABERTA")
+  // MONITORIA_APP / DEMAIS_ORIGENS (ver src/lib/origemPassagemTurno.ts) — o
+  // analista registra uma passagem por origem, nunca as duas juntas. Nula
+  // nas passagens criadas antes dessa separação existir (misturavam as
+  // duas origens).
+  origem            String?
   observacoes       String?
   analistaEntregaId String
   analistaRecebeId  String?

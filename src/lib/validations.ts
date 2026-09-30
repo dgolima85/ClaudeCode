@@ -3,6 +3,7 @@ import { TURNOS } from "@/lib/turno";
 import { STATUS_OCORRENCIA } from "@/lib/status";
 import { MODELOS_AVISO } from "@/lib/aviso";
 import { CRITICIDADES } from "@/lib/criticidade";
+import { ORIGENS_PASSAGEM_TURNO } from "@/lib/origemPassagemTurno";
 
 export const nomeSchema = z
   .string()
@@ -66,6 +67,7 @@ export const comentarioEventoSchema = z
   .max(4000, "Comentário muito longo");
 
 export const novaPassagemTurnoSchema = z.object({
+  origem: z.enum(ORIGENS_PASSAGEM_TURNO, { message: "Selecione a origem da passagem de turno." }),
   observacoes: z.string().trim().max(4000, "Observações muito longas").optional().or(z.literal("")),
 });
 

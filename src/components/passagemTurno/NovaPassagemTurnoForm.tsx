@@ -4,21 +4,24 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { TURNO_LABELS, type Turno } from "@/lib/turno";
 import { criarPassagemTurno } from "@/app/passagem-turno/actions";
+import type { OrigemPassagemTurno } from "@/lib/origemPassagemTurno";
 
 type NovaPassagemTurnoFormProps = {
   turnoDestino: Turno;
+  origemSelecionada: OrigemPassagemTurno | null;
 };
 
-export default function NovaPassagemTurnoForm({ turnoDestino }: NovaPassagemTurnoFormProps) {
+export default function NovaPassagemTurnoForm({ turnoDestino, origemSelecionada }: NovaPassagemTurnoFormProps) {
   const router = useRouter();
   const [observacoes, setObservacoes] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function enviar() {
+    if (!origemSelecionada) return;
     setErro(null);
     startTransition(async () => {
-      const res = await criarPassagemTurno({ observacoes });
+      const res = await criarPassagemTurno({ origem: origemSelecionada, observacoes });
       if (res.error) {
         setErro(res.error);
         return;
@@ -53,7 +56,7 @@ export default function NovaPassagemTurnoForm({ turnoDestino }: NovaPassagemTurn
       <div>
         <button
           type="button"
-          disabled={pending}
+          disabled={pending || !origemSelecionada}
           onClick={enviar}
           className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
