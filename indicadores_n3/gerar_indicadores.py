@@ -106,6 +106,8 @@ def servico(r):
     if "awdio" in fila: return "Awdio"
     if "engenharia de video" in fila: return "Canais ao Vivo / Eng. de Vídeo"
     if "conteudo" in fila: return "VOD / Conteúdo"
+    if re.search(r"squad (mobile|tv|web)", fila): return "Apps (TV/Roku/Mobile/Web)"
+    if "suporte performance" in fila or "novas solicitacoes" in fila: pass
     nome = norm(r["Nome"])
     cp = norm(r.get("Cliente/Plataforma", "")) if pd.notna(r.get("Cliente/Plataforma")) else ""
     for s, rx in SERVICOS[:3]:
