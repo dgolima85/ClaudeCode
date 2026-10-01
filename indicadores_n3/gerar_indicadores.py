@@ -375,6 +375,54 @@ def main():
     cols = ["Fila", "Nome", "Estado", "Status", "Prioridade_N", "TIPO N3", "Categoria", "Serviço", "Cliente/Plataforma",
             "Device", "Tipo", "Time", "Grupo", "Data de abertura", "Data de Conclusão", "Mês abertura", "Mês conclusão"]
     escreve(wbse, df[cols], 1); wbse.freeze_panes = "A2"; wbse.auto_filter.ref = wbse.dimensions
+
+    # ---- Consolidado 3 e 6 meses (coorte pela Data de abertura)
+    import json, datetime as dt
+    ref = pd.Timestamp(os.environ.get("REF_DATE", dt.date.today().isoformat()))
+    fim = ref.to_period("M").start_time - pd.Timedelta(days=1)          # último dia do mês anterior
+    cons = {"referencia": str(ref.date()), "base_total": int(len(df)), "sem_data_abertura": int(df["Data de abertura"].isna().sum()),
+            "backlog_atual": int(n_ab.sum()), "backlog_prio": df[n_ab].Prioridade_N.value_counts().to_dict(), "janelas": {}}
+    wc = wb.create_sheet("Consolidado 3 e 6 meses", 1)
+    r = 1
+    for meses in (3, 6):
+        ini = (fim.to_period("M") - (meses - 1)).start_time
+        w = df[(df["Data de abertura"] >= ini) & (df["Data de abertura"] <= fim)]
+        rw = reab[(reab["Abertura recorrência"] >= ini) & (reab["Abertura recorrência"] <= fim)] if len(reab) else reab
+        pr = {p: {"entradas": int((w.Prioridade_N == p).sum()),
+                  "resolvidos": int(((w.Prioridade_N == p) & (w.Estado == "Resolvido")).sum()),
+                  "abertos": int(((w.Prioridade_N == p) & (w.Estado == "Aberto")).sum())} for p in ("P1", "P2", "P3", "P4")}
+        ms = [str(p) for p in pd.period_range(ini, fim, freq="M")]
+        serie = [{"mes": m, "entradas": int((w["Mês abertura"] == m).sum()),
+                  "resolvidos": int(((w["Mês abertura"] == m) & (w.Estado == "Resolvido")).sum()),
+                  "p1p2": int(((w["Mês abertura"] == m) & w.Prioridade_N.isin(["P1", "P2"])).sum())} for m in ms]
+        top = w.Categoria.value_counts().head(3)
+        j = {"inicio": str(ini.date()), "fim": str(fim.date()), "entradas": int(len(w)),
+             "resolvidos": int((w.Estado == "Resolvido").sum()), "abertos": int((w.Estado == "Aberto").sum()),
+             "cancelados": int((w.Estado == "Cancelado").sum()),
+             "reab_alta": int((rw["Confiança"] == "Alta").sum()) if len(rw) else 0, "reab_total": int(len(rw)),
+             "prio": pr, "serie": serie,
+             "top3": [{"categoria": c, "chamados": int(n), "pct": round(n / len(w), 4)} for c, n in top.items()],
+             "categorias": {c: int(n) for c, n in w.Categoria.value_counts().items()}}
+        j["taxa_resolucao"] = round(j["resolvidos"] / max(j["entradas"] - j["cancelados"], 1), 4)
+        cons["janelas"][str(meses)] = j
+        titulo_ws(wc, f"Últimos {meses} meses — {ini:%d/%m/%Y} a {fim:%d/%m/%Y} (chamados abertos no período)", r)
+        linhas = pd.DataFrame([("Chamados abertos no período (entradas)", j["entradas"]),
+                               ("  dos quais resolvidos (Feito)", j["resolvidos"]), ("  dos quais ainda abertos", j["abertos"]),
+                               ("  dos quais cancelados", j["cancelados"]), ("Taxa de resolução (resolvidos / entradas sem cancelados)", j["taxa_resolucao"]),
+                               ("Reaberturas/recorrências — confiança Alta", j["reab_alta"]), ("Reaberturas/recorrências — Alta + Média", j["reab_total"])],
+                              columns=["Indicador", "Valor"])
+        r = escreve(wc, linhas, r + 1)
+        wc.cell(r - 2, 2).number_format = "0.0%"
+        pt = pd.DataFrame([(p, v["entradas"], v["resolvidos"], v["abertos"]) for p, v in pr.items()], columns=["Criticidade", "Entradas", "Resolvidos", "Abertos"])
+        r = escreve(wc, pt, r + 2)
+        tt = pd.DataFrame([(i + 1, x["categoria"], x["chamados"], x["pct"]) for i, x in enumerate(j["top3"])], columns=["Top", "Categoria", "Chamados", "%"])
+        r2 = escreve(wc, tt, r + 2)
+        for i in range(r + 3, r2 + 1): wc.cell(i, 4).number_format = "0.0%"
+        r = r2 + 3
+    wc.cell(r, 1, "Disponibilidade por serviço: não apurada (sem horários de indisponibilidade nas planilhas).").font = Font(italic=True)
+    wc.cell(r + 1, 1, f"Backlog atual (todos os períodos): {cons['backlog_atual']} abertos. {cons['sem_data_abertura']} chamados sem Data de abertura ficam fora das janelas.").font = Font(italic=True)
+    wc.column_dimensions["A"].width = 62
+    json.dump(cons, open(os.path.join(os.path.dirname(os.path.abspath(saida)), "consolidado.json"), "w"), ensure_ascii=False, indent=1)
     wb.save(saida); print("OK", saida)
     print(k); print(t); print(top)
     print("reaberturas", len(reab)); print(df.Categoria.value_counts()); print(df["Serviço"].value_counts())
