@@ -6,6 +6,7 @@ import { TAMANHO_MAXIMO_EVIDENCIA_BYTES, formatarTamanhoArquivo } from "@/lib/ev
 import { ROTINA_TESTE_LABELS, type RotinaTeste } from "@/lib/roteiroTeste/rotinas";
 import { RESULTADOS_TESTE, RESULTADO_TESTE_LABELS, type ResultadoTeste } from "@/lib/roteiroTeste/resultado";
 import { BRANDS_TESTE, type BrandTeste } from "@/lib/roteiroTeste/brand";
+import { DISPOSITIVOS_TESTE, type DispositivoTeste } from "@/lib/roteiroTeste/dispositivos";
 import { DEFINICOES_ROTEIRO_TESTE, todosPassos, type PassoRoteiroTeste } from "@/lib/roteiroTeste/definicoes";
 import { criarExecucaoRoteiroTeste } from "@/app/roteiro-testes/actions";
 
@@ -70,6 +71,8 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
 
   const [brand, setBrand] = useState<BrandTeste | "">("");
   const [versao, setVersao] = useState("");
+  const [dispositivos, setDispositivos] = useState<DispositivoTeste[]>([]);
+  const [dataExecucao, setDataExecucao] = useState("");
   const [respostas, setRespostas] = useState<Record<string, ResultadoTeste | "">>({});
   const [anotacao, setAnotacao] = useState("");
   const [arquivos, setArquivos] = useState<File[]>([]);
@@ -92,9 +95,19 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
 
   const passos = todosPassos(definicao);
   const preenchidos = passos.filter((p) => respostas[p.codigo]).length;
+  // Extraídos aqui (em vez de ler "definicao.xxx" dentro de enviar()) porque
+  // o TypeScript não propaga o narrowing do "if (!definicao) return" acima
+  // pra dentro de funções aninhadas declaradas depois.
+  const usaDispositivos = definicao.usaDispositivos ?? false;
 
   function setResposta(codigo: string, valor: ResultadoTeste) {
     setRespostas((atual) => ({ ...atual, [codigo]: valor }));
+  }
+
+  function alternarDispositivo(dispositivo: DispositivoTeste) {
+    setDispositivos((atual) =>
+      atual.includes(dispositivo) ? atual.filter((d) => d !== dispositivo) : [...atual, dispositivo],
+    );
   }
 
   function selecionarArquivos(e: ChangeEvent<HTMLInputElement>) {
@@ -130,6 +143,10 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
       setErro("Informe a versão (release).");
       return;
     }
+    if (usaDispositivos && dispositivos.length === 0) {
+      setErro("Selecione ao menos um dispositivo.");
+      return;
+    }
     const faltando = passos.find((p) => !respostas[p.codigo]);
     if (faltando) {
       setErro(`Preencha o resultado de "${faltando.codigo}".`);
@@ -142,6 +159,8 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
       fd.set("brand", brand);
       fd.set("versao", versao.trim());
       fd.set("anotacao", anotacao);
+      for (const dispositivo of dispositivos) fd.append("dispositivos", dispositivo);
+      if (dataExecucao) fd.set("dataExecucao", dataExecucao);
       for (const passo of passos) fd.set(`passo_${passo.codigo}`, respostas[passo.codigo]);
       for (const arquivo of arquivos) fd.append("evidencias", arquivo);
 
@@ -214,7 +233,46 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
               className={CLASSE_INPUT}
             />
           </label>
+
+          {definicao.usaData && (
+            <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
+              Data
+              <input
+                type="date"
+                value={dataExecucao}
+                disabled={pending}
+                onChange={(e) => setDataExecucao(e.target.value)}
+                className={`${CLASSE_INPUT} dark:[color-scheme:dark]`}
+              />
+            </label>
+          )}
         </div>
+
+        {definicao.usaDispositivos && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs text-gray-600 dark:text-gray-400">Dispositivos</span>
+            <div className="flex flex-wrap gap-2">
+              {DISPOSITIVOS_TESTE.map((dispositivo) => {
+                const ativo = dispositivos.includes(dispositivo);
+                return (
+                  <button
+                    key={dispositivo}
+                    type="button"
+                    disabled={pending}
+                    onClick={() => alternarDispositivo(dispositivo)}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+                      ativo
+                        ? "border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500"
+                        : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    {dispositivo}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Passos do roteiro</h3>
@@ -234,19 +292,23 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
           ))}
         </div>
 
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Navegadores</h3>
-          <div className="flex flex-col gap-2">
-            {definicao.navegadores.map((passo) => (
-              <PassoCard
-                key={passo.codigo}
-                passo={passo}
-                valor={respostas[passo.codigo] ?? ""}
-                onChange={(valor) => setResposta(passo.codigo, valor)}
-              />
-            ))}
+        {definicao.secaoExtra && (
+          <div>
+            <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {definicao.secaoExtra.titulo}
+            </h3>
+            <div className="flex flex-col gap-2">
+              {definicao.secaoExtra.passos.map((passo) => (
+                <PassoCard
+                  key={passo.codigo}
+                  passo={passo}
+                  valor={respostas[passo.codigo] ?? ""}
+                  onChange={(valor) => setResposta(passo.codigo, valor)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
           Anotação

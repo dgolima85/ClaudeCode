@@ -8,7 +8,9 @@ import { validarEvidencia } from "@/lib/evidencias";
 import { isRotinaTeste, type RotinaTeste } from "@/lib/roteiroTeste/rotinas";
 import { isResultadoTeste, type ResultadoTeste } from "@/lib/roteiroTeste/resultado";
 import { isBrandTeste } from "@/lib/roteiroTeste/brand";
+import { isDispositivoTeste, type DispositivoTeste } from "@/lib/roteiroTeste/dispositivos";
 import { DEFINICOES_ROTEIRO_TESTE, todosPassos } from "@/lib/roteiroTeste/definicoes";
+import { inicioDoDiaBR } from "@/lib/dataHoraBR";
 
 export async function criarExecucaoRoteiroTeste(
   formData: FormData,
@@ -34,6 +36,19 @@ export async function criarExecucaoRoteiroTeste(
   if (typeof versao !== "string" || !versao.trim()) {
     return { error: "Informe a versão (release)." };
   }
+
+  const dispositivos = formData
+    .getAll("dispositivos")
+    .filter((v): v is string => typeof v === "string" && isDispositivoTeste(v)) as DispositivoTeste[];
+  if (definicao.usaDispositivos && dispositivos.length === 0) {
+    return { error: "Selecione ao menos um dispositivo." };
+  }
+
+  const dataExecucaoBruta = formData.get("dataExecucao");
+  const dataExecucao =
+    definicao.usaData && typeof dataExecucaoBruta === "string" && dataExecucaoBruta
+      ? inicioDoDiaBR(dataExecucaoBruta)
+      : null;
 
   const itens: { codigo: string; resultado: ResultadoTeste }[] = [];
   for (const passo of todosPassos(definicao)) {
@@ -70,6 +85,8 @@ export async function criarExecucaoRoteiroTeste(
     data: {
       rotina,
       brand,
+      dispositivos,
+      dataExecucao,
       versao: versao.trim(),
       anotacao: typeof anotacao === "string" && anotacao.trim() ? anotacao.trim() : null,
       analistaId: analista.id,
@@ -119,6 +136,7 @@ export type ExecucaoRoteiroTesteLinha = {
   id: string;
   rotina: RotinaTeste;
   brand: string;
+  dispositivos: string[];
   versao: string;
   analista: string;
   createdAt: string;
@@ -142,6 +160,7 @@ export async function listarExecucoesRoteiroTeste(limit = 20): Promise<ExecucaoR
       id: e.id,
       rotina: e.rotina,
       brand: e.brand,
+      dispositivos: e.dispositivos,
       versao: e.versao,
       analista: e.analista.nome,
       createdAt: e.createdAt.toISOString(),
@@ -155,7 +174,9 @@ export type ExecucaoRoteiroTesteDetalhe = {
   id: string;
   rotina: RotinaTeste;
   brand: string;
+  dispositivos: string[];
   versao: string;
+  dataExecucao: string | null;
   anotacao: string | null;
   analista: string;
   createdAt: string;
@@ -191,7 +212,9 @@ export async function buscarExecucaoRoteiroTeste(id: string): Promise<ExecucaoRo
     id: execucao.id,
     rotina: execucao.rotina,
     brand: execucao.brand,
+    dispositivos: execucao.dispositivos,
     versao: execucao.versao,
+    dataExecucao: execucao.dataExecucao ? execucao.dataExecucao.toISOString() : null,
     anotacao: execucao.anotacao,
     analista: execucao.analista.nome,
     createdAt: execucao.createdAt.toISOString(),

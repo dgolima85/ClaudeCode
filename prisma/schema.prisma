@@ -330,6 +330,14 @@ model RoteiroTesteExecucao {
   id         String   @id @default(cuid())
   rotina     String
   brand      String
+  // Dispositivos validados nesta execução (ex.: Teste TV — LG, Samsung...).
+  // Lista vazia nas rotinas que não têm esse campo (ex.: Teste Web). Multi-
+  // escolha, por isso array em vez de uma coluna única feito "brand".
+  dispositivos String[]
+  // Campo "Data" do formulário original (a data em que o teste foi de fato
+  // executado) — opcional, distinto de createdAt (quando o registro foi
+  // salvo no sistema). Nulo nas rotinas que não têm esse campo.
+  dataExecucao DateTime?
   versao     String
   anotacao   String?
   analistaId String

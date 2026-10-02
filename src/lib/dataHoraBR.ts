@@ -15,6 +15,13 @@ const formatterDataHoraBR = new Intl.DateTimeFormat("pt-BR", {
   hour12: false,
 });
 
+const formatterDataCurtaBR = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: TIMEZONE_BR,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
 const formatterDiaBR = new Intl.DateTimeFormat("en-CA", {
   timeZone: TIMEZONE_BR,
   year: "numeric",
@@ -43,6 +50,12 @@ const formatterHoraBR = new Intl.DateTimeFormat("en-GB", {
 export function formatarDataHoraBR(data: Date | string): string {
   const d = typeof data === "string" ? new Date(data) : data;
   return formatterDataHoraBR.format(d).replace(",", "");
+}
+
+/** Formata uma data (sem horário) no padrão dd/MM/yyyy, sempre no horário de Brasília. */
+export function formatarDataBR(data: Date | string): string {
+  const d = typeof data === "string" ? new Date(data) : data;
+  return formatterDataCurtaBR.format(d);
 }
 
 /** Retorna o dia (yyyy-MM-dd) correspondente a uma data, no horário de Brasília. */

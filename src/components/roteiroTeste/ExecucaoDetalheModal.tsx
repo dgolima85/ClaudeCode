@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
-import { formatarDataHoraBR } from "@/lib/dataHoraBR";
+import { formatarDataHoraBR, formatarDataBR } from "@/lib/dataHoraBR";
 import { formatarTamanhoArquivo } from "@/lib/evidencias";
 import { ROTINA_TESTE_LABELS } from "@/lib/roteiroTeste/rotinas";
 import { RESULTADO_TESTE_LABELS, RESULTADO_TESTE_DOT_COLOR } from "@/lib/roteiroTeste/resultado";
@@ -49,12 +49,30 @@ export default function ExecucaoDetalheModal({ execucaoId, onClose }: ExecucaoDe
               <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Versão</span>
               <span className="text-gray-700 dark:text-gray-300">{detalhe.versao}</span>
             </div>
+            {detalhe.dispositivos.length > 0 && (
+              <div>
+                <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Dispositivos
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">{detalhe.dispositivos.join(", ")}</span>
+              </div>
+            )}
             <div>
               <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Analista</span>
               <span className="text-gray-700 dark:text-gray-300">{detalhe.analista}</span>
             </div>
-            <div className="col-span-2">
-              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Data</span>
+            {detalhe.dataExecucao && (
+              <div>
+                <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                  Data do teste
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">{formatarDataBR(detalhe.dataExecucao)}</span>
+              </div>
+            )}
+            <div>
+              <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                Enviado em
+              </span>
               <span className="text-gray-700 dark:text-gray-300">{formatarDataHoraBR(detalhe.createdAt)}</span>
             </div>
           </div>

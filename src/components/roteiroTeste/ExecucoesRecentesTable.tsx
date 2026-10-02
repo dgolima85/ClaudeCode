@@ -17,6 +17,7 @@ export default function ExecucoesRecentesTable({ execucoes, onSelecionar }: Exec
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Rotina</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Brand</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Dispositivos</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Versão</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Analista</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Data</th>
@@ -34,6 +35,9 @@ export default function ExecucoesRecentesTable({ execucoes, onSelecionar }: Exec
                 {ROTINA_TESTE_LABELS[e.rotina]}
               </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{e.brand}</td>
+              <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                {e.dispositivos.length > 0 ? e.dispositivos.join(", ") : "—"}
+              </td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{e.versao}</td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">{e.analista}</td>
               <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
@@ -52,7 +56,7 @@ export default function ExecucoesRecentesTable({ execucoes, onSelecionar }: Exec
           ))}
           {execucoes.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
+              <td colSpan={7} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma execução registrada ainda.
               </td>
             </tr>
