@@ -36,8 +36,9 @@ export type FaixaPlantao = {
 export type PlantaoLinha = {
   area: string;
   analista: string;
-  telefone: string;
   horarios: FaixaPlantao[];
+  escalationNome: string;
+  escalationTelefone: string;
 };
 
 function extrairTenantId(issuer: string | undefined): string | null {
@@ -216,6 +217,48 @@ function extrairLegenda(texto: string[][]): FaixaCodigo[] {
   return legenda;
 }
 
+export type EscalationArea = {
+  nome: string;
+  telefone: string;
+};
+
+// Tabelinha de Escalation (confirmado pelo usuário): fica numa posição fixa
+// e independente dos blocos de plantão, a partir da coluna "AL" (nunca muda
+// de lugar) — coluna "AL" = Área, "AM" = Nome do escalation, "AN" =
+// Telefone. Tem uma linha de cabeçalho (com rótulos tipo "Área"/"Nome"/
+// "Telefone") e, a partir da linha seguinte, uma linha por área até a
+// primeira célula vazia na coluna "Área" dessa tabela. A correlação com os
+// blocos de plantão é pelo texto da área (mesmo tratamento usado no resto
+// do arquivo: sem acento/caixa).
+const COLUNA_ESCALATION_AREA = 37; // "AL" (A=0, B=1, ..., Z=25, AA=26, ..., AL=37)
+const COLUNA_ESCALATION_NOME = COLUNA_ESCALATION_AREA + 1; // "AM"
+const COLUNA_ESCALATION_TELEFONE = COLUNA_ESCALATION_AREA + 2; // "AN"
+
+function extrairEscalationPorArea(texto: string[][]): Map<string, EscalationArea> {
+  const porArea = new Map<string, EscalationArea>();
+
+  let rHeader = -1;
+  for (let r = 0; r < texto.length; r++) {
+    const celula = texto[r]?.[COLUNA_ESCALATION_AREA];
+    if (celula && ROTULO_AREA.includes(normalizarTexto(celula))) {
+      rHeader = r;
+      break;
+    }
+  }
+  if (rHeader === -1) return porArea;
+
+  for (let r = rHeader + 1; r < texto.length; r++) {
+    const area = texto[r]?.[COLUNA_ESCALATION_AREA]?.trim();
+    if (!area) break;
+    porArea.set(normalizarTexto(area), {
+      nome: texto[r]?.[COLUNA_ESCALATION_NOME]?.trim() ?? "",
+      telefone: texto[r]?.[COLUNA_ESCALATION_TELEFONE]?.trim() ?? "",
+    });
+  }
+
+  return porArea;
+}
+
 type AncoraRecursos = { rHeader: number; cRecurso: number };
 
 function localizarAncorasRecursos(texto: string[][]): AncoraRecursos[] {
@@ -297,6 +340,10 @@ export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
     throw new Error("Não foi possível ler a legenda de horários (ex.: \"P1 - 05h00 as 07:00\") na planilha.");
   }
 
+  // Opcional: se a tabelinha de Escalation (coluna "AL") não for encontrada,
+  // o painel continua funcionando normalmente, só sem essa informação.
+  const escalationPorArea = extrairEscalationPorArea(range.text);
+
   const [anoAtual, mesAtual, diaAtualStr] = dataBR().split("-");
   const diaAtual = Number(diaAtualStr);
   const mesAtualNum = Number(mesAtual);
@@ -306,7 +353,11 @@ export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
   const resultado: PlantaoLinha[] = [];
 
   for (const { rHeader, cRecurso } of ancoras) {
-    const { cContato, colInicioDias } = localizarColunaContatoEInicioDias(range.text, rHeader, cRecurso);
+    // "cContato" não é mais usado (o telefone do analista não é mais exibido
+    // — ver "escalation" abaixo), mas a coluna "Contato" ainda pode existir
+    // na planilha e precisa continuar sendo pulada pra achar onde os dias
+    // começam.
+    const { colInicioDias } = localizarColunaContatoEInicioDias(range.text, rHeader, cRecurso);
     const cArea = localizarColunaArea(range.text, rHeader, cRecurso);
 
     const mesAno = localizarMesAno(range.text[rHeader], colInicioDias);
@@ -337,12 +388,15 @@ export async function buscarPlantaoHoje(): Promise<PlantaoLinha[]> {
       if (horarios.length === 0) continue;
 
       const areaDaLinha = cArea !== null ? range.text[r][cArea]?.trim() : "";
+      const area = areaDaLinha || aba.name;
+      const escalation = escalationPorArea.get(normalizarTexto(area));
 
       resultado.push({
-        area: areaDaLinha || aba.name,
+        area,
         analista: range.text[r][cRecurso].trim(),
-        telefone: cContato !== null ? (range.text[r][cContato]?.trim() ?? "") : "",
         horarios,
+        escalationNome: escalation?.nome ?? "",
+        escalationTelefone: escalation?.telefone ?? "",
       });
     }
   }

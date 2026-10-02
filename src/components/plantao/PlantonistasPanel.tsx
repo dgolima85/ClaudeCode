@@ -58,8 +58,8 @@ export default async function PlantonistasPanel() {
               <tr className="text-left text-xs text-gray-400 dark:text-gray-500">
                 <th className="pb-1.5 pr-3 font-medium">Área</th>
                 <th className="pb-1.5 pr-3 font-medium">Analista</th>
-                <th className="pb-1.5 pr-3 font-medium">Telefone</th>
-                <th className="pb-1.5 font-medium">Horário</th>
+                <th className="pb-1.5 pr-3 font-medium">Horário</th>
+                <th className="pb-1.5 font-medium">Escalation</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -67,9 +67,20 @@ export default async function PlantonistasPanel() {
                 <tr key={`${p.area}-${p.analista}-${i}`}>
                   <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-300">{p.area}</td>
                   <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-300">{p.analista}</td>
-                  <td className="py-1.5 pr-3 text-gray-500 dark:text-gray-400">{p.telefone || "—"}</td>
-                  <td className="py-1.5 whitespace-nowrap">
+                  <td className="py-1.5 pr-3 whitespace-nowrap">
                     <HorariosDoDia horarios={p.horarios} />
+                  </td>
+                  <td className="py-1.5 text-gray-600 dark:text-gray-400">
+                    {p.escalationNome ? (
+                      <>
+                        <div className="text-gray-700 dark:text-gray-300">{p.escalationNome}</div>
+                        {p.escalationTelefone && (
+                          <div className="text-xs text-gray-400 dark:text-gray-500">{p.escalationTelefone}</div>
+                        )}
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                 </tr>
               ))}
