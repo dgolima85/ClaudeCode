@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { formatarDataHoraBR, paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { MODELOS_AVISO, MODELO_AVISO_LABELS, type ModeloAviso } from "@/lib/aviso";
+import type { ContextoAviso } from "@/lib/contextoAviso";
 import { criarAviso, atualizarAviso, excluirAviso } from "@/app/avisos/actions";
 import { IconeInformativo, IconeAcompanhamento, IconeAtuacao } from "./icones";
 
@@ -15,6 +16,7 @@ export type AvisoLinha = {
 
 type AvisosPanelProps = {
   avisos: AvisoLinha[];
+  contexto: ContextoAviso;
 };
 
 const ICONE_MODELO: Record<ModeloAviso, typeof IconeInformativo> = {
@@ -72,11 +74,13 @@ function IconeSeta({ direcao, className }: { direcao: "esquerda" | "direita"; cl
 
 function AvisoCard({
   aviso,
+  contexto,
   onExcluir,
   onAtualizar,
   onEditandoChange,
 }: {
   aviso: AvisoLinha;
+  contexto: ContextoAviso;
   onExcluir: (id: string) => void;
   onAtualizar: (aviso: AvisoLinha) => void;
   onEditandoChange: (editando: boolean) => void;
@@ -110,7 +114,7 @@ function AvisoCard({
       return;
     }
     startTransition(async () => {
-      const res = await atualizarAviso(aviso.id, { modelo, descricao, expiraEm });
+      const res = await atualizarAviso(aviso.id, { modelo, descricao, expiraEm, contexto });
       if (res?.error || !res.aviso) {
         setErro(res.error ?? "Não foi possível salvar o aviso.");
         return;
@@ -236,7 +240,7 @@ function AvisoCard({
   );
 }
 
-export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps) {
+export default function AvisosPanel({ avisos: avisosIniciais, contexto }: AvisosPanelProps) {
   const [avisos, setAvisos] = useState(avisosIniciais);
   const [indice, setIndice] = useState(0);
   const [criando, setCriando] = useState(false);
@@ -262,7 +266,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
       return;
     }
     startTransition(async () => {
-      const res = await criarAviso({ modelo, descricao, expiraEm });
+      const res = await criarAviso({ modelo, descricao, expiraEm, contexto });
       if (res?.error || !res.aviso) {
         setErro(res.error ?? "Não foi possível salvar o aviso.");
         return;
@@ -401,6 +405,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
               <div className="min-w-0 flex-1">
                 <AvisoCard
                   aviso={avisos[indice]}
+                  contexto={contexto}
                   onExcluir={excluirLocal}
                   onAtualizar={atualizarLocal}
                   onEditandoChange={setEditandoAlgum}

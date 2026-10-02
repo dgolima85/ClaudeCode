@@ -5,6 +5,7 @@ import { exigirAnalistaLogado } from "@/lib/session";
 import { avisoSchema } from "@/lib/validations";
 import { deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { revalidarHomesOcorrencias } from "@/lib/revalidarOcorrencias";
+import type { ContextoAviso } from "@/lib/contextoAviso";
 
 export type AvisoCriado = {
   id: string;
@@ -17,6 +18,7 @@ export async function criarAviso(dados: {
   modelo: string;
   descricao: string;
   expiraEm: string;
+  contexto: ContextoAviso;
 }): Promise<{ error?: string; aviso?: AvisoCriado }> {
   const analista = await exigirAnalistaLogado();
   const parsed = avisoSchema.safeParse(dados);
@@ -29,6 +31,7 @@ export async function criarAviso(dados: {
       modelo: parsed.data.modelo,
       descricao: parsed.data.descricao,
       expiraEm: deInputDataHoraBR(parsed.data.expiraEm),
+      contexto: parsed.data.contexto,
       analistaId: analista.id,
     },
   });
@@ -46,7 +49,7 @@ export async function criarAviso(dados: {
 
 export async function atualizarAviso(
   id: string,
-  dados: { modelo: string; descricao: string; expiraEm: string },
+  dados: { modelo: string; descricao: string; expiraEm: string; contexto: ContextoAviso },
 ): Promise<{ error?: string; aviso?: AvisoCriado }> {
   await exigirAnalistaLogado();
   const parsed = avisoSchema.safeParse(dados);
@@ -60,6 +63,10 @@ export async function atualizarAviso(
       modelo: parsed.data.modelo,
       descricao: parsed.data.descricao,
       expiraEm: deInputDataHoraBR(parsed.data.expiraEm),
+      // Avisos antigos (de antes dos quadros serem desmembrados) não têm
+      // contexto definido — editar um deles passa a atribuí-lo ao quadro de
+      // onde a edição partiu, migrando-o aos poucos pra o novo modelo.
+      contexto: parsed.data.contexto,
     },
   });
 

@@ -42,6 +42,13 @@ model Aviso {
   modelo     String
   descricao  String
   expiraEm   DateTime
+  // OCORRENCIAS_ONGOING / OCORRENCIAS_QUALIDADE_APP (ver src/lib/contextoAviso.ts)
+  // — cada quadro de Avisos só cria, edita e exclui avisos do seu próprio
+  // contexto. Nula nos avisos criados antes desse campo existir (quando as
+  // duas homes ainda compartilhavam o mesmo quadro) — esses continuam
+  // aparecendo nas duas até expirarem ou serem editados (o que define o
+  // contexto deles a partir daí).
+  contexto   String?
   analistaId String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -49,6 +56,7 @@ model Aviso {
   analista Analista @relation(fields: [analistaId], references: [id], onDelete: Restrict)
 
   @@index([expiraEm])
+  @@index([contexto])
   @@map("avisos")
 }
 

@@ -51,7 +51,12 @@ export default async function OcorrenciasQualidadeAppPage({
         orderBy: { nome: "asc" },
       }),
       prisma.aviso.findMany({
-        where: { expiraEm: { gt: new Date() } },
+        // Avisos sem contexto são de antes dos quadros serem desmembrados —
+        // continuam aparecendo nas duas homes até expirarem ou serem editados.
+        where: {
+          expiraEm: { gt: new Date() },
+          OR: [{ contexto: "OCORRENCIAS_QUALIDADE_APP" }, { contexto: null }],
+        },
         orderBy: { createdAt: "desc" },
       }),
       buscarPendentesPassagemTurno(),
@@ -166,7 +171,7 @@ export default async function OcorrenciasQualidadeAppPage({
 
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         <NovaOcorrenciaForm tipos={tipos} onCriar={criarOcorrencia} />
-        <AvisosPanel avisos={avisos} />
+        <AvisosPanel avisos={avisos} contexto="OCORRENCIAS_QUALIDADE_APP" />
       </div>
 
       <OcorrenciasTable ocorrencias={linhas} tipos={tipos} ocorrenciaAbertaId={sp.ocorrencia} />

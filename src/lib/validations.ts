@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TURNOS } from "@/lib/turno";
 import { STATUS_OCORRENCIA } from "@/lib/status";
 import { MODELOS_AVISO } from "@/lib/aviso";
+import { CONTEXTOS_AVISO } from "@/lib/contextoAviso";
 import { CRITICIDADES } from "@/lib/criticidade";
 import { ORIGENS_PASSAGEM_TURNO } from "@/lib/origemPassagemTurno";
 
@@ -44,6 +45,7 @@ export const avisoSchema = z
     modelo: z.enum(MODELOS_AVISO, { message: "Selecione um modelo válido" }),
     descricao: z.string().trim().min(1, "Descreva o aviso").max(2000, "Descrição muito longa"),
     expiraEm: dataHoraLocalSchema,
+    contexto: z.enum(CONTEXTOS_AVISO, { message: "Contexto inválido" }),
   })
   .refine((d) => new Date(`${d.expiraEm}:00-03:00`).getTime() > Date.now(), {
     message: "Escolha uma data e hora futura para o aviso expirar.",

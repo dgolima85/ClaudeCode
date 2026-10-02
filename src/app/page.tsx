@@ -62,7 +62,9 @@ export default async function HomePage({
     }),
     prisma.tipoOcorrencia.findMany({ select: { id: true, nome: true } }),
     prisma.aviso.findMany({
-      where: { expiraEm: { gt: new Date() } },
+      // Avisos sem contexto são de antes dos quadros serem desmembrados —
+      // continuam aparecendo nas duas homes até expirarem ou serem editados.
+      where: { expiraEm: { gt: new Date() }, OR: [{ contexto: "OCORRENCIAS_ONGOING" }, { contexto: null }] },
       orderBy: { createdAt: "desc" },
     }),
     buscarPendentesPassagemTurno(),
@@ -188,7 +190,7 @@ export default async function HomePage({
 
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         <NovaOcorrenciaForm tipos={tipos} onCriar={criarOcorrencia} />
-        <AvisosPanel avisos={avisos} />
+        <AvisosPanel avisos={avisos} contexto="OCORRENCIAS_ONGOING" />
       </div>
 
       <OcorrenciasTable ocorrencias={linhas} tipos={tipos} ocorrenciaAbertaId={sp.ocorrencia} />
