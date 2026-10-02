@@ -1,6 +1,9 @@
 import type { RotinaTeste } from "./rotinas";
 import { PASSOS_TESTE_WEB, NAVEGADORES_TESTE_WEB } from "./testeWeb";
 import { PASSOS_TESTE_TV } from "./testeTv";
+import { PASSOS_TESTE_MOBILE } from "./testeMobile";
+import { BRANDS_TESTE, BRANDS_TESTE_MOBILE } from "./brand";
+import { DISPOSITIVOS_TESTE_TV, DISPOSITIVOS_TESTE_MOBILE } from "./dispositivos";
 
 export type PassoRoteiroTeste = {
   codigo: string;
@@ -21,30 +24,43 @@ export type DefinicaoRoteiroTeste = {
   // Passos numerados do roteiro (AUTH-WEB-001, TV-001, ...).
   passos: PassoRoteiroTeste[];
   secaoExtra?: SecaoExtraRoteiroTeste;
-  // Campo "Dispositivos" (multi-escolha) — só o Teste TV tem, por enquanto.
-  usaDispositivos?: boolean;
+  // Opções do campo Brand — cada rotina tem a sua própria lista (ex.: Teste
+  // Mobile V4 tem uma marca a mais, "Awdio", que Web/TV não têm).
+  brands: readonly string[];
+  // Campo "Dispositivos" (multi-escolha) — presente e com sua própria lista
+  // de opções só nas rotinas que têm esse campo (Teste TV, Teste Mobile).
+  // Ausente (undefined) nas rotinas sem esse campo (ex.: Teste Web).
+  dispositivos?: readonly string[];
   // Campo "Data" (opcional, data em que o teste foi executado) — distinto
   // de quando a execução foi salva no sistema (createdAt).
   usaData?: boolean;
 };
 
-// Só "TESTE_WEB" e "TESTE_TV" têm roteiro definido por enquanto — "Teste
-// Mobile V4" (ver rotinas.ts) aparece no seletor da Home mas ainda não tem
-// um roteiro implementado.
+// Só "TESTE_WEB", "TESTE_TV" e "TESTE_MOBILE_V4" têm roteiro definido por
+// enquanto.
 export const DEFINICOES_ROTEIRO_TESTE: Partial<Record<RotinaTeste, DefinicaoRoteiroTeste>> = {
   TESTE_WEB: {
     titulo: "Teste Web",
     subtitulo: "Realização dos testes em Chrome, Edge e Firefox.",
     passos: PASSOS_TESTE_WEB,
     secaoExtra: { titulo: "Navegadores", passos: NAVEGADORES_TESTE_WEB },
+    brands: BRANDS_TESTE,
   },
   TESTE_TV: {
     titulo: "Teste TV V4",
     subtitulo:
       "Formulário para validação do roteiro de testes de TV. Objetivo: garantir que todas as funcionalidades principais do aplicativo estão funcionando conforme descrito em cada teste.",
     passos: PASSOS_TESTE_TV,
-    usaDispositivos: true,
+    brands: BRANDS_TESTE,
+    dispositivos: DISPOSITIVOS_TESTE_TV,
     usaData: true,
+  },
+  TESTE_MOBILE_V4: {
+    titulo: "Teste Mobile V4",
+    subtitulo: "Realização dos testes em Mobile Android e iOS.",
+    passos: PASSOS_TESTE_MOBILE,
+    brands: BRANDS_TESTE_MOBILE,
+    dispositivos: DISPOSITIVOS_TESTE_MOBILE,
   },
 };
 

@@ -5,8 +5,6 @@ import Modal from "@/components/ui/Modal";
 import { TAMANHO_MAXIMO_EVIDENCIA_BYTES, formatarTamanhoArquivo } from "@/lib/evidencias";
 import { ROTINA_TESTE_LABELS, type RotinaTeste } from "@/lib/roteiroTeste/rotinas";
 import { RESULTADOS_TESTE, RESULTADO_TESTE_LABELS, type ResultadoTeste } from "@/lib/roteiroTeste/resultado";
-import { BRANDS_TESTE, type BrandTeste } from "@/lib/roteiroTeste/brand";
-import { DISPOSITIVOS_TESTE, type DispositivoTeste } from "@/lib/roteiroTeste/dispositivos";
 import { DEFINICOES_ROTEIRO_TESTE, todosPassos, type PassoRoteiroTeste } from "@/lib/roteiroTeste/definicoes";
 import { criarExecucaoRoteiroTeste } from "@/app/roteiro-testes/actions";
 
@@ -69,9 +67,9 @@ function PassoCard({
 export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroTesteModalProps) {
   const definicao = DEFINICOES_ROTEIRO_TESTE[rotina];
 
-  const [brand, setBrand] = useState<BrandTeste | "">("");
+  const [brand, setBrand] = useState("");
   const [versao, setVersao] = useState("");
-  const [dispositivos, setDispositivos] = useState<DispositivoTeste[]>([]);
+  const [dispositivos, setDispositivos] = useState<string[]>([]);
   const [dataExecucao, setDataExecucao] = useState("");
   const [respostas, setRespostas] = useState<Record<string, ResultadoTeste | "">>({});
   const [anotacao, setAnotacao] = useState("");
@@ -98,13 +96,13 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
   // Extraídos aqui (em vez de ler "definicao.xxx" dentro de enviar()) porque
   // o TypeScript não propaga o narrowing do "if (!definicao) return" acima
   // pra dentro de funções aninhadas declaradas depois.
-  const usaDispositivos = definicao.usaDispositivos ?? false;
+  const dispositivosDisponiveis = definicao.dispositivos;
 
   function setResposta(codigo: string, valor: ResultadoTeste) {
     setRespostas((atual) => ({ ...atual, [codigo]: valor }));
   }
 
-  function alternarDispositivo(dispositivo: DispositivoTeste) {
+  function alternarDispositivo(dispositivo: string) {
     setDispositivos((atual) =>
       atual.includes(dispositivo) ? atual.filter((d) => d !== dispositivo) : [...atual, dispositivo],
     );
@@ -143,7 +141,7 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
       setErro("Informe a versão (release).");
       return;
     }
-    if (usaDispositivos && dispositivos.length === 0) {
+    if (dispositivosDisponiveis && dispositivos.length === 0) {
       setErro("Selecione ao menos um dispositivo.");
       return;
     }
@@ -209,13 +207,13 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
             <select
               value={brand}
               disabled={pending}
-              onChange={(e) => setBrand(e.target.value as BrandTeste)}
+              onChange={(e) => setBrand(e.target.value)}
               className={CLASSE_SELECT}
             >
               <option value="" disabled>
                 Selecione
               </option>
-              {BRANDS_TESTE.map((b) => (
+              {definicao.brands.map((b) => (
                 <option key={b} value={b}>
                   {b}
                 </option>
@@ -248,11 +246,11 @@ export default function RoteiroTesteModal({ rotina, onClose, onSalvo }: RoteiroT
           )}
         </div>
 
-        {definicao.usaDispositivos && (
+        {dispositivosDisponiveis && (
           <div className="flex flex-col gap-1.5">
             <span className="text-xs text-gray-600 dark:text-gray-400">Dispositivos</span>
             <div className="flex flex-wrap gap-2">
-              {DISPOSITIVOS_TESTE.map((dispositivo) => {
+              {dispositivosDisponiveis.map((dispositivo) => {
                 const ativo = dispositivos.includes(dispositivo);
                 return (
                   <button

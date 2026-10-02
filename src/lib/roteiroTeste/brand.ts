@@ -1,3 +1,5 @@
+// Lista "base", reaproveitada pelo Teste Web e Teste TV. O Teste Mobile V4
+// tem uma marca a mais (Awdio) — ver BRANDS_TESTE_MOBILE.
 export const BRANDS_TESTE = [
   "Watch TV",
   "Vero Video",
@@ -9,8 +11,4 @@ export const BRANDS_TESTE = [
   "Desktop Play",
 ] as const;
 
-export type BrandTeste = (typeof BRANDS_TESTE)[number];
-
-export function isBrandTeste(value: string): value is BrandTeste {
-  return (BRANDS_TESTE as readonly string[]).includes(value);
-}
+export const BRANDS_TESTE_MOBILE = [...BRANDS_TESTE, "Awdio"] as const;

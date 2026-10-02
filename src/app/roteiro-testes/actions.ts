@@ -7,8 +7,6 @@ import { exigirAnalistaLogado } from "@/lib/session";
 import { validarEvidencia } from "@/lib/evidencias";
 import { isRotinaTeste, type RotinaTeste } from "@/lib/roteiroTeste/rotinas";
 import { isResultadoTeste, type ResultadoTeste } from "@/lib/roteiroTeste/resultado";
-import { isBrandTeste } from "@/lib/roteiroTeste/brand";
-import { isDispositivoTeste, type DispositivoTeste } from "@/lib/roteiroTeste/dispositivos";
 import { DEFINICOES_ROTEIRO_TESTE, todosPassos } from "@/lib/roteiroTeste/definicoes";
 import { inicioDoDiaBR } from "@/lib/dataHoraBR";
 
@@ -28,7 +26,7 @@ export async function criarExecucaoRoteiroTeste(
   }
 
   const brand = formData.get("brand");
-  if (typeof brand !== "string" || !isBrandTeste(brand)) {
+  if (typeof brand !== "string" || !definicao.brands.includes(brand)) {
     return { error: "Selecione o Brand." };
   }
 
@@ -37,10 +35,11 @@ export async function criarExecucaoRoteiroTeste(
     return { error: "Informe a versão (release)." };
   }
 
+  const dispositivosDisponiveis = definicao.dispositivos;
   const dispositivos = formData
     .getAll("dispositivos")
-    .filter((v): v is string => typeof v === "string" && isDispositivoTeste(v)) as DispositivoTeste[];
-  if (definicao.usaDispositivos && dispositivos.length === 0) {
+    .filter((v): v is string => typeof v === "string" && (dispositivosDisponiveis?.includes(v) ?? false));
+  if (dispositivosDisponiveis && dispositivos.length === 0) {
     return { error: "Selecione ao menos um dispositivo." };
   }
 
