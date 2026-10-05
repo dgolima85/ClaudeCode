@@ -392,15 +392,16 @@ export default function AvisosPanel({ avisos: avisosIniciais, contexto }: Avisos
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={anterior}
-                disabled={avisos.length <= 1}
-                aria-label="Aviso anterior"
-                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              >
-                <IconeSeta direcao="esquerda" className="h-5 w-5" />
-              </button>
+              {avisos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={anterior}
+                  aria-label="Aviso anterior"
+                  className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                >
+                  <IconeSeta direcao="esquerda" className="h-5 w-5" />
+                </button>
+              )}
 
               <div className="min-w-0 flex-1">
                 <AvisoCard
@@ -412,15 +413,16 @@ export default function AvisosPanel({ avisos: avisosIniciais, contexto }: Avisos
                 />
               </div>
 
-              <button
-                type="button"
-                onClick={proximo}
-                disabled={avisos.length <= 1}
-                aria-label="Próximo aviso"
-                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              >
-                <IconeSeta direcao="direita" className="h-5 w-5" />
-              </button>
+              {avisos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={proximo}
+                  aria-label="Próximo aviso"
+                  className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                >
+                  <IconeSeta direcao="direita" className="h-5 w-5" />
+                </button>
+              )}
             </div>
 
             {avisos.length > 1 && (
