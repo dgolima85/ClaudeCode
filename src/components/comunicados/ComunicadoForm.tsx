@@ -96,6 +96,11 @@ function LogoMarca() {
   );
 }
 
+function MarcaWatch() {
+  // eslint-disable-next-line @next/next/no-img-element -- precisa ser um <img> "cru": o html2canvas captura a árvore do DOM e next/image passa pela rota de otimização, que complica a captura sem ganho nenhum aqui (o arquivo já é pequeno).
+  return <img src="/watch-logo.png" alt="Watch" style={{ height: 22, width: "auto", flexShrink: 0 }} />;
+}
+
 function LinhaRotulo({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
     <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>
@@ -156,7 +161,10 @@ function ComunicadoTemplate({
         gap: 18,
       }}
     >
-      <LogoMarca />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <LogoMarca />
+        <MarcaWatch />
+      </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
         <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>
