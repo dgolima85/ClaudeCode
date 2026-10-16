@@ -26,9 +26,14 @@ type PartidaBruta = {
   content?: { broadcast?: { name?: string }[] };
 };
 
-type BlocoDados = {
-  teams?: Record<string, TimeInfo>;
+// A lista de jogos por dia vive aninhada em "football-daily-matches.order"
+// (não mais em "order" na raiz — ver histórico de depuração via ?debug=1).
+type FootballDailyMatches = {
   order?: { date: string; matches: number[] }[];
+};
+
+type BlocoDados = {
+  "football-daily-matches"?: FootballDailyMatches;
   [chave: string]: unknown;
 };
 
@@ -37,9 +42,9 @@ type BlocoDados = {
 // chamada JS separada — mais estável que depender de replicar os headers de
 // uma chamada de API (ver conversa). Em vez de fixar qual <script> é o
 // certo (o id/hash pode mudar), procura pelo CONTEÚDO: o bloco que tem
-// "teams" + "order" + pelo menos uma chave "football-match-<id>" juntos —
-// resistente a uma mudança de hash, só quebra se a UOL mudar a estrutura
-// dos dados em si.
+// "football-daily-matches" + pelo menos uma chave "football-match-<id>"
+// juntos — resistente a uma mudança de hash, só quebra se a UOL mudar a
+// estrutura dos dados em si.
 function extrairBlocoDados(html: string): BlocoDados | null {
   const regex = /<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/g;
   let match: RegExpExecArray | null;
@@ -53,8 +58,7 @@ function extrairBlocoDados(html: string): BlocoDados | null {
     if (
       parsed &&
       typeof parsed === "object" &&
-      "teams" in parsed &&
-      "order" in parsed &&
+      "football-daily-matches" in parsed &&
       Object.keys(parsed as object).some((chave) => /^football-match-\d+$/.test(chave))
     ) {
       return parsed as BlocoDados;
@@ -130,14 +134,14 @@ export function diagnosticarHtml(html: string) {
 
 export function extrairJogosDoDia(html: string, dataBRHoje: string): ResultadoExtracao {
   const bloco = extrairBlocoDados(html);
-  if (!bloco || !bloco.teams || !bloco.order) {
+  const order = bloco?.["football-daily-matches"]?.order;
+  if (!bloco || !order) {
     return {
       error: "Não foi possível encontrar o bloco de dados dos jogos na página (o layout da fonte pode ter mudado).",
     };
   }
 
-  const times = bloco.teams;
-  const diaHoje = bloco.order.find((o) => o.date === dataBRHoje);
+  const diaHoje = order.find((o) => o.date === dataBRHoje);
   if (!diaHoje) {
     return { jogos: [] };
   }
@@ -153,8 +157,8 @@ export function extrairJogosDoDia(html: string, dataBRHoje: string): ResultadoEx
 
     const mandanteId = partida.teams?.home;
     const visitanteId = partida.teams?.away;
-    const mandante = (mandanteId !== undefined ? times[String(mandanteId)]?.name : undefined) ?? "—";
-    const visitante = (visitanteId !== undefined ? times[String(visitanteId)]?.name : undefined) ?? "—";
+    const mandante = (mandanteId !== undefined ? (bloco[`football-team-${mandanteId}`] as TimeInfo | undefined)?.name : undefined) ?? "—";
+    const visitante = (visitanteId !== undefined ? (bloco[`football-team-${visitanteId}`] as TimeInfo | undefined)?.name : undefined) ?? "—";
 
     const canais = (partida.content?.broadcast ?? [])
       .map((b) => b.name)
