@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { sincronizarJogosDoDia } from "@/lib/jogosDoDia/sync";
+import { buscarHtmlCentralDeJogos } from "@/lib/jogosDoDia/uol";
+import { diagnosticarHtml } from "@/lib/jogosDoDia/parser";
 
 // Chamada pela rotina agendada do Vercel Cron (ver vercel.json). Protegida
 // por CRON_SECRET quando configurada — o Vercel Cron manda essa chave
@@ -14,6 +16,16 @@ export async function GET(request: Request) {
     if (autorizacao !== `Bearer ${segredoEsperado}`) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+  }
+
+  // "?debug=1": diagnóstico temporário (ver parser.ts `diagnosticarHtml`)
+  // pra investigar o que a página da fonte está devolvendo em produção,
+  // sem rodar a sincronização de verdade. Remover depois de confirmar que
+  // a extração está funcionando.
+  const url = new URL(request.url);
+  if (url.searchParams.get("debug") === "1") {
+    const html = await buscarHtmlCentralDeJogos();
+    return NextResponse.json(diagnosticarHtml(html));
   }
 
   const resultado = await sincronizarJogosDoDia();

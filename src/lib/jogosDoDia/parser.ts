@@ -41,7 +41,7 @@ type BlocoDados = {
 // resistente a uma mudança de hash, só quebra se a UOL mudar a estrutura
 // dos dados em si.
 function extrairBlocoDados(html: string): BlocoDados | null {
-  const regex = /<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/g;
+  const regex = /<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/g;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(html)) !== null) {
     let parsed: unknown;
@@ -83,6 +83,31 @@ function normalizarHora(hour: string | undefined): string {
  * (layout mudou) — hoje genuinamente não ter jogos nos campeonatos
  * acompanhados é `{ jogos: [] }`, não um erro.
  */
+// Diagnóstico temporário pra investigar por que a extração falhou em
+// produção, sem precisar devolver o HTML inteiro (pode ser grande e expor
+// a página publicamente). Devolve só a forma do que foi encontrado.
+export function diagnosticarHtml(html: string) {
+  const regex = /<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/g;
+  const blocos: { tamanho: number; parseOk: boolean; chaves?: string[]; erro?: string }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    try {
+      const parsed = JSON.parse(match[1]);
+      const chaves = parsed && typeof parsed === "object" ? Object.keys(parsed) : [];
+      blocos.push({ tamanho: match[1].length, parseOk: true, chaves: chaves.slice(0, 15) });
+    } catch (e) {
+      blocos.push({ tamanho: match[1].length, parseOk: false, erro: e instanceof Error ? e.message : String(e) });
+    }
+  }
+  return {
+    tamanhoHtml: html.length,
+    blocosJsonEncontrados: blocos.length,
+    blocos,
+    contemFootballMatch: html.includes("football-match-"),
+    contemSinaisDeBloqueio: /captcha|access denied|just a moment|attention required/i.test(html),
+  };
+}
+
 export function extrairJogosDoDia(html: string, dataBRHoje: string): ResultadoExtracao {
   const bloco = extrairBlocoDados(html);
   if (!bloco || !bloco.teams || !bloco.order) {
