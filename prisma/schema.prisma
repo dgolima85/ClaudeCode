@@ -396,3 +396,49 @@ model RoteiroTesteEvidencia {
   @@index([execucaoId])
   @@map("roteiro_teste_evidencias")
 }
+
+// Jogos do dia (painel "Jogos de Hoje" na home de Ocorrências Ongoing) —
+// sincronizado periodicamente a partir da Central de Jogos do UOL por uma
+// rotina agendada (ver src/lib/jogosDoDia/ e src/app/api/cron/jogos-do-dia).
+// A tabela é sempre totalmente substituída a cada sincronização bem-sucedida
+// (só guarda os jogos do dia vigente, não é histórico) — se uma
+// sincronização falhar, os jogos da última tentativa que deu certo
+// continuam aqui até a próxima funcionar, em vez do painel ficar vazio.
+model JogoDoDia {
+  id         String   @id @default(cuid())
+  // Id da partida na fonte (UOL) — não é por ele que a tabela é mantida
+  // única (a tabela toda é substituída a cada sync), serve só de referência.
+  sourceId   Int      @unique
+  mandante   String
+  visitante  String
+  // "HH:mm", sempre horário de Brasília (a fonte não expõe um instante UTC
+  // confiável — ver comentário em src/lib/jogosDoDia/parser.ts).
+  horario    String
+  // "yyyy-MM-dd" (ver src/lib/dataHoraBR.ts) — permanece aqui como reforço
+  // de segurança: o painel sempre filtra por esse campo, então, se a rotina
+  // não rodar ainda hoje, mostra "nenhum jogo" em vez de exibir os jogos
+  // (corretos, mas de outro dia) que sobraram da sincronização anterior.
+  dataBR     String
+  estadio    String
+  cidade     String
+  campeonato String
+  canais     String[]
+  createdAt  DateTime @default(now())
+
+  @@index([dataBR])
+  @@map("jogos_do_dia")
+}
+
+// Linha única (id fixo "singleton") com o status da última sincronização —
+// alimenta o "atualizado há X" do painel e permite perceber rápido se o
+// parsing da Central de Jogos quebrou (ex.: o UOL mudou o layout), sem
+// esperar alguém reparar que os jogos pararam de atualizar.
+model JogoDoDiaSync {
+  id                String    @id
+  ultimoSucessoEm   DateTime?
+  ultimaTentativaEm DateTime?
+  ultimoErro        String?
+  jogosEncontrados  Int?
+
+  @@map("jogo_do_dia_sync")
+}

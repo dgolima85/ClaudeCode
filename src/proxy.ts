@@ -7,7 +7,12 @@ const SESSION_COOKIE = "analistaId";
 const AUTH_JS_SESSION_COOKIES = ["authjs.session-token", "__Secure-authjs.session-token"];
 // "/api/auth" precisa ficar público: é o callback que o Entra ID chama de
 // volta durante o login, antes de qualquer cookie de sessão existir.
-const PUBLIC_PATHS = ["/login", "/api/auth"];
+// "/api/cron" também: é chamada pelo Vercel Cron (ver vercel.json), que não
+// tem cookie de sessão nenhum — autentica por conta própria via CRON_SECRET
+// (ver src/app/api/cron/jogos-do-dia/route.ts). Sem essa exceção, a rotina
+// agendada nunca rodaria: cairia sempre no redirect pro /login antes de
+// chegar no código da rota.
+const PUBLIC_PATHS = ["/login", "/api/auth", "/api/cron"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

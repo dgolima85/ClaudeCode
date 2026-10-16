@@ -5,10 +5,9 @@ import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
 import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
 import PlantonistasPanel from "@/components/plantao/PlantonistasPanel";
-import IndicadoresOcorrenciasPanel, {
-  type IndicadoresOcorrencias,
-} from "@/components/ocorrencias/IndicadoresOcorrenciasPanel";
-import { STATUS_OCORRENCIA, isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import JogosDoDiaPanel from "@/components/jogosDoDia/JogosDoDiaPanel";
+import { buscarJogosDeHoje } from "@/lib/jogosDoDia/consulta";
+import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { FILTRO_TIPO_DEMAIS_ORIGENS } from "@/lib/monitoriaApp";
 import { isCriticidade } from "@/lib/criticidade";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
@@ -38,16 +37,7 @@ export default async function HomePage({
           isStatusOcorrencia,
         );
 
-  const [
-    ocorrencias,
-    tiposBrutos,
-    todosOsTipos,
-    avisosBrutos,
-    pendentesPassagemTurno,
-    statusCounts,
-    origemCounts,
-    ocorrenciasEmAbertoResumo,
-  ] = await Promise.all([
+  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno, jogosDeHoje] = await Promise.all([
     prisma.ocorrencia.findMany({
       where: {
         ...(statusFiltro.length > 0 ? { status: { in: statusFiltro } } : {}),
@@ -60,7 +50,6 @@ export default async function HomePage({
       where: { ativo: true, ...excluirMonitoriaApp },
       orderBy: { nome: "asc" },
     }),
-    prisma.tipoOcorrencia.findMany({ select: { id: true, nome: true } }),
     prisma.aviso.findMany({
       // Avisos sem contexto são de antes dos quadros serem desmembrados —
       // continuam aparecendo nas duas homes até expirarem ou serem editados.
@@ -68,23 +57,7 @@ export default async function HomePage({
       orderBy: { createdAt: "desc" },
     }),
     buscarPendentesPassagemTurno(),
-    // Indicadores da Home: independem do filtro de status aplicado à tabela
-    // abaixo, então são buscados à parte, sempre sobre todas as ocorrências
-    // (exceto Monitoria APP, que não pertence a esta home).
-    prisma.ocorrencia.groupBy({
-      by: ["status"],
-      where: { tipo: excluirMonitoriaApp },
-      _count: { _all: true },
-    }),
-    prisma.ocorrencia.groupBy({
-      by: ["tipoId"],
-      where: { status: { not: "RESOLVIDO" }, tipo: excluirMonitoriaApp },
-      _count: { _all: true },
-    }),
-    prisma.ocorrencia.findMany({
-      where: { status: { not: "RESOLVIDO" }, tipo: excluirMonitoriaApp },
-      select: { createdAt: true, ticket: true },
-    }),
+    buscarJogosDeHoje(),
   ]);
   const tipos = ordenarComNaPrimeiro(tiposBrutos);
   const avisos = avisosBrutos
@@ -95,41 +68,6 @@ export default async function HomePage({
       descricao: a.descricao,
       expiraEm: a.expiraEm.toISOString(),
     }));
-
-  const porStatus = Object.fromEntries(
-    STATUS_OCORRENCIA.map((status) => [status, 0]),
-  ) as Record<StatusOcorrencia, number>;
-  for (const c of statusCounts) {
-    if (isStatusOcorrencia(c.status)) porStatus[c.status] = c._count._all;
-  }
-  const emAberto = porStatus.EM_ANDAMENTO + porStatus.AGUARDANDO_VALIDACAO + porStatus.PENDENTE_CAUSA;
-
-  const nomeTipoPorId = new Map(todosOsTipos.map((t) => [t.id, t.nome]));
-  const porOrigem = origemCounts
-    .map((c) => ({ nome: nomeTipoPorId.get(c.tipoId) ?? "—", quantidade: c._count._all }))
-    .sort((a, b) => b.quantidade - a.quantidade);
-
-  const agora = new Date().getTime();
-  const idade = { ateTresDias: 0, quatroASeteDias: 0, maisDeUmaSemana: 0 };
-  let semTicket = 0;
-  let maisAntigaDias: number | null = null;
-  for (const o of ocorrenciasEmAbertoResumo) {
-    const dias = Math.floor((agora - o.createdAt.getTime()) / (1000 * 60 * 60 * 24));
-    if (dias <= 3) idade.ateTresDias += 1;
-    else if (dias <= 7) idade.quatroASeteDias += 1;
-    else idade.maisDeUmaSemana += 1;
-    if (!o.ticket) semTicket += 1;
-    if (maisAntigaDias === null || dias > maisAntigaDias) maisAntigaDias = dias;
-  }
-
-  const indicadores: IndicadoresOcorrencias = {
-    emAberto,
-    porStatus,
-    porOrigem,
-    idade,
-    semTicket,
-    maisAntigaDias,
-  };
 
   const linhas = ocorrencias.map((o) => ({
     id: o.id,
@@ -178,7 +116,11 @@ export default async function HomePage({
           <PlantonistasPanel />
         </div>
 
-        <IndicadoresOcorrenciasPanel dados={indicadores} />
+        <JogosDoDiaPanel
+          jogos={jogosDeHoje.jogos}
+          ultimoSucessoEm={jogosDeHoje.ultimoSucessoEm}
+          ultimoErro={jogosDeHoje.ultimoErro}
+        />
       </div>
 
       {tipos.length === 0 && (
