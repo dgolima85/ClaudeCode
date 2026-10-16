@@ -3,6 +3,11 @@ import { dataBR } from "@/lib/dataHoraBR";
 
 export type JogoDoDiaLinha = {
   id: string;
+  // Id da partida na fonte (UOL) — usado pra atrelar o acompanhamento
+  // operacional (ver src/app/jogos-do-dia/actions.ts), que precisa sobreviver
+  // à substituição diária desta tabela.
+  sourceId: number;
+  dataBR: string;
   mandante: string;
   visitante: string;
   horario: string;
@@ -31,6 +36,8 @@ export async function buscarJogosDeHoje(): Promise<JogosDeHoje> {
   return {
     jogos: jogos.map((j) => ({
       id: j.id,
+      sourceId: j.sourceId,
+      dataBR: j.dataBR,
       mandante: j.mandante,
       visitante: j.visitante,
       horario: j.horario,

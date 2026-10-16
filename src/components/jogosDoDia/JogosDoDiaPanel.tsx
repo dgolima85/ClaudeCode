@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { idadeCurta } from "@/lib/dataHoraBR";
 import type { JogoDoDiaLinha } from "@/lib/jogosDoDia/consulta";
+import JogoDetalheModal from "./JogoDetalheModal";
 
 type JogosDoDiaPanelProps = {
   jogos: JogoDoDiaLinha[];
@@ -7,9 +11,29 @@ type JogosDoDiaPanelProps = {
   ultimoErro: string | null;
 };
 
-function JogoCard({ jogo }: { jogo: JogoDoDiaLinha }) {
+const JANELA_ALERTA_MS = 60 * 60 * 1000;
+
+/** Instante (UTC) do início do jogo, a partir de horario ("HH:mm") + dataBR, sempre em Brasília. */
+function instanteInicioJogo(jogo: JogoDoDiaLinha): Date {
+  return new Date(`${jogo.dataBR}T${jogo.horario}:00-03:00`);
+}
+
+function JogoCard({ jogo, agora, onClick }: { jogo: JogoDoDiaLinha; agora: Date; onClick: () => void }) {
+  const faltam = instanteInicioJogo(jogo).getTime() - agora.getTime();
+  // Pisca só na última hora ANTES do início — depois que o jogo já começou,
+  // o alerta de "faça os testes antes" não faz mais sentido.
+  const emAlerta = faltam > 0 && faltam <= JANELA_ALERTA_MS;
+
   return (
-    <div className="rounded-md border border-gray-200 p-2 dark:border-gray-700">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full rounded-md border p-2 text-left transition-colors ${
+        emAlerta
+          ? "jogo-alerta-piscando border-amber-500"
+          : "border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0 text-sm font-medium break-words text-gray-800 dark:text-gray-200">
           {jogo.mandante} x {jogo.visitante}
@@ -33,7 +57,7 @@ function JogoCard({ jogo }: { jogo: JogoDoDiaLinha }) {
           ))}
         </div>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -46,6 +70,17 @@ export default function JogosDoDiaPanel({ jogos, ultimoSucessoEm, ultimoErro }: 
   // — uma falha pontual com dados antigos ainda válidos no banco não deve
   // alarmar quem está vendo o painel, só o log/monitoramento da rotina.
   const mostrarErro = jogos.length === 0 && !ultimoSucessoEm && ultimoErro;
+
+  const [selecionado, setSelecionado] = useState<JogoDoDiaLinha | null>(null);
+  const [agora, setAgora] = useState(() => new Date());
+
+  // Recalcula o alerta de "falta 1h" periodicamente, sem depender de um
+  // refresh de página — o painel fica aberto na TV/monitor do NOC o turno
+  // inteiro.
+  useEffect(() => {
+    const id = setInterval(() => setAgora(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="flex h-full flex-col rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
@@ -68,9 +103,11 @@ export default function JogosDoDiaPanel({ jogos, ultimoSucessoEm, ultimoErro }: 
           </p>
         )}
         {jogos.map((jogo) => (
-          <JogoCard key={jogo.id} jogo={jogo} />
+          <JogoCard key={jogo.id} jogo={jogo} agora={agora} onClick={() => setSelecionado(jogo)} />
         ))}
       </div>
+
+      {selecionado && <JogoDetalheModal jogo={selecionado} onClose={() => setSelecionado(null)} />}
     </div>
   );
 }

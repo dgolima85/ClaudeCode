@@ -31,6 +31,8 @@ model Analista {
   roteiroTesteExecucoes  RoteiroTesteExecucao[]
   roteiroTesteEvidencias RoteiroTesteEvidencia[]
 
+  jogoDoDiaAcompanhamentos JogoDoDiaAcompanhamento[]
+
   @@map("analistas")
 }
 
@@ -441,4 +443,39 @@ model JogoDoDiaSync {
   jogosEncontrados  Int?
 
   @@map("jogo_do_dia_sync")
+}
+
+// Acompanhamento operacional de um jogo durante o dia (checklist de
+// transmissão, preenchido pelo analista) — uma linha por canal de
+// transmissão do jogo. Propositalmente NÃO tem FK pro id de JogoDoDia: essa
+// tabela é inteiramente substituída a cada sincronização (ver comentário
+// acima), então uma FK com cascade apagaria o acompanhamento assim que o
+// jogo saísse do painel no dia seguinte — e esses dados precisam sobreviver
+// pra viabilizar relatórios posteriores (daí os campos de jogo duplicados
+// aqui: mandante/visitante/campeonato), referenciando o jogo só pelo
+// sourceId (id da partida na fonte, estável).
+model JogoDoDiaAcompanhamento {
+  id               String   @id @default(cuid())
+  jogoSourceId     Int
+  dataBR           String
+  mandante         String
+  visitante        String
+  campeonato       String
+  canal            String
+  // Canal de transmissão que não faz parte do nosso portfólio (ex.: GOAT) —
+  // nesse caso os campos operacionais (testado/som e imagem/delay) não se
+  // aplicam.
+  foraDoPortfolio  Boolean  @default(false)
+  testadoValidado  Boolean  @default(false)
+  somEImagem       String?
+  delayClaro       String?
+  relatorioPosJogo String?
+  atualizadoEm     DateTime @updatedAt
+  atualizadoPorId  String?
+
+  atualizadoPor Analista? @relation(fields: [atualizadoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([jogoSourceId, canal])
+  @@index([dataBR])
+  @@map("jogo_do_dia_acompanhamento")
 }
