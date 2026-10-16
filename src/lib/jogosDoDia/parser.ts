@@ -110,15 +110,11 @@ export function diagnosticarHtml(html: string) {
   // estrutura real em vez de adivinhar.
   const detalheCandidatos = candidatos.map((bloco) => {
     const chaveMatch = Object.keys(bloco).find((c) => /^football-match-\d+$/.test(c));
-    const dailyMatches = bloco["football-daily-matches"];
+    const chaveTime = Object.keys(bloco).find((c) => /^football-team-\d+$/.test(c));
     return {
-      chavesRaiz: Object.keys(bloco),
-      formaDailyMatches: Array.isArray(dailyMatches)
-        ? { tipo: "array", tamanho: dailyMatches.length, primeiroItem: dailyMatches[0] ?? null }
-        : dailyMatches && typeof dailyMatches === "object"
-          ? { tipo: "object", chaves: Object.keys(dailyMatches) }
-          : { tipo: typeof dailyMatches, valor: dailyMatches },
+      footballDailyMatches: bloco["football-daily-matches"] ?? null,
       partidaExemplo: chaveMatch ? bloco[chaveMatch] : null,
+      timeExemplo: chaveTime ? { chave: chaveTime, valor: bloco[chaveTime] } : null,
     };
   });
 
