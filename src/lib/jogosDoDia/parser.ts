@@ -89,20 +89,44 @@ function normalizarHora(hour: string | undefined): string {
 export function diagnosticarHtml(html: string) {
   const regex = /<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/g;
   const blocos: { tamanho: number; parseOk: boolean; chaves?: string[]; erro?: string }[] = [];
+  const candidatos: Record<string, unknown>[] = [];
   let match: RegExpExecArray | null;
   while ((match = regex.exec(html)) !== null) {
     try {
       const parsed = JSON.parse(match[1]);
       const chaves = parsed && typeof parsed === "object" ? Object.keys(parsed) : [];
       blocos.push({ tamanho: match[1].length, parseOk: true, chaves: chaves.slice(0, 15) });
+      if (parsed && typeof parsed === "object" && chaves.some((c) => /^football-match-\d+$/.test(c))) {
+        candidatos.push(parsed as Record<string, unknown>);
+      }
     } catch (e) {
       blocos.push({ tamanho: match[1].length, parseOk: false, erro: e instanceof Error ? e.message : String(e) });
     }
   }
+
+  // Pra cada bloco que tem partidas, mostra a forma completa: todas as
+  // chaves de nível raiz, a forma de "football-daily-matches" (substituiu
+  // "order"?) e uma partida de exemplo inteira, pra remapear o parser pra
+  // estrutura real em vez de adivinhar.
+  const detalheCandidatos = candidatos.map((bloco) => {
+    const chaveMatch = Object.keys(bloco).find((c) => /^football-match-\d+$/.test(c));
+    const dailyMatches = bloco["football-daily-matches"];
+    return {
+      chavesRaiz: Object.keys(bloco),
+      formaDailyMatches: Array.isArray(dailyMatches)
+        ? { tipo: "array", tamanho: dailyMatches.length, primeiroItem: dailyMatches[0] ?? null }
+        : dailyMatches && typeof dailyMatches === "object"
+          ? { tipo: "object", chaves: Object.keys(dailyMatches) }
+          : { tipo: typeof dailyMatches, valor: dailyMatches },
+      partidaExemplo: chaveMatch ? bloco[chaveMatch] : null,
+    };
+  });
+
   return {
     tamanhoHtml: html.length,
     blocosJsonEncontrados: blocos.length,
     blocos,
+    detalheCandidatos,
     contemFootballMatch: html.includes("football-match-"),
     contemSinaisDeBloqueio: /captcha|access denied|just a moment|attention required/i.test(html),
   };
