@@ -3,8 +3,9 @@
 import { useEffect, useState, useTransition } from "react";
 import { formatarDataHoraBR, paraInputDataHoraBR, deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { MODELOS_AVISO, MODELO_AVISO_LABELS, type ModeloAviso } from "@/lib/aviso";
+import type { ContextoAviso } from "@/lib/contextoAviso";
 import { criarAviso, atualizarAviso, excluirAviso } from "@/app/avisos/actions";
-import { IconeAtivo, IconeInformativo, IconeAcompanhamento, IconeAtuacao } from "./icones";
+import { IconeInformativo, IconeAcompanhamento, IconeAtuacao } from "./icones";
 
 export type AvisoLinha = {
   id: string;
@@ -15,6 +16,7 @@ export type AvisoLinha = {
 
 type AvisosPanelProps = {
   avisos: AvisoLinha[];
+  contexto: ContextoAviso;
 };
 
 const ICONE_MODELO: Record<ModeloAviso, typeof IconeInformativo> = {
@@ -42,7 +44,7 @@ function CampoIcone({
   label,
   className,
 }: {
-  Icone: typeof IconeAtivo;
+  Icone: typeof IconeInformativo;
   label: string;
   className: string;
 }) {
@@ -72,11 +74,13 @@ function IconeSeta({ direcao, className }: { direcao: "esquerda" | "direita"; cl
 
 function AvisoCard({
   aviso,
+  contexto,
   onExcluir,
   onAtualizar,
   onEditandoChange,
 }: {
   aviso: AvisoLinha;
+  contexto: ContextoAviso;
   onExcluir: (id: string) => void;
   onAtualizar: (aviso: AvisoLinha) => void;
   onEditandoChange: (editando: boolean) => void;
@@ -110,7 +114,7 @@ function AvisoCard({
       return;
     }
     startTransition(async () => {
-      const res = await atualizarAviso(aviso.id, { modelo, descricao, expiraEm });
+      const res = await atualizarAviso(aviso.id, { modelo, descricao, expiraEm, contexto });
       if (res?.error || !res.aviso) {
         setErro(res.error ?? "Não foi possível salvar o aviso.");
         return;
@@ -196,7 +200,6 @@ function AvisoCard({
 
   return (
     <div className="flex items-start gap-3 rounded-md border border-gray-200 p-2.5 dark:border-gray-700">
-      <CampoIcone Icone={IconeAtivo} label="Ativo" className="text-green-600 dark:text-green-400" />
       <CampoIcone
         Icone={IconeModelo}
         label={MODELO_AVISO_LABELS[aviso.modelo]}
@@ -237,7 +240,7 @@ function AvisoCard({
   );
 }
 
-export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps) {
+export default function AvisosPanel({ avisos: avisosIniciais, contexto }: AvisosPanelProps) {
   const [avisos, setAvisos] = useState(avisosIniciais);
   const [indice, setIndice] = useState(0);
   const [criando, setCriando] = useState(false);
@@ -263,7 +266,7 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
       return;
     }
     startTransition(async () => {
-      const res = await criarAviso({ modelo, descricao, expiraEm });
+      const res = await criarAviso({ modelo, descricao, expiraEm, contexto });
       if (res?.error || !res.aviso) {
         setErro(res.error ?? "Não foi possível salvar o aviso.");
         return;
@@ -389,34 +392,37 @@ export default function AvisosPanel({ avisos: avisosIniciais }: AvisosPanelProps
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={anterior}
-                disabled={avisos.length <= 1}
-                aria-label="Aviso anterior"
-                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              >
-                <IconeSeta direcao="esquerda" className="h-5 w-5" />
-              </button>
+              {avisos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={anterior}
+                  aria-label="Aviso anterior"
+                  className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                >
+                  <IconeSeta direcao="esquerda" className="h-5 w-5" />
+                </button>
+              )}
 
               <div className="min-w-0 flex-1">
                 <AvisoCard
                   aviso={avisos[indice]}
+                  contexto={contexto}
                   onExcluir={excluirLocal}
                   onAtualizar={atualizarLocal}
                   onEditandoChange={setEditandoAlgum}
                 />
               </div>
 
-              <button
-                type="button"
-                onClick={proximo}
-                disabled={avisos.length <= 1}
-                aria-label="Próximo aviso"
-                className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              >
-                <IconeSeta direcao="direita" className="h-5 w-5" />
-              </button>
+              {avisos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={proximo}
+                  aria-label="Próximo aviso"
+                  className="shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                >
+                  <IconeSeta direcao="direita" className="h-5 w-5" />
+                </button>
+              )}
             </div>
 
             {avisos.length > 1 && (

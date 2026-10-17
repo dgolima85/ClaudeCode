@@ -2,6 +2,9 @@ import { z } from "zod";
 import { TURNOS } from "@/lib/turno";
 import { STATUS_OCORRENCIA } from "@/lib/status";
 import { MODELOS_AVISO } from "@/lib/aviso";
+import { CONTEXTOS_AVISO } from "@/lib/contextoAviso";
+import { CRITICIDADES } from "@/lib/criticidade";
+import { ORIGENS_PASSAGEM_TURNO } from "@/lib/origemPassagemTurno";
 
 export const nomeSchema = z
   .string()
@@ -42,14 +45,18 @@ export const avisoSchema = z
     modelo: z.enum(MODELOS_AVISO, { message: "Selecione um modelo válido" }),
     descricao: z.string().trim().min(1, "Descreva o aviso").max(2000, "Descrição muito longa"),
     expiraEm: dataHoraLocalSchema,
+    contexto: z.enum(CONTEXTOS_AVISO, { message: "Contexto inválido" }),
   })
   .refine((d) => new Date(`${d.expiraEm}:00-03:00`).getTime() > Date.now(), {
     message: "Escolha uma data e hora futura para o aviso expirar.",
     path: ["expiraEm"],
   });
 
+export const criticidadeSchema = z.enum(CRITICIDADES, { message: "Selecione a criticidade" });
+
 export const novaOcorrenciaSchema = z.object({
   tipoId: z.string().trim().min(1, "Selecione um tipo"),
+  criticidade: criticidadeSchema,
   titulo: z.string().trim().min(1, "Descreva a ocorrência").max(500),
   ticket: z.string().trim().max(120).optional().or(z.literal("")),
   inicio: dataHoraLocalSchema,
@@ -62,23 +69,17 @@ export const comentarioEventoSchema = z
   .max(4000, "Comentário muito longo");
 
 export const novaPassagemTurnoSchema = z.object({
-  turnoDestino: turnoSchema,
+  origem: z.enum(ORIGENS_PASSAGEM_TURNO, { message: "Selecione a origem da passagem de turno." }),
   observacoes: z.string().trim().max(4000, "Observações muito longas").optional().or(z.literal("")),
 });
 
-export const normalizacaoOcorrenciaSchema = z
-  .object({
-    causaId: z.string().trim().nullable(),
-    causaOutra: z.string().trim().max(300, "Descrição da causa muito longa"),
-    solucaoId: z.string().trim().nullable(),
-    solucaoOutra: z.string().trim().max(300, "Descrição da solução muito longa"),
-    fim: dataHoraLocalSchema,
-  })
-  .refine((d) => Boolean(d.causaId) || d.causaOutra.length > 0, {
-    message: "Informe a causa da ocorrência.",
-    path: ["causaId"],
-  })
-  .refine((d) => Boolean(d.solucaoId) || d.solucaoOutra.length > 0, {
-    message: "Informe a solução da ocorrência.",
-    path: ["solucaoId"],
-  });
+export const normalizacaoOcorrenciaSchema = z.object({
+  causa: z.string().trim().min(1, "Informe a causa da ocorrência.").max(300, "Descrição da causa muito longa"),
+  solucao: z
+    .string()
+    .trim()
+    .min(1, "Informe a solução da ocorrência.")
+    .max(300, "Descrição da solução muito longa"),
+  criticidade: criticidadeSchema,
+  fim: dataHoraLocalSchema,
+});

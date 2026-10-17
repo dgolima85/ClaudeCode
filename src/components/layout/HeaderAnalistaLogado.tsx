@@ -17,7 +17,16 @@ export default async function HeaderAnalistaLogado() {
         </Link>
         <nav className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
           <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">
-            Ocorrências
+            Ocorrências Ongoing
+          </Link>
+          <Link href="/ocorrencias-qualidade-app" className="hover:text-blue-600 dark:hover:text-blue-400">
+            Ocorrências Qualidade App
+          </Link>
+          <Link href="/roteiro-testes" className="hover:text-blue-600 dark:hover:text-blue-400">
+            Roteiro de Testes
+          </Link>
+          <Link href="/comunicados" className="hover:text-blue-600 dark:hover:text-blue-400">
+            Comunicados
           </Link>
           <Link href="/passagem-turno" className="hover:text-blue-600 dark:hover:text-blue-400">
             Passagem de Turno
@@ -40,7 +49,7 @@ export default async function HeaderAnalistaLogado() {
         </span>
         <form action={sair}>
           <button type="submit" className="text-blue-600 hover:underline dark:text-blue-400">
-            Trocar analista
+            Logout
           </button>
         </form>
         <ThemeToggle />

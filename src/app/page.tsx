@@ -4,12 +4,24 @@ import OcorrenciasTable from "@/components/ocorrencias/OcorrenciasTable";
 import FiltroStatus from "@/components/ocorrencias/FiltroStatus";
 import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
+import PlantonistasPanel from "@/components/plantao/PlantonistasPanel";
+import JogosDoDiaPanel from "@/components/jogosDoDia/JogosDoDiaPanel";
+import { buscarJogosDeHoje } from "@/lib/jogosDoDia/consulta";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { FILTRO_TIPO_DEMAIS_ORIGENS } from "@/lib/monitoriaApp";
+import { isCriticidade } from "@/lib/criticidade";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
 import { isModeloAviso, type ModeloAviso } from "@/lib/aviso";
 import { criarOcorrencia } from "@/app/ocorrencias/actions";
 import { buscarPendentesPassagemTurno } from "@/app/passagem-turno/actions";
 import { TURNO_LABELS } from "@/lib/turno";
+
+// Esta home ("Ocorrências Ongoing") nunca mostra ocorrências de origem
+// "Monitoria APP" — essas ficam isoladas na outra home, em
+// /ocorrencias-qualidade-app. Diferente do antigo filtro "Demais Origens"
+// (removido), essa exclusão não é mais uma opção do usuário: é sempre
+// aplicada.
+const excluirMonitoriaApp = FILTRO_TIPO_DEMAIS_ORIGENS;
 
 export default async function HomePage({
   searchParams,
@@ -18,22 +30,34 @@ export default async function HomePage({
 }) {
   const sp = await searchParams;
   const statusParamBruto = sp.status;
-  const statusFiltro = (
-    Array.isArray(statusParamBruto) ? statusParamBruto : statusParamBruto ? [statusParamBruto] : []
-  ).filter(isStatusOcorrencia);
+  const statusFiltro: StatusOcorrencia[] =
+    statusParamBruto === undefined
+      ? ["EM_ANDAMENTO", "AGUARDANDO_VALIDACAO", "PENDENTE_CAUSA"]
+      : (Array.isArray(statusParamBruto) ? statusParamBruto : [statusParamBruto]).filter(
+          isStatusOcorrencia,
+        );
 
-  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno] = await Promise.all([
+  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno, jogosDeHoje] = await Promise.all([
     prisma.ocorrencia.findMany({
-      where: statusFiltro.length > 0 ? { status: { in: statusFiltro } } : undefined,
+      where: {
+        ...(statusFiltro.length > 0 ? { status: { in: statusFiltro } } : {}),
+        tipo: excluirMonitoriaApp,
+      },
       include: { tipo: true, analista: true },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.tipoOcorrencia.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
+    prisma.tipoOcorrencia.findMany({
+      where: { ativo: true, ...excluirMonitoriaApp },
+      orderBy: { nome: "asc" },
+    }),
     prisma.aviso.findMany({
-      where: { expiraEm: { gt: new Date() } },
+      // Avisos sem contexto são de antes dos quadros serem desmembrados —
+      // continuam aparecendo nas duas homes até expirarem ou serem editados.
+      where: { expiraEm: { gt: new Date() }, OR: [{ contexto: "OCORRENCIAS_ONGOING" }, { contexto: null }] },
       orderBy: { createdAt: "desc" },
     }),
     buscarPendentesPassagemTurno(),
+    buscarJogosDeHoje(),
   ]);
   const tipos = ordenarComNaPrimeiro(tiposBrutos);
   const avisos = avisosBrutos
@@ -48,6 +72,7 @@ export default async function HomePage({
   const linhas = ocorrencias.map((o) => ({
     id: o.id,
     status: o.status as StatusOcorrencia,
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),
@@ -74,14 +99,29 @@ export default async function HomePage({
         </Link>
       )}
 
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Registre e acompanhe as ocorrências do turno. Clique em ⤢ para abrir os detalhes.
-        </p>
-      </div>
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
+        <div className="flex flex-col gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências Ongoing</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Registre e acompanhe as ocorrências do turno. Clique em ⤢ para abrir os detalhes.
+            </p>
+          </div>
 
-      <FiltroStatus statusSelecionados={statusFiltro} />
+          <FiltroStatus
+            statusSelecionados={statusFiltro}
+            filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
+          />
+
+          <PlantonistasPanel />
+        </div>
+
+        <JogosDoDiaPanel
+          jogos={jogosDeHoje.jogos}
+          ultimoSucessoEm={jogosDeHoje.ultimoSucessoEm}
+          ultimoErro={jogosDeHoje.ultimoErro}
+        />
+      </div>
 
       {tipos.length === 0 && (
         <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-yellow-900/40 dark:text-yellow-300">
@@ -92,7 +132,7 @@ export default async function HomePage({
 
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         <NovaOcorrenciaForm tipos={tipos} onCriar={criarOcorrencia} />
-        <AvisosPanel avisos={avisos} />
+        <AvisosPanel avisos={avisos} contexto="OCORRENCIAS_ONGOING" />
       </div>
 
       <OcorrenciasTable ocorrencias={linhas} tipos={tipos} ocorrenciaAbertaId={sp.ocorrencia} />

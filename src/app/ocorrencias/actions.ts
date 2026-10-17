@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
 import {
@@ -9,11 +8,14 @@ import {
   dataHoraLocalSchema,
 } from "@/lib/validations";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
+import { isCriticidade, type Criticidade } from "@/lib/criticidade";
 import { deInputDataHoraBR } from "@/lib/dataHoraBR";
 import { ordenarComNaPrimeiro } from "@/lib/ordenarListaReferencia";
+import { revalidarHomesOcorrencias } from "@/lib/revalidarOcorrencias";
 
 export async function criarOcorrencia(dados: {
   tipoId: string;
+  criticidade: string;
   titulo: string;
   ticket: string;
   inicio: string;
@@ -27,6 +29,7 @@ export async function criarOcorrencia(dados: {
   await prisma.ocorrencia.create({
     data: {
       tipoId: parsed.data.tipoId,
+      criticidade: parsed.data.criticidade,
       titulo: parsed.data.titulo,
       ticket: parsed.data.ticket ? parsed.data.ticket : null,
       analistaId: analista.id,
@@ -35,7 +38,23 @@ export async function criarOcorrencia(dados: {
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
+  return {};
+}
+
+export async function atualizarCriticidadeOcorrencia(
+  id: string,
+  criticidade: string,
+): Promise<{ error?: string }> {
+  await exigirAnalistaLogado();
+  if (criticidade && !isCriticidade(criticidade)) return { error: "Criticidade inválida." };
+
+  await prisma.ocorrencia.update({
+    where: { id },
+    data: { criticidade: criticidade || null },
+  });
+
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -52,7 +71,7 @@ export async function atualizarInicioOcorrencia(
     data: { createdAt: deInputDataHoraBR(parsed.data) },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -66,7 +85,7 @@ export async function atualizarFimOcorrencia(id: string, fim: string): Promise<{
     data: { resolvidoEm: deInputDataHoraBR(parsed.data) },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -94,17 +113,16 @@ export async function atualizarStatusOcorrencia(
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
 export async function normalizarOcorrencia(
   id: string,
   dados: {
-    causaId: string | null;
-    causaOutra: string;
-    solucaoId: string | null;
-    solucaoOutra: string;
+    causa: string;
+    solucao: string;
+    criticidade: string;
     fim: string;
   },
 ): Promise<{ error?: string }> {
@@ -117,14 +135,15 @@ export async function normalizarOcorrencia(
     data: {
       status: "RESOLVIDO",
       resolvidoEm: deInputDataHoraBR(parsed.data.fim),
-      causaId: parsed.data.causaId || null,
-      causaOutraDescricao: parsed.data.causaId ? null : parsed.data.causaOutra,
-      solucaoId: parsed.data.solucaoId || null,
-      solucaoOutraDescricao: parsed.data.solucaoId ? null : parsed.data.solucaoOutra,
+      causaId: null,
+      causaOutraDescricao: parsed.data.causa,
+      solucaoId: null,
+      solucaoOutraDescricao: parsed.data.solucao,
+      criticidade: parsed.data.criticidade,
     },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -136,8 +155,7 @@ export type DadosNormalizacaoOcorrencia = {
   ambiente: string | null;
   recurso: string | null;
   servico: string | null;
-  causas: ItemReferencia[];
-  solucoes: ItemReferencia[];
+  criticidade: Criticidade | null;
 };
 
 export async function buscarDadosNormalizacaoOcorrencia(
@@ -145,21 +163,17 @@ export async function buscarDadosNormalizacaoOcorrencia(
 ): Promise<DadosNormalizacaoOcorrencia | null> {
   await exigirAnalistaLogado();
 
-  const [o, causas, solucoes] = await Promise.all([
-    prisma.ocorrencia.findUnique({
-      where: { id },
-      include: {
-        tipo: true,
-        parcerias: true,
-        empresas: true,
-        ambienteInfra: true,
-        recursos: true,
-        servicos: true,
-      },
-    }),
-    prisma.causa.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
-    prisma.solucao.findMany({ where: { ativo: true }, orderBy: { nome: "asc" } }),
-  ]);
+  const o = await prisma.ocorrencia.findUnique({
+    where: { id },
+    include: {
+      tipo: true,
+      parcerias: true,
+      empresas: true,
+      ambienteInfra: true,
+      recursos: true,
+      servicos: true,
+    },
+  });
   if (!o) return null;
 
   const parceriaEmpresa =
@@ -175,8 +189,7 @@ export async function buscarDadosNormalizacaoOcorrencia(
     ambiente: o.ambienteInfra?.nome ?? null,
     recurso: o.recursos.map((r) => r.nome).join(", ") || null,
     servico: o.servicos.map((s) => s.nome).join(", ") || null,
-    causas: causas.map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo })),
-    solucoes: solucoes.map((s) => ({ id: s.id, nome: s.nome, ativo: s.ativo })),
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
   };
 }
 
@@ -189,7 +202,7 @@ export async function atualizarTituloOcorrencia(
   if (!tituloLimpo) return { error: "A ocorrência não pode ficar sem título." };
 
   await prisma.ocorrencia.update({ where: { id }, data: { titulo: tituloLimpo } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -199,7 +212,7 @@ export async function atualizarTicketOcorrencia(
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
   await prisma.ocorrencia.update({ where: { id }, data: { ticket: ticket.trim() || null } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -211,7 +224,7 @@ export async function atualizarTipoDaOcorrencia(
   if (!tipoId) return { error: "Selecione um tipo válido." };
 
   await prisma.ocorrencia.update({ where: { id }, data: { tipoId } });
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
   return {};
 }
 
@@ -241,6 +254,15 @@ export type OcorrenciaDetalhe = {
     createdAt: string;
     analista: { id: string; nome: string };
   }[];
+  evidencias: {
+    id: string;
+    nomeArquivo: string;
+    tipo: string;
+    tamanhoBytes: number;
+    url: string;
+    createdAt: string;
+    analista: { id: string; nome: string };
+  }[];
 };
 
 export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDetalhe | null> {
@@ -260,6 +282,10 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
       plataformas: true,
       canais: true,
       eventos: {
+        include: { analista: true },
+        orderBy: { createdAt: "desc" },
+      },
+      evidencias: {
         include: { analista: true },
         orderBy: { createdAt: "desc" },
       },
@@ -292,6 +318,15 @@ export async function buscarOcorrenciaDetalhe(id: string): Promise<OcorrenciaDet
       comentario: e.comentario,
       createdAt: e.createdAt.toISOString(),
       analista: { id: e.analista.id, nome: e.analista.nome },
+    })),
+    evidencias: o.evidencias.map((ev) => ({
+      id: ev.id,
+      nomeArquivo: ev.nomeArquivo,
+      tipo: ev.tipo,
+      tamanhoBytes: ev.tamanhoBytes,
+      url: ev.url,
+      createdAt: ev.createdAt.toISOString(),
+      analista: { id: ev.analista.id, nome: ev.analista.nome },
     })),
   };
 }
@@ -362,21 +397,41 @@ export async function atualizarDetalhesOcorrencia(
 ): Promise<{ error?: string }> {
   await exigirAnalistaLogado();
 
+  // Só inclui no update as relações realmente enviadas: cada `set` num
+  // relacionamento m-n implícito do Prisma refaz a tabela de junção inteira
+  // (desconecta tudo e reconecta), então tocar nas 7 relações a cada
+  // alteração de um único multi-select (ex.: Plataforma) multiplicava por 7
+  // o custo de cada clique.
   await prisma.ocorrencia.update({
     where: { id },
     data: {
-      parcerias: { set: (dados.parceriaIds ?? []).map((id) => ({ id })) },
-      empresas: { set: (dados.empresaIds ?? []).map((id) => ({ id })) },
-      servicos: { set: (dados.servicoIds ?? []).map((id) => ({ id })) },
-      sistemasOperacionais: { set: (dados.sistemaOperacionalIds ?? []).map((id) => ({ id })) },
-      recursos: { set: (dados.recursoIds ?? []).map((id) => ({ id })) },
-      plataformas: { set: (dados.plataformaIds ?? []).map((id) => ({ id })) },
-      canais: { set: (dados.canalIds ?? []).map((id) => ({ id })) },
-      ambienteInfraId: dados.ambienteInfraId || null,
-      cdnId: dados.cdnId || null,
+      ...(dados.parceriaIds !== undefined && {
+        parcerias: { set: dados.parceriaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.empresaIds !== undefined && {
+        empresas: { set: dados.empresaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.servicoIds !== undefined && {
+        servicos: { set: dados.servicoIds.map((id) => ({ id })) },
+      }),
+      ...(dados.sistemaOperacionalIds !== undefined && {
+        sistemasOperacionais: { set: dados.sistemaOperacionalIds.map((id) => ({ id })) },
+      }),
+      ...(dados.recursoIds !== undefined && {
+        recursos: { set: dados.recursoIds.map((id) => ({ id })) },
+      }),
+      ...(dados.plataformaIds !== undefined && {
+        plataformas: { set: dados.plataformaIds.map((id) => ({ id })) },
+      }),
+      ...(dados.canalIds !== undefined && {
+        canais: { set: dados.canalIds.map((id) => ({ id })) },
+      }),
+      ...(dados.ambienteInfraId !== undefined && { ambienteInfraId: dados.ambienteInfraId || null }),
+      ...(dados.cdnId !== undefined && { cdnId: dados.cdnId || null }),
     },
   });
 
-  revalidatePath("/");
+  // Nenhum destes campos aparece na listagem de "/" (ver OcorrenciasTable),
+  // então revalidar aquela rota aqui só invalidava cache sem necessidade.
   return {};
 }

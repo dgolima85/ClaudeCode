@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { limparSessao, setAnalistaLogado } from "@/lib/session";
+import { signIn, signOut } from "@/auth";
 
 export async function login(formData: FormData) {
   const analistaId = formData.get("analistaId");
@@ -21,7 +22,14 @@ export async function login(formData: FormData) {
   redirect(typeof redirectTo === "string" && redirectTo ? redirectTo : "/");
 }
 
+export async function entrarComMicrosoft(formData: FormData) {
+  const redirectTo = formData.get("redirect");
+  await signIn("microsoft-entra-id", {
+    redirectTo: typeof redirectTo === "string" && redirectTo ? redirectTo : "/",
+  });
+}
+
 export async function sair() {
   await limparSessao();
-  redirect("/login");
+  await signOut({ redirectTo: "/login" });
 }
