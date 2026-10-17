@@ -482,3 +482,21 @@ model JogoDoDiaAcompanhamento {
   @@index([dataBR])
   @@map("jogo_do_dia_acompanhamento")
 }
+
+// Canais de transmissão que fazem parte do nosso portfólio — usado pra
+// filtrar, no painel "Jogos de Hoje", quais canais de cada jogo exibir (e,
+// se nenhum canal do jogo for nosso, esconder o jogo inteiro). Gerenciável
+// em Administração → Canais de Transmissão (mesmo padrão CRUD dos outros
+// cadastros), já que o portfólio muda com o tempo. Ver
+// src/lib/jogosDoDia/canaisPortfolio.ts pra lógica de confronto (o nome
+// aqui não precisa bater exatamente com o nome que o UOL usa — é
+// normalizado dos dois lados na hora de comparar).
+model CanalPortfolio {
+  id        String   @id @default(cuid())
+  nome      String   @unique
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("canais_portfolio")
+}
