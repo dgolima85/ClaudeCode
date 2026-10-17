@@ -401,11 +401,14 @@ model RoteiroTesteEvidencia {
 
 // Jogos do dia (painel "Jogos de Hoje" na home de Ocorrências Ongoing) —
 // sincronizado periodicamente a partir da Central de Jogos do UOL por uma
-// rotina agendada (ver src/lib/jogosDoDia/ e src/app/api/cron/jogos-do-dia).
-// A tabela é sempre totalmente substituída a cada sincronização bem-sucedida
-// (só guarda os jogos do dia vigente, não é histórico) — se uma
-// sincronização falhar, os jogos da última tentativa que deu certo
-// continuam aqui até a próxima funcionar, em vez do painel ficar vazio.
+// rotina agendada (ver src/lib/jogosDoDia/sync.ts e
+// src/app/api/cron/jogos-do-dia). Guarda sempre HOJE e AMANHÃ (D+1): como a
+// rotina roda só 1x/dia, pré-carregar o dia seguinte com antecedência é o
+// que faz o painel já nascer alimentado na virada do dia, em vez de ficar
+// vazio até o próximo horário agendado. Não é histórico — dias que já
+// passaram são removidos a cada sincronização. Se uma sincronização falhar,
+// os jogos da última tentativa que deu certo continuam aqui até a próxima
+// funcionar, em vez do painel ficar vazio.
 model JogoDoDia {
   id         String   @id @default(cuid())
   // Id da partida na fonte (UOL) — não é por ele que a tabela é mantida
