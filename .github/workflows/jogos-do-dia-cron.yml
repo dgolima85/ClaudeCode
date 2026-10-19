@@ -20,16 +20,15 @@ jobs:
       - name: Chama a rota de sincronização
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
         run: |
-          # O parâmetro na URL é o método confirmado funcionando (testado
-          # manualmente) — o header x-vercel-protection-bypass não estava
-          # sendo aceito vindo do runner do GitHub, por motivo não
-          # totalmente claro.
+          # "Vercel Authentication" (Deployment Protection) foi desligada
+          # pra Production — era ela quem bloqueava essa chamada com 403
+          # antes mesmo de chegar na nossa rota (ver conversa). A proteção
+          # real de quem pode disparar isso é só o CRON_SECRET abaixo.
           status=$(curl -sS -o resposta.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
-            "https://pasagem-turno.vercel.app/api/cron/jogos-do-dia?x-vercel-protection-bypass=${VERCEL_PROTECTION_BYPASS}")
+            https://pasagem-turno.vercel.app/api/cron/jogos-do-dia)
           echo "HTTP status: $status"
           cat resposta.json
           echo
