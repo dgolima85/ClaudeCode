@@ -12,6 +12,12 @@ export type FiltrosRelatorio = {
   status: StatusOcorrencia[];
   tipoId?: string;
   parceriaId?: string;
+  // Filtro por título (ver FiltrosResumoExecutivo) — não entra no `where` do
+  // Prisma (montarWhereOcorrencia abaixo): o match precisa ignorar acento
+  // além de caixa, e isso é aplicado em JS depois da busca (ver
+  // src/lib/resumoExecutivo.ts), não é suportado nativamente pelo Postgres
+  // via Prisma sem a extensão unaccent.
+  titulo?: string;
 };
 
 function pick(v: string | string[] | undefined): string | undefined {
@@ -33,6 +39,7 @@ export function parseFiltros(sp: SearchParamsRelatorio): FiltrosRelatorio {
     status,
     tipoId: pick(sp.tipoId) || undefined,
     parceriaId: pick(sp.parceriaId) || undefined,
+    titulo: pick(sp.titulo)?.trim() || undefined,
   };
 }
 
@@ -46,7 +53,8 @@ export function temAlgumFiltro(filtros: FiltrosRelatorio): boolean {
       filtros.turno ||
       filtros.status.length > 0 ||
       filtros.tipoId ||
-      filtros.parceriaId,
+      filtros.parceriaId ||
+      filtros.titulo,
   );
 }
 

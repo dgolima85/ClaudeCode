@@ -19,11 +19,9 @@ export default async function ResumosExecutivosPage({
   const sp = await searchParams;
   const filtros = parseFiltros(sp);
 
-  const [ocorrencias, analistas, tipos, parcerias] = await Promise.all([
+  const [ocorrencias, analistas] = await Promise.all([
     listarResumosExecutivos(filtros),
     prisma.analista.findMany({ orderBy: { nome: "asc" } }),
-    prisma.tipoOcorrencia.findMany({ orderBy: { nome: "asc" } }),
-    prisma.parceria.findMany({ orderBy: { nome: "asc" } }),
   ]);
 
   const linhas = ocorrencias.map((o) => ({
@@ -57,7 +55,7 @@ export default async function ResumosExecutivosPage({
         <ExportCsvButton href="/relatorios/executivo/export" queryString={queryString} />
       </div>
 
-      <FiltrosResumoExecutivo analistas={analistas} tipos={tipos} parcerias={parcerias} filtros={filtros} />
+      <FiltrosResumoExecutivo analistas={analistas} filtros={filtros} />
 
       <TabelaResumoExecutivo linhas={linhas} />
     </div>
