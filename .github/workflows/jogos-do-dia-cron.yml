@@ -1,0 +1,33 @@
+name: Sincroniza Jogos do Dia
+
+# Dispara a sincronização de "Jogos de Hoje" diariamente, chamando a mesma
+# rota que o Cron Jobs da Vercel deveria chamar sozinho (ver vercel.json) —
+# criado como mecanismo independente porque o disparo automático da Vercel
+# não estava funcionando no plano Hobby (ver conversa), mesmo com a rota
+# acessível e funcionando perfeitamente quando chamada manualmente. Mantém
+# o cron da Vercel configurado como redundância sem custo.
+on:
+  schedule:
+    # 9h07 UTC = 6h07 em Brasília — alguns minutos após a hora cheia, pra
+    # não cair exatamente no horário mais concorrido dos runners do GitHub.
+    - cron: "7 9 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chama a rota de sincronização
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          status=$(curl -sS -o resposta.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            https://pasagem-turno.vercel.app/api/cron/jogos-do-dia)
+          echo "HTTP status: $status"
+          cat resposta.json
+          echo
+          if [ "$status" -ge 400 ]; then
+            echo "::error::Sincronização falhou (HTTP $status)"
+            exit 1
+          fi
