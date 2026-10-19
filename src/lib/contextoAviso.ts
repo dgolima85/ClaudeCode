@@ -8,7 +8,7 @@ export type ContextoAviso = (typeof CONTEXTOS_AVISO)[number];
 
 export const CONTEXTO_AVISO_LABELS: Record<ContextoAviso, string> = {
   OCORRENCIAS_ONGOING: "Ocorrências Ongoing",
-  OCORRENCIAS_QUALIDADE_APP: "Ocorrências Qualidade App",
+  OCORRENCIAS_QUALIDADE_APP: "Ocorrências Plataforma",
 };
 
 export function isContextoAviso(value: string): value is ContextoAviso {

@@ -20,7 +20,7 @@ export default async function HeaderAnalistaLogado() {
             Ocorrências Ongoing
           </Link>
           <Link href="/ocorrencias-qualidade-app" className="hover:text-blue-600 dark:hover:text-blue-400">
-            Ocorrências Qualidade App
+            Ocorrências Plataforma
           </Link>
           <Link href="/roteiro-testes" className="hover:text-blue-600 dark:hover:text-blue-400">
             Roteiro de Testes
@@ -29,7 +29,7 @@ export default async function HeaderAnalistaLogado() {
             Comunicados
           </Link>
           <Link href="/passagem-turno" className="hover:text-blue-600 dark:hover:text-blue-400">
-            Passagem de Turno
+            Troca de Turnos
           </Link>
           <Link href="/admin/analistas" className="hover:text-blue-600 dark:hover:text-blue-400">
             Administração

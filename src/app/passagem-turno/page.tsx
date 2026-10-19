@@ -27,7 +27,7 @@ export default async function PassagemTurnoPage({
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Passagem de Turno</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Troca de Turnos</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Registre a passagem ao final do seu turno e confirme o recebimento de uma passagem pendente.
           Monitoria APP e Demais Origens são passagens separadas.

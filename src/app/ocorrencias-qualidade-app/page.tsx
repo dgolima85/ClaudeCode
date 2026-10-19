@@ -146,7 +146,7 @@ export default async function OcorrenciasQualidadeAppPage({
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências Qualidade App</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ocorrências Plataforma</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Registre e acompanhe as ocorrências de Monitoria APP do turno. Clique em ⤢ para abrir os
               detalhes.
