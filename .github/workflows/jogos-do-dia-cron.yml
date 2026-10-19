@@ -20,9 +20,11 @@ jobs:
       - name: Chama a rota de sincronização
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
         run: |
           status=$(curl -sS -o resposta.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "x-vercel-protection-bypass: ${VERCEL_PROTECTION_BYPASS}" \
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
             https://pasagem-turno.vercel.app/api/cron/jogos-do-dia)
           echo "HTTP status: $status"
