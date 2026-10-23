@@ -6,7 +6,9 @@ import NovaOcorrenciaForm from "@/components/ocorrencias/NovaOcorrenciaForm";
 import AvisosPanel from "@/components/avisos/AvisosPanel";
 import PlantonistasPanel from "@/components/plantao/PlantonistasPanel";
 import JogosDoDiaPanel from "@/components/jogosDoDia/JogosDoDiaPanel";
+import DesvioOperacionalPanel from "@/components/desvioOperacional/DesvioOperacionalPanel";
 import { buscarJogosDeHoje } from "@/lib/jogosDoDia/consulta";
+import { buscarDesvioOperacional } from "@/lib/desvioOperacional";
 import { isStatusOcorrencia, type StatusOcorrencia } from "@/lib/status";
 import { FILTRO_TIPO_DEMAIS_ORIGENS } from "@/lib/monitoriaApp";
 import { isCriticidade } from "@/lib/criticidade";
@@ -37,7 +39,7 @@ export default async function HomePage({
           isStatusOcorrencia,
         );
 
-  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno, jogosDeHoje] = await Promise.all([
+  const [ocorrencias, tiposBrutos, avisosBrutos, pendentesPassagemTurno, jogosDeHoje, desvioOperacional] = await Promise.all([
     prisma.ocorrencia.findMany({
       where: {
         ...(statusFiltro.length > 0 ? { status: { in: statusFiltro } } : {}),
@@ -58,6 +60,7 @@ export default async function HomePage({
     }),
     buscarPendentesPassagemTurno(),
     buscarJogosDeHoje(),
+    buscarDesvioOperacional(),
   ]);
   const tipos = ordenarComNaPrimeiro(tiposBrutos);
   const avisos = avisosBrutos
@@ -111,6 +114,12 @@ export default async function HomePage({
           <FiltroStatus
             statusSelecionados={statusFiltro}
             filtroAlteradoPeloUsuario={statusParamBruto !== undefined}
+          />
+
+          <DesvioOperacionalPanel
+            dias={desvioOperacional.dias}
+            recorde={desvioOperacional.recorde}
+            ultimoDesvioEm={desvioOperacional.ultimoDesvioEm}
           />
 
           <PlantonistasPanel />

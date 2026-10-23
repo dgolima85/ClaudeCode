@@ -20,7 +20,7 @@ model Analista {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ocorrencias Ocorrencia[] @relation("OcorrenciaAnalista")
+  ocorrencias Ocorrencia[]          @relation("OcorrenciaAnalista")
   eventos     Evento[]
   avisos      Aviso[]
   evidencias  EvidenciaOcorrencia[]
@@ -31,7 +31,8 @@ model Analista {
   roteiroTesteExecucoes  RoteiroTesteExecucao[]
   roteiroTesteEvidencias RoteiroTesteEvidencia[]
 
-  jogoDoDiaAcompanhamentos JogoDoDiaAcompanhamento[]
+  jogoDoDiaAcompanhamentos     JogoDoDiaAcompanhamento[]
+  desviosOperacionaisResetados DesvioOperacional[]
 
   @@map("analistas")
 }
@@ -239,13 +240,13 @@ model Ocorrencia {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  tipo          TipoOcorrencia @relation(fields: [tipoId], references: [id], onDelete: Restrict)
-  analista      Analista       @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
-  ambiente      Ambiente?      @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
-  ambienteInfra AmbienteInfra? @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
-  cdn           Cdn?           @relation(fields: [cdnId], references: [id], onDelete: Restrict)
-  causa         Causa?         @relation(fields: [causaId], references: [id], onDelete: Restrict)
-  solucao       Solucao?       @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
+  tipo          TipoOcorrencia        @relation(fields: [tipoId], references: [id], onDelete: Restrict)
+  analista      Analista              @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
+  ambiente      Ambiente?             @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
+  ambienteInfra AmbienteInfra?        @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
+  cdn           Cdn?                  @relation(fields: [cdnId], references: [id], onDelete: Restrict)
+  causa         Causa?                @relation(fields: [causaId], references: [id], onDelete: Restrict)
+  solucao       Solucao?              @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
   eventos       Evento[]
   evidencias    EvidenciaOcorrencia[]
 
@@ -337,9 +338,9 @@ model PassagemTurno {
 // cada rotina tem seu próprio conjunto de passos, versionado em código, não
 // no banco.
 model RoteiroTesteExecucao {
-  id         String   @id @default(cuid())
-  rotina     String
-  brand      String
+  id           String    @id @default(cuid())
+  rotina       String
+  brand        String
   // Dispositivos validados nesta execução (ex.: Teste TV — LG, Samsung...).
   // Lista vazia nas rotinas que não têm esse campo (ex.: Teste Web). Multi-
   // escolha, por isso array em vez de uma coluna única feito "brand".
@@ -348,10 +349,10 @@ model RoteiroTesteExecucao {
   // executado) — opcional, distinto de createdAt (quando o registro foi
   // salvo no sistema). Nulo nas rotinas que não têm esse campo.
   dataExecucao DateTime?
-  versao     String
-  anotacao   String?
-  analistaId String
-  createdAt  DateTime @default(now())
+  versao       String
+  anotacao     String?
+  analistaId   String
+  createdAt    DateTime  @default(now())
 
   analista   Analista                @relation(fields: [analistaId], references: [id], onDelete: Restrict)
   itens      RoteiroTesteItem[]
@@ -499,4 +500,22 @@ model CanalPortfolio {
   updatedAt DateTime @updatedAt
 
   @@map("canais_portfolio")
+}
+
+// Indicador "dias sem Desvio Operacional" na home de Ocorrências Ongoing —
+// singleton (id fixo "singleton"). Sem rotina agendada: o número de dias
+// exibido é sempre calculado na hora, a partir de `ultimoDesvioEm` (ver
+// src/lib/desvioOperacional.ts), então ele avança sozinho a cada virada de
+// dia sem precisar de nenhum job. `recordeDias` guarda o maior streak já
+// alcançado — atualizado no momento de um reset, se o streak corrente
+// (ainda não salvo) superar o recorde já salvo.
+model DesvioOperacional {
+  id              String   @id
+  ultimoDesvioEm  DateTime
+  recordeDias     Int      @default(0)
+  atualizadoPorId String?
+
+  atualizadoPor Analista? @relation(fields: [atualizadoPorId], references: [id], onDelete: SetNull)
+
+  @@map("desvio_operacional")
 }
