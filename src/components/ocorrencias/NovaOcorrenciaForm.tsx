@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { paraInputDataHoraBR } from "@/lib/dataHoraBR";
+import { CRITICIDADES, CRITICIDADE_LABELS, type Criticidade } from "@/lib/criticidade";
 
 type Tipo = { id: string; nome: string };
 
@@ -9,6 +10,7 @@ type NovaOcorrenciaFormProps = {
   tipos: Tipo[];
   onCriar: (dados: {
     tipoId: string;
+    criticidade: string;
     titulo: string;
     ticket: string;
     inicio: string;
@@ -17,6 +19,7 @@ type NovaOcorrenciaFormProps = {
 
 export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFormProps) {
   const [tipoId, setTipoId] = useState(() => tipos[0]?.id ?? "");
+  const [criticidade, setCriticidade] = useState<Criticidade | "">("");
   const [titulo, setTitulo] = useState("");
   const [ticket, setTicket] = useState("");
   const [inicio, setInicio] = useState(() => paraInputDataHoraBR(new Date()));
@@ -26,12 +29,13 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
   function salvar() {
     setErro(null);
     startTransition(async () => {
-      const res = await onCriar({ tipoId, titulo, ticket, inicio });
+      const res = await onCriar({ tipoId, criticidade, titulo, ticket, inicio });
       if (res?.error) {
         setErro(res.error);
         return;
       }
       setTipoId(tipos[0]?.id ?? "");
+      setCriticidade("");
       setTitulo("");
       setTicket("");
       setInicio(paraInputDataHoraBR(new Date()));
@@ -53,7 +57,26 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
           />
         </label>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
+            Criticidade
+            <select
+              value={criticidade}
+              disabled={pending}
+              onChange={(e) => setCriticidade(e.target.value as Criticidade)}
+              className="rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
+            >
+              <option value="" disabled>
+                Selecione
+              </option>
+              {CRITICIDADES.map((c) => (
+                <option key={c} value={c}>
+                  {CRITICIDADE_LABELS[c]}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
             Ticket
             <input
@@ -79,7 +102,7 @@ export default function NovaOcorrenciaForm({ tipos, onCriar }: NovaOcorrenciaFor
 
         <button
           type="button"
-          disabled={pending || !tipoId || tipos.length === 0 || !titulo.trim() || !inicio}
+          disabled={pending || !tipoId || tipos.length === 0 || !criticidade || !titulo.trim() || !inicio}
           onClick={salvar}
           className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >

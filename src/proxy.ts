@@ -2,12 +2,24 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const SESSION_COOKIE = "analistaId";
-const PUBLIC_PATHS = ["/login"];
+// Cookies de sessão do Auth.js (login via Microsoft Entra ID): nome sem
+// prefixo em dev/http, com "__Secure-" em produção/https.
+const AUTH_JS_SESSION_COOKIES = ["authjs.session-token", "__Secure-authjs.session-token"];
+// "/api/auth" precisa ficar público: é o callback que o Entra ID chama de
+// volta durante o login, antes de qualquer cookie de sessão existir.
+// "/api/cron" também: é chamada pelo Vercel Cron (ver vercel.json), que não
+// tem cookie de sessão nenhum — autentica por conta própria via CRON_SECRET
+// (ver src/app/api/cron/jogos-do-dia/route.ts). Sem essa exceção, a rotina
+// agendada nunca rodaria: cairia sempre no redirect pro /login antes de
+// chegar no código da rota.
+const PUBLIC_PATHS = ["/login", "/api/auth", "/api/cron"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
-  const hasSession = request.cookies.has(SESSION_COOKIE);
+  const hasSession =
+    request.cookies.has(SESSION_COOKIE) ||
+    AUTH_JS_SESSION_COOKIES.some((name) => request.cookies.has(name));
 
   if (!hasSession && !isPublic) {
     const loginUrl = new URL("/login", request.url);

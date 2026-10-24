@@ -4,6 +4,7 @@ import { TabelaPdf, type ColunaPdf } from "./TabelaPdf";
 import { TURNO_LABELS, type Turno } from "@/lib/turno";
 import { STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
 import { formatarDataHoraBR } from "@/lib/dataHoraBR";
+import { ORIGEM_PASSAGEM_TURNO_LABELS, type OrigemPassagemTurno } from "@/lib/origemPassagemTurno";
 
 export type LinhaPassagemTurnoPdf = {
   tipo: string;
@@ -17,6 +18,7 @@ export type LinhaPassagemTurnoPdf = {
 type PassagemTurnoPdfDocumentProps = {
   turno: Turno;
   data: string;
+  origem: OrigemPassagemTurno;
   geradoEm: string;
   geradoPor: string;
   emAberto: LinhaPassagemTurnoPdf[];
@@ -51,15 +53,18 @@ function linhasParaTabela(linhas: LinhaPassagemTurnoPdf[]): string[][] {
 export function PassagemTurnoPdfDocument({
   turno,
   data,
+  origem,
   geradoEm,
   geradoPor,
   emAberto,
   atividade,
 }: PassagemTurnoPdfDocumentProps) {
   return (
-    <Document title={`Passagem de Turno - ${TURNO_LABELS[turno]} - ${data}`}>
+    <Document
+      title={`Passagem de Turno - ${TURNO_LABELS[turno]} - ${ORIGEM_PASSAGEM_TURNO_LABELS[origem]} - ${data}`}
+    >
       <Page size="A4" orientation="landscape" style={estilos.pagina}>
-        <Text style={estilos.tituloRelatorio}>Passagem de Turno</Text>
+        <Text style={estilos.tituloRelatorio}>Passagem de Turno · {ORIGEM_PASSAGEM_TURNO_LABELS[origem]}</Text>
         <Text style={estilos.subtitulo}>
           Turno {TURNO_LABELS[turno]} · {formatarDataBR(data)} · Gerado por {geradoPor} em{" "}
           {formatarDataHoraBR(geradoEm)}

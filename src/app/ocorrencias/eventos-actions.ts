@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
 import { comentarioEventoSchema } from "@/lib/validations";
+import { revalidarHomesOcorrencias } from "@/lib/revalidarOcorrencias";
 
 export async function criarEvento(ocorrenciaId: string, comentario: string) {
   const analista = await exigirAnalistaLogado();
@@ -21,7 +21,7 @@ export async function criarEvento(ocorrenciaId: string, comentario: string) {
     include: { analista: true },
   });
 
-  revalidatePath("/");
+  revalidarHomesOcorrencias();
 
   return {
     evento: {
