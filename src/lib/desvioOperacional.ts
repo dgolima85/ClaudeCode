@@ -9,6 +9,13 @@ export type DesvioOperacionalInfo = {
   ultimoDesvioEm: string;
 };
 
+export type DesvioOperacionalRegistroInfo = {
+  id: string;
+  ocorridoEm: string;
+  motivo: string;
+  registradoPor: string | null;
+};
+
 /**
  * Diferença em dias de calendário (Brasília) entre duas datas — não é uma
  * diferença de 24h corridas, por isso o indicador "incrementa" sozinho
@@ -42,4 +49,19 @@ export async function buscarDesvioOperacional(): Promise<DesvioOperacionalInfo> 
     recorde: Math.max(registro.recordeDias, dias),
     ultimoDesvioEm: registro.ultimoDesvioEm.toISOString(),
   };
+}
+
+/** Histórico de desvios registrados (mais recente primeiro) — ver botão "Histórico" do painel. */
+export async function buscarHistoricoDesvioOperacional(): Promise<DesvioOperacionalRegistroInfo[]> {
+  const registros = await prisma.desvioOperacionalRegistro.findMany({
+    include: { registradoPor: true },
+    orderBy: { ocorridoEm: "desc" },
+  });
+
+  return registros.map((r) => ({
+    id: r.id,
+    ocorridoEm: r.ocorridoEm.toISOString(),
+    motivo: r.motivo,
+    registradoPor: r.registradoPor?.nome ?? null,
+  }));
 }

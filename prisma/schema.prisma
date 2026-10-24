@@ -31,8 +31,9 @@ model Analista {
   roteiroTesteExecucoes  RoteiroTesteExecucao[]
   roteiroTesteEvidencias RoteiroTesteEvidencia[]
 
-  jogoDoDiaAcompanhamentos     JogoDoDiaAcompanhamento[]
-  desviosOperacionaisResetados DesvioOperacional[]
+  jogoDoDiaAcompanhamentos       JogoDoDiaAcompanhamento[]
+  desviosOperacionaisResetados   DesvioOperacional[]
+  desviosOperacionaisRegistrados DesvioOperacionalRegistro[]
 
   @@map("analistas")
 }
@@ -518,4 +519,22 @@ model DesvioOperacional {
   atualizadoPor Analista? @relation(fields: [atualizadoPorId], references: [id], onDelete: SetNull)
 
   @@map("desvio_operacional")
+}
+
+// Histórico de desvios operacionais — uma linha por reset do indicador
+// acima, guardando quando o desvio de fato aconteceu (escolhido pelo
+// analista no momento do reset, não necessariamente "agora") e o motivo.
+// Consultável no botão "Histórico" do painel (ver
+// src/components/desvioOperacional/HistoricoDesvioModal.tsx).
+model DesvioOperacionalRegistro {
+  id              String   @id @default(cuid())
+  ocorridoEm      DateTime
+  motivo          String
+  registradoPorId String?
+  createdAt       DateTime @default(now())
+
+  registradoPor Analista? @relation(fields: [registradoPorId], references: [id], onDelete: SetNull)
+
+  @@index([ocorridoEm])
+  @@map("desvio_operacional_registros")
 }
