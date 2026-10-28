@@ -1,9 +1,9 @@
 // Campeonatos/divisões que devem aparecer no painel "Jogos de Hoje" — lista
 // fechada, pedida explicitamente (Brasileirão, Sul-Americana, Libertadores,
-// Liga dos Campeões, e os campeonatos Alemão/Espanhol/Italiano/Inglês/
-// Francês). Qualquer outro campeonato (Série B, Copa do Brasil, seleções,
-// etc.) fica de fora por não estar nessa lista — não é um bloqueio
-// específico à Série B, é uma lista de permissão.
+// Liga dos Campeões, os campeonatos Alemão/Espanhol/Italiano/Inglês/
+// Francês, e a Copa da Liga Inglesa). Qualquer outro campeonato (Série B,
+// Copa do Brasil, seleções, etc.) fica de fora por não estar nessa lista —
+// não é um bloqueio específico à Série B, é uma lista de permissão.
 //
 // Casa tanto pelo "slug" quanto pelo nome (normalizado, sem acento/caixa)
 // porque não há como confirmar ao vivo o slug exato que o UOL usa pra cada
@@ -28,6 +28,10 @@ const CAMPEONATOS_PERMITIDOS: CampeonatoPermitido[] = [
   { slugs: ["italiano", "serie-a-italiana"], nomes: ["italiano", "campeonato italiano"] },
   { slugs: ["ingles", "premier-league"], nomes: ["ingles", "campeonato ingles", "premier league"] },
   { slugs: ["frances", "ligue-1"], nomes: ["frances", "campeonato frances", "ligue 1"] },
+  {
+    slugs: ["copa-da-liga-inglesa", "efl-cup", "carabao-cup", "league-cup"],
+    nomes: ["copa da liga inglesa", "efl cup", "carabao cup", "league cup"],
+  },
 ];
 
 function normalizar(texto: string): string {
