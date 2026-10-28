@@ -10,6 +10,7 @@ export const TIMES_COMUNICADO = [
   "Web",
   "Cyber Segurança",
   "Diretoria TI Watch",
+  "DEVs",
 ] as const;
 
 export type TimeComunicado = (typeof TIMES_COMUNICADO)[number];
