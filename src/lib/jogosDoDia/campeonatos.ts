@@ -42,9 +42,16 @@ function normalizar(texto: string): string {
     .trim();
 }
 
+// A UOL inclui o ano na edição de alguns campeonatos (ex.: "Copa da Liga
+// Inglesa 2027") — remove um ano de 4 dígitos no fim do nome/slug antes de
+// comparar, pra não precisar atualizar a lista toda virada de ano.
+function semAnoFinal(texto: string): string {
+  return texto.replace(/[\s-]*\d{4}$/, "").trim();
+}
+
 export function isCampeonatoPermitido(nome: string, slug: string): boolean {
-  const nomeNorm = normalizar(nome);
-  const slugNorm = normalizar(slug);
+  const nomeNorm = semAnoFinal(normalizar(nome));
+  const slugNorm = semAnoFinal(normalizar(slug));
   return CAMPEONATOS_PERMITIDOS.some(
     (c) =>
       (slugNorm && c.slugs.some((s) => normalizar(s) === slugNorm)) ||
