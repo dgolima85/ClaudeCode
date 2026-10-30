@@ -11,6 +11,9 @@ export type AcompanhamentoCanal = {
   somEImagem: string;
   delayClaro: string;
   relatorioPosJogo: string;
+  // Só preenchido quando canal === "Premiere" — a origem (UOL) não informa
+  // qual numerado (1 a 8) está no ar, então quem sabe é o analista.
+  premiereNumero: number | null;
   atualizadoEm: string;
 };
 
@@ -29,6 +32,7 @@ export async function buscarAcompanhamentoJogo(jogoSourceId: number): Promise<Ac
     somEImagem: l.somEImagem ?? "",
     delayClaro: l.delayClaro ?? "",
     relatorioPosJogo: l.relatorioPosJogo ?? "",
+    premiereNumero: l.premiereNumero,
     atualizadoEm: l.atualizadoEm.toISOString(),
   }));
 }
@@ -46,6 +50,7 @@ type PatchAcompanhamento = Partial<{
   somEImagem: string;
   delayClaro: string;
   relatorioPosJogo: string;
+  premiereNumero: number | null;
 }>;
 
 /**
@@ -82,6 +87,7 @@ export async function salvarAcompanhamentoCanal(
       somEImagem: patch.somEImagem ?? null,
       delayClaro: patch.delayClaro ?? null,
       relatorioPosJogo: patch.relatorioPosJogo ?? null,
+      premiereNumero: patch.premiereNumero ?? null,
       atualizadoPorId: analista.id,
     },
     update: {

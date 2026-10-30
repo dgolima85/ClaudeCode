@@ -20,8 +20,11 @@ const CANAL_PADRAO: Omit<AcompanhamentoCanal, "canal"> = {
   somEImagem: "",
   delayClaro: "",
   relatorioPosJogo: "",
+  premiereNumero: null,
   atualizadoEm: "",
 };
+
+const NUMEROS_PREMIERE = [1, 2, 3, 4, 5, 6, 7, 8];
 
 type CanalSecaoProps = {
   jogo: JogoDoDiaLinha;
@@ -54,6 +57,7 @@ function CanalSecao({ jogo, canal, estadoInicial }: CanalSecaoProps) {
   }
 
   const desabilitarCamposOperacionais = estado.foraDoPortfolio;
+  const ehPremiereGenerico = canal.trim().toLowerCase() === "premiere";
 
   return (
     <div className="rounded-md border border-gray-200 p-3 dark:border-gray-700">
@@ -70,6 +74,31 @@ function CanalSecao({ jogo, canal, estadoInicial }: CanalSecaoProps) {
           N/A — canal fora do nosso portfólio
         </label>
       </div>
+
+      {ehPremiereGenerico && !desabilitarCamposOperacionais && (
+        <div className="mt-3">
+          <span className="block text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+            Qual Premiere está transmitindo?
+          </span>
+          <select
+            value={estado.premiereNumero ?? ""}
+            disabled={pending}
+            onChange={(e) => salvar({ premiereNumero: e.target.value ? Number(e.target.value) : null })}
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          >
+            <option value="">Selecione...</option>
+            {NUMEROS_PREMIERE.map((n) => (
+              <option key={n} value={n}>
+                Premiere {n}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+            Usado pro acompanhamento de SLA do canal — sem isso, o painel de SLA precisa estimar qual Premiere foi
+            usado.
+          </p>
+        </div>
+      )}
 
       <div className="mt-3 flex flex-col gap-3">
         <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">

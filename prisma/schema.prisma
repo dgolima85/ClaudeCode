@@ -475,6 +475,11 @@ model JogoDoDiaAcompanhamento {
   somEImagem       String?
   delayClaro       String?
   relatorioPosJogo String?
+  // Só usado quando canal == "Premiere" (a origem não diz qual numerado —
+  // ver conversa sobre o artefato de SLA dos Canais). Preenchido pelo
+  // analista no painel, pra identificar com certeza qual Premiere (1 a 8)
+  // está transmitindo, em vez de depender de uma estimativa por audiência.
+  premiereNumero   Int?
   atualizadoEm     DateTime @updatedAt
   atualizadoPorId  String?
 
