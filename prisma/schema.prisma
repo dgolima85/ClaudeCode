@@ -20,12 +20,20 @@ model Analista {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ocorrencias Ocorrencia[] @relation("OcorrenciaAnalista")
+  ocorrencias Ocorrencia[]          @relation("OcorrenciaAnalista")
   eventos     Evento[]
   avisos      Aviso[]
+  evidencias  EvidenciaOcorrencia[]
 
   passagensTurnoEntregues PassagemTurno[] @relation("PassagemTurnoEntrega")
   passagensTurnoRecebidas PassagemTurno[] @relation("PassagemTurnoRecebe")
+
+  roteiroTesteExecucoes  RoteiroTesteExecucao[]
+  roteiroTesteEvidencias RoteiroTesteEvidencia[]
+
+  jogoDoDiaAcompanhamentos       JogoDoDiaAcompanhamento[]
+  desviosOperacionaisResetados   DesvioOperacional[]
+  desviosOperacionaisRegistrados DesvioOperacionalRegistro[]
 
   @@map("analistas")
 }
@@ -38,6 +46,13 @@ model Aviso {
   modelo     String
   descricao  String
   expiraEm   DateTime
+  // OCORRENCIAS_ONGOING / OCORRENCIAS_QUALIDADE_APP (ver src/lib/contextoAviso.ts)
+  // — cada quadro de Avisos só cria, edita e exclui avisos do seu próprio
+  // contexto. Nula nos avisos criados antes desse campo existir (quando as
+  // duas homes ainda compartilhavam o mesmo quadro) — esses continuam
+  // aparecendo nas duas até expirarem ou serem editados (o que define o
+  // contexto deles a partir daí).
+  contexto   String?
   analistaId String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -45,6 +60,7 @@ model Aviso {
   analista Analista @relation(fields: [analistaId], references: [id], onDelete: Restrict)
 
   @@index([expiraEm])
+  @@index([contexto])
   @@map("avisos")
 }
 
@@ -207,6 +223,10 @@ model Ocorrencia {
   id                    String    @id @default(cuid())
   tipoId                String
   status                String    @default("EM_ANDAMENTO")
+  // ALTA / MEDIA / BAIXA (ver src/lib/criticidade.ts). Obrigatória na
+  // criação para ocorrências novas; nula em ocorrências antigas até serem
+  // preenchidas (é exigida antes de marcar como Resolvido).
+  criticidade           String?
   titulo                String
   ticket                String?
   analistaId            String
@@ -221,14 +241,15 @@ model Ocorrencia {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  tipo          TipoOcorrencia @relation(fields: [tipoId], references: [id], onDelete: Restrict)
-  analista      Analista       @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
-  ambiente      Ambiente?      @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
-  ambienteInfra AmbienteInfra? @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
-  cdn           Cdn?           @relation(fields: [cdnId], references: [id], onDelete: Restrict)
-  causa         Causa?         @relation(fields: [causaId], references: [id], onDelete: Restrict)
-  solucao       Solucao?       @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
+  tipo          TipoOcorrencia        @relation(fields: [tipoId], references: [id], onDelete: Restrict)
+  analista      Analista              @relation("OcorrenciaAnalista", fields: [analistaId], references: [id], onDelete: Restrict)
+  ambiente      Ambiente?             @relation(fields: [ambienteId], references: [id], onDelete: Restrict)
+  ambienteInfra AmbienteInfra?        @relation(fields: [ambienteInfraId], references: [id], onDelete: Restrict)
+  cdn           Cdn?                  @relation(fields: [cdnId], references: [id], onDelete: Restrict)
+  causa         Causa?                @relation(fields: [causaId], references: [id], onDelete: Restrict)
+  solucao       Solucao?              @relation(fields: [solucaoId], references: [id], onDelete: Restrict)
   eventos       Evento[]
+  evidencias    EvidenciaOcorrencia[]
 
   parcerias            Parceria[]
   empresas             Empresa[]
@@ -258,6 +279,26 @@ model Evento {
   @@map("eventos")
 }
 
+// Arquivo em si NÃO fica no Postgres (inflaria o banco) — fica no Vercel
+// Blob (ver src/lib/evidencias.ts). Aqui só o metadado + a URL de download.
+model EvidenciaOcorrencia {
+  id           String   @id @default(cuid())
+  ocorrenciaId String
+  analistaId   String
+  nomeArquivo  String
+  tipo         String
+  tamanhoBytes Int
+  url          String
+  blobPath     String
+  createdAt    DateTime @default(now())
+
+  ocorrencia Ocorrencia @relation(fields: [ocorrenciaId], references: [id], onDelete: Cascade)
+  analista   Analista   @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+
+  @@index([ocorrenciaId])
+  @@map("evidencias_ocorrencia")
+}
+
 // Fluxo ativo de passagem de turno: quem está saindo registra as ocorrências
 // em aberto no momento e observações; quem assume o turno seguinte precisa
 // confirmar o recebimento. Diferente do relatório em /relatorios/passagem-turno
@@ -269,6 +310,11 @@ model PassagemTurno {
   turnoOrigem       String
   turnoDestino      String
   status            String    @default("ABERTA")
+  // MONITORIA_APP / DEMAIS_ORIGENS (ver src/lib/origemPassagemTurno.ts) — o
+  // analista registra uma passagem por origem, nunca as duas juntas. Nula
+  // nas passagens criadas antes dessa separação existir (misturavam as
+  // duas origens).
+  origem            String?
   observacoes       String?
   analistaEntregaId String
   analistaRecebeId  String?
@@ -282,4 +328,218 @@ model PassagemTurno {
   @@index([status])
   @@index([createdAt])
   @@map("passagens_turno")
+}
+
+// Uma execução do "Roteiro de Testes" (checklist diário que os analistas
+// rodam em TV/Web/Mobile) — substitui o formulário que hoje vive no
+// Microsoft Lists, guardando o resultado de cada passo em vez de só o envio
+// do formulário, o que viabiliza relatório e consulta posterior (ver
+// src/lib/roteiroTeste/). "rotina" identifica qual roteiro foi executado
+// (TESTE_WEB, TESTE_TV, TESTE_MOBILE_V4 — ver src/lib/roteiroTeste/rotinas.ts);
+// cada rotina tem seu próprio conjunto de passos, versionado em código, não
+// no banco.
+model RoteiroTesteExecucao {
+  id           String    @id @default(cuid())
+  rotina       String
+  brand        String
+  // Dispositivos validados nesta execução (ex.: Teste TV — LG, Samsung...).
+  // Lista vazia nas rotinas que não têm esse campo (ex.: Teste Web). Multi-
+  // escolha, por isso array em vez de uma coluna única feito "brand".
+  dispositivos String[]
+  // Campo "Data" do formulário original (a data em que o teste foi de fato
+  // executado) — opcional, distinto de createdAt (quando o registro foi
+  // salvo no sistema). Nulo nas rotinas que não têm esse campo.
+  dataExecucao DateTime?
+  versao       String
+  anotacao     String?
+  analistaId   String
+  createdAt    DateTime  @default(now())
+
+  analista   Analista                @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+  itens      RoteiroTesteItem[]
+  evidencias RoteiroTesteEvidencia[]
+
+  @@index([rotina])
+  @@index([createdAt])
+  @@map("roteiro_teste_execucoes")
+}
+
+// Resultado de um passo específico do roteiro (ex.: "AUTH-WEB-001" ->
+// VALIDADO). O texto da instrução do passo não é duplicado aqui — só o
+// código, que é resolvido de volta pra descrição via a definição do roteiro
+// em código (permite corrigir o texto de um passo sem tocar em dados já
+// salvos).
+model RoteiroTesteItem {
+  id         String @id @default(cuid())
+  execucaoId String
+  codigo     String
+  resultado  String
+
+  execucao RoteiroTesteExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
+
+  @@index([execucaoId])
+  @@map("roteiro_teste_itens")
+}
+
+// Mesma lógica de EvidenciaOcorrencia: arquivo vive no Vercel Blob, aqui só
+// o metadado.
+model RoteiroTesteEvidencia {
+  id           String   @id @default(cuid())
+  execucaoId   String
+  analistaId   String
+  nomeArquivo  String
+  tipo         String
+  tamanhoBytes Int
+  url          String
+  blobPath     String
+  createdAt    DateTime @default(now())
+
+  execucao RoteiroTesteExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
+  analista Analista             @relation(fields: [analistaId], references: [id], onDelete: Restrict)
+
+  @@index([execucaoId])
+  @@map("roteiro_teste_evidencias")
+}
+
+// Jogos do dia (painel "Jogos de Hoje" na home de Ocorrências Ongoing) —
+// sincronizado periodicamente a partir da Central de Jogos do UOL por uma
+// rotina agendada (ver src/lib/jogosDoDia/sync.ts e
+// src/app/api/cron/jogos-do-dia). Guarda sempre HOJE e AMANHÃ (D+1): como a
+// rotina roda só 1x/dia, pré-carregar o dia seguinte com antecedência é o
+// que faz o painel já nascer alimentado na virada do dia, em vez de ficar
+// vazio até o próximo horário agendado. Não é histórico — dias que já
+// passaram são removidos a cada sincronização. Se uma sincronização falhar,
+// os jogos da última tentativa que deu certo continuam aqui até a próxima
+// funcionar, em vez do painel ficar vazio.
+model JogoDoDia {
+  id         String   @id @default(cuid())
+  // Id da partida na fonte (UOL) — não é por ele que a tabela é mantida
+  // única (a tabela toda é substituída a cada sync), serve só de referência.
+  sourceId   Int      @unique
+  mandante   String
+  visitante  String
+  // "HH:mm", sempre horário de Brasília (a fonte não expõe um instante UTC
+  // confiável — ver comentário em src/lib/jogosDoDia/parser.ts).
+  horario    String
+  // "yyyy-MM-dd" (ver src/lib/dataHoraBR.ts) — permanece aqui como reforço
+  // de segurança: o painel sempre filtra por esse campo, então, se a rotina
+  // não rodar ainda hoje, mostra "nenhum jogo" em vez de exibir os jogos
+  // (corretos, mas de outro dia) que sobraram da sincronização anterior.
+  dataBR     String
+  estadio    String
+  cidade     String
+  campeonato String
+  canais     String[]
+  createdAt  DateTime @default(now())
+
+  @@index([dataBR])
+  @@map("jogos_do_dia")
+}
+
+// Linha única (id fixo "singleton") com o status da última sincronização —
+// alimenta o "atualizado há X" do painel e permite perceber rápido se o
+// parsing da Central de Jogos quebrou (ex.: o UOL mudou o layout), sem
+// esperar alguém reparar que os jogos pararam de atualizar.
+model JogoDoDiaSync {
+  id                String    @id
+  ultimoSucessoEm   DateTime?
+  ultimaTentativaEm DateTime?
+  ultimoErro        String?
+  jogosEncontrados  Int?
+
+  @@map("jogo_do_dia_sync")
+}
+
+// Acompanhamento operacional de um jogo durante o dia (checklist de
+// transmissão, preenchido pelo analista) — uma linha por canal de
+// transmissão do jogo. Propositalmente NÃO tem FK pro id de JogoDoDia: essa
+// tabela é inteiramente substituída a cada sincronização (ver comentário
+// acima), então uma FK com cascade apagaria o acompanhamento assim que o
+// jogo saísse do painel no dia seguinte — e esses dados precisam sobreviver
+// pra viabilizar relatórios posteriores (daí os campos de jogo duplicados
+// aqui: mandante/visitante/campeonato), referenciando o jogo só pelo
+// sourceId (id da partida na fonte, estável).
+model JogoDoDiaAcompanhamento {
+  id               String   @id @default(cuid())
+  jogoSourceId     Int
+  dataBR           String
+  mandante         String
+  visitante        String
+  campeonato       String
+  canal            String
+  // Canal de transmissão que não faz parte do nosso portfólio (ex.: GOAT) —
+  // nesse caso os campos operacionais (testado/som e imagem/delay) não se
+  // aplicam.
+  foraDoPortfolio  Boolean  @default(false)
+  testadoValidado  Boolean  @default(false)
+  somEImagem       String?
+  delayClaro       String?
+  relatorioPosJogo String?
+  // Só usado quando canal == "Premiere" (a origem não diz qual numerado —
+  // ver conversa sobre o artefato de SLA dos Canais). Preenchido pelo
+  // analista no painel, pra identificar com certeza qual Premiere (1 a 8)
+  // está transmitindo, em vez de depender de uma estimativa por audiência.
+  premiereNumero   Int?
+  atualizadoEm     DateTime @updatedAt
+  atualizadoPorId  String?
+
+  atualizadoPor Analista? @relation(fields: [atualizadoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([jogoSourceId, canal])
+  @@index([dataBR])
+  @@map("jogo_do_dia_acompanhamento")
+}
+
+// Canais de transmissão que fazem parte do nosso portfólio — usado pra
+// filtrar, no painel "Jogos de Hoje", quais canais de cada jogo exibir (e,
+// se nenhum canal do jogo for nosso, esconder o jogo inteiro). Gerenciável
+// em Administração → Canais de Transmissão (mesmo padrão CRUD dos outros
+// cadastros), já que o portfólio muda com o tempo. Ver
+// src/lib/jogosDoDia/canaisPortfolio.ts pra lógica de confronto (o nome
+// aqui não precisa bater exatamente com o nome que o UOL usa — é
+// normalizado dos dois lados na hora de comparar).
+model CanalPortfolio {
+  id        String   @id @default(cuid())
+  nome      String   @unique
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("canais_portfolio")
+}
+
+// Indicador "dias sem Desvio Operacional" na home de Ocorrências Ongoing —
+// singleton (id fixo "singleton"). Sem rotina agendada: o número de dias
+// exibido é sempre calculado na hora, a partir de `ultimoDesvioEm` (ver
+// src/lib/desvioOperacional.ts), então ele avança sozinho a cada virada de
+// dia sem precisar de nenhum job. `recordeDias` guarda o maior streak já
+// alcançado — atualizado no momento de um reset, se o streak corrente
+// (ainda não salvo) superar o recorde já salvo.
+model DesvioOperacional {
+  id              String   @id
+  ultimoDesvioEm  DateTime
+  recordeDias     Int      @default(0)
+  atualizadoPorId String?
+
+  atualizadoPor Analista? @relation(fields: [atualizadoPorId], references: [id], onDelete: SetNull)
+
+  @@map("desvio_operacional")
+}
+
+// Histórico de desvios operacionais — uma linha por reset do indicador
+// acima, guardando quando o desvio de fato aconteceu (escolhido pelo
+// analista no momento do reset, não necessariamente "agora") e o motivo.
+// Consultável no botão "Histórico" do painel (ver
+// src/components/desvioOperacional/HistoricoDesvioModal.tsx).
+model DesvioOperacionalRegistro {
+  id              String   @id @default(cuid())
+  ocorridoEm      DateTime
+  motivo          String
+  registradoPorId String?
+  createdAt       DateTime @default(now())
+
+  registradoPor Analista? @relation(fields: [registradoPorId], references: [id], onDelete: SetNull)
+
+  @@index([ocorridoEm])
+  @@map("desvio_operacional_registros")
 }

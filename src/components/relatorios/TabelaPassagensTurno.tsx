@@ -5,6 +5,7 @@ import {
   STATUS_PASSAGEM_TURNO_LABELS,
   STATUS_PASSAGEM_TURNO_DOT_COLOR,
 } from "@/lib/statusPassagemTurno";
+import { ORIGEM_PASSAGEM_TURNO_LABELS } from "@/lib/origemPassagemTurno";
 import type { PassagemTurnoLinha } from "@/app/passagem-turno/actions";
 
 type TabelaPassagensTurnoProps = {
@@ -18,6 +19,7 @@ export default function TabelaPassagensTurno({ linhas }: TabelaPassagensTurnoPro
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Turno</th>
+            <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Origem</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Status</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Entregue por</th>
             <th className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-400">Recebido por</th>
@@ -32,6 +34,9 @@ export default function TabelaPassagensTurno({ linhas }: TabelaPassagensTurnoPro
                 <Link href={`/passagem-turno/${p.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
                   {TURNO_LABELS[p.turnoOrigem]} → {TURNO_LABELS[p.turnoDestino]}
                 </Link>
+              </td>
+              <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
+                {p.origem ? ORIGEM_PASSAGEM_TURNO_LABELS[p.origem] : "—"}
               </td>
               <td className="px-3 py-2 whitespace-nowrap">
                 <span className="inline-flex items-center gap-2">
@@ -55,7 +60,7 @@ export default function TabelaPassagensTurno({ linhas }: TabelaPassagensTurnoPro
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
+              <td colSpan={7} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">
                 Nenhuma passagem de turno registrada ainda.
               </td>
             </tr>

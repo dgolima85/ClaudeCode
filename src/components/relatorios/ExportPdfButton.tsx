@@ -1,9 +1,18 @@
 type ExportPdfButtonProps = {
   href: string;
   label?: string;
+  disabled?: boolean;
 };
 
-export default function ExportPdfButton({ href, label = "Exportar PDF" }: ExportPdfButtonProps) {
+export default function ExportPdfButton({ href, label = "Exportar PDF", disabled = false }: ExportPdfButtonProps) {
+  if (disabled) {
+    return (
+      <span className="cursor-not-allowed rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-400 opacity-50 dark:border-gray-600 dark:text-gray-500">
+        {label}
+      </span>
+    );
+  }
+
   return (
     <a
       href={href}

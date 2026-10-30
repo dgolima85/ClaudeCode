@@ -1,19 +1,14 @@
-import { TURNOS, TURNO_LABELS } from "@/lib/turno";
 import type { FiltrosRelatorio } from "@/lib/relatorios";
 
 type Opcao = { id: string; nome: string };
 
 type FiltrosResumoExecutivoProps = {
   analistas: Opcao[];
-  tipos: Opcao[];
-  parcerias: Opcao[];
   filtros: FiltrosRelatorio;
 };
 
 export default function FiltrosResumoExecutivo({
   analistas,
-  tipos,
-  parcerias,
   filtros,
 }: FiltrosResumoExecutivoProps) {
   return (
@@ -55,49 +50,14 @@ export default function FiltrosResumoExecutivo({
         </select>
       </label>
       <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
-        Turno
-        <select
-          name="turno"
-          defaultValue={filtros.turno ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
-        >
-          <option value="">Todos</option>
-          {TURNOS.map((t) => (
-            <option key={t} value={t}>
-              {TURNO_LABELS[t]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
-        Origem
-        <select
-          name="tipoId"
-          defaultValue={filtros.tipoId ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
-        >
-          <option value="">Todos</option>
-          {tipos.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.nome}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
-        Parceria
-        <select
-          name="parceriaId"
-          defaultValue={filtros.parceriaId ?? ""}
-          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:[color-scheme:dark]"
-        >
-          <option value="">Todas</option>
-          {parcerias.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nome}
-            </option>
-          ))}
-        </select>
+        Título
+        <input
+          type="text"
+          name="titulo"
+          placeholder="Buscar no título..."
+          defaultValue={filtros.titulo ?? ""}
+          className="rounded border border-gray-300 bg-transparent px-2 py-1 text-sm dark:border-gray-600 dark:text-gray-100"
+        />
       </label>
       <div className="flex gap-3">
         <button

@@ -4,9 +4,15 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirAnalistaLogado } from "@/lib/session";
 import { novaPassagemTurnoSchema } from "@/lib/validations";
-import type { Turno } from "@/lib/turno";
+import { TURNO_DESTINO_PASSAGEM, type Turno } from "@/lib/turno";
 import type { StatusOcorrencia } from "@/lib/status";
+import { isCriticidade } from "@/lib/criticidade";
 import type { StatusPassagemTurno } from "@/lib/statusPassagemTurno";
+import {
+  isOrigemPassagemTurno,
+  filtroTipoPorOrigemPassagemTurno,
+  type OrigemPassagemTurno,
+} from "@/lib/origemPassagemTurno";
 import type { LinhaRelatorio } from "@/components/relatorios/TabelaOcorrenciasFiltravel";
 
 const includeOcorrencia = { tipo: true, analista: true } as const;
@@ -14,6 +20,7 @@ const includeOcorrencia = { tipo: true, analista: true } as const;
 function mapOcorrencia(o: {
   id: string;
   status: string;
+  criticidade: string | null;
   titulo: string;
   ticket: string | null;
   createdAt: Date;
@@ -24,6 +31,7 @@ function mapOcorrencia(o: {
   return {
     id: o.id,
     status: o.status as StatusOcorrencia,
+    criticidade: o.criticidade && isCriticidade(o.criticidade) ? o.criticidade : null,
     titulo: o.titulo,
     ticket: o.ticket,
     createdAt: o.createdAt.toISOString(),
@@ -34,11 +42,13 @@ function mapOcorrencia(o: {
   };
 }
 
-export async function buscarOcorrenciasEmAbertoPreview(): Promise<LinhaRelatorio[]> {
+export async function buscarOcorrenciasEmAbertoPreview(
+  origem: OrigemPassagemTurno,
+): Promise<LinhaRelatorio[]> {
   await exigirAnalistaLogado();
 
   const ocorrencias = await prisma.ocorrencia.findMany({
-    where: { status: { not: "RESOLVIDO" } },
+    where: { status: { not: "RESOLVIDO" }, tipo: filtroTipoPorOrigemPassagemTurno(origem) },
     include: includeOcorrencia,
     orderBy: { createdAt: "asc" },
   });
@@ -50,15 +60,16 @@ export type PassagemTurnoPendente = {
   id: string;
   turnoOrigem: Turno;
   turnoDestino: Turno;
+  origem: OrigemPassagemTurno | null;
   analistaEntrega: string;
   createdAt: string;
 };
 
 export async function buscarPendentesPassagemTurno(): Promise<PassagemTurnoPendente[]> {
-  await exigirAnalistaLogado();
+  const analista = await exigirAnalistaLogado();
 
   const pendentes = await prisma.passagemTurno.findMany({
-    where: { status: "ABERTA" },
+    where: { status: "ABERTA", turnoDestino: analista.turno },
     include: { analistaEntrega: true },
     orderBy: { createdAt: "desc" },
   });
@@ -67,13 +78,14 @@ export async function buscarPendentesPassagemTurno(): Promise<PassagemTurnoPende
     id: p.id,
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
+    origem: p.origem && isOrigemPassagemTurno(p.origem) ? p.origem : null,
     analistaEntrega: p.analistaEntrega.nome,
     createdAt: p.createdAt.toISOString(),
   }));
 }
 
 export async function criarPassagemTurno(dados: {
-  turnoDestino: string;
+  origem: string;
   observacoes: string;
 }): Promise<{ error?: string; id?: string }> {
   const analista = await exigirAnalistaLogado();
@@ -83,14 +95,15 @@ export async function criarPassagemTurno(dados: {
   }
 
   const ocorrenciasEmAberto = await prisma.ocorrencia.findMany({
-    where: { status: { not: "RESOLVIDO" } },
+    where: { status: { not: "RESOLVIDO" }, tipo: filtroTipoPorOrigemPassagemTurno(parsed.data.origem) },
     select: { id: true },
   });
 
   const passagem = await prisma.passagemTurno.create({
     data: {
       turnoOrigem: analista.turno,
-      turnoDestino: parsed.data.turnoDestino,
+      turnoDestino: TURNO_DESTINO_PASSAGEM[analista.turno as Turno],
+      origem: parsed.data.origem,
       observacoes: parsed.data.observacoes ? parsed.data.observacoes : null,
       analistaEntregaId: analista.id,
       ocorrencias: { connect: ocorrenciasEmAberto.map((o) => ({ id: o.id })) },
@@ -98,6 +111,7 @@ export async function criarPassagemTurno(dados: {
   });
 
   revalidatePath("/");
+  revalidatePath("/ocorrencias-qualidade-app");
   revalidatePath("/passagem-turno");
   return { id: passagem.id };
 }
@@ -107,7 +121,9 @@ export type PassagemTurnoDetalhe = {
   status: StatusPassagemTurno;
   turnoOrigem: Turno;
   turnoDestino: Turno;
+  origem: OrigemPassagemTurno | null;
   observacoes: string | null;
+  analistaEntregaId: string;
   analistaEntrega: string;
   analistaRecebe: string | null;
   createdAt: string;
@@ -116,7 +132,7 @@ export type PassagemTurnoDetalhe = {
 };
 
 export async function buscarPassagemTurno(id: string): Promise<PassagemTurnoDetalhe | null> {
-  await exigirAnalistaLogado();
+  const analista = await exigirAnalistaLogado();
 
   const p = await prisma.passagemTurno.findUnique({
     where: { id },
@@ -127,13 +143,18 @@ export async function buscarPassagemTurno(id: string): Promise<PassagemTurnoDeta
     },
   });
   if (!p) return null;
+  // Só quem está do lado de origem ou destino dessa passagem pode vê-la —
+  // ex: Intermediário não visualiza passagens entre Manhã e Noite.
+  if (analista.turno !== p.turnoOrigem && analista.turno !== p.turnoDestino) return null;
 
   return {
     id: p.id,
     status: p.status as StatusPassagemTurno,
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
+    origem: p.origem && isOrigemPassagemTurno(p.origem) ? p.origem : null,
     observacoes: p.observacoes,
+    analistaEntregaId: p.analistaEntregaId,
     analistaEntrega: p.analistaEntrega.nome,
     analistaRecebe: p.analistaRecebe?.nome ?? null,
     createdAt: p.createdAt.toISOString(),
@@ -148,6 +169,15 @@ export async function confirmarPassagemTurno(id: string): Promise<{ error?: stri
   const passagem = await prisma.passagemTurno.findUnique({ where: { id } });
   if (!passagem) return { error: "Passagem de turno não encontrada." };
   if (passagem.status !== "ABERTA") return { error: "Esta passagem de turno já foi confirmada." };
+  if (analista.turno !== passagem.turnoDestino) {
+    return { error: "Apenas o turno de destino desta passagem pode confirmar o recebimento." };
+  }
+  // Turno Intermediário tem turnoDestino igual ao turnoOrigem (ver
+  // TURNO_DESTINO_PASSAGEM) — sem este check, quem entregou poderia
+  // confirmar a própria passagem nesse caso.
+  if (passagem.analistaEntregaId === analista.id) {
+    return { error: "Quem entregou a passagem não pode confirmar o próprio recebimento." };
+  }
 
   await prisma.passagemTurno.update({
     where: { id },
@@ -159,6 +189,7 @@ export async function confirmarPassagemTurno(id: string): Promise<{ error?: stri
   });
 
   revalidatePath("/");
+  revalidatePath("/ocorrencias-qualidade-app");
   revalidatePath("/passagem-turno");
   revalidatePath(`/passagem-turno/${id}`);
   revalidatePath("/relatorios/passagens-turno");
@@ -170,6 +201,7 @@ export type PassagemTurnoLinha = {
   status: StatusPassagemTurno;
   turnoOrigem: Turno;
   turnoDestino: Turno;
+  origem: OrigemPassagemTurno | null;
   analistaEntrega: string;
   analistaRecebe: string | null;
   createdAt: string;
@@ -177,9 +209,10 @@ export type PassagemTurnoLinha = {
 };
 
 export async function buscarHistoricoPassagensTurno(): Promise<PassagemTurnoLinha[]> {
-  await exigirAnalistaLogado();
+  const analista = await exigirAnalistaLogado();
 
   const passagens = await prisma.passagemTurno.findMany({
+    where: { OR: [{ turnoOrigem: analista.turno }, { turnoDestino: analista.turno }] },
     include: { analistaEntrega: true, analistaRecebe: true },
     orderBy: { createdAt: "desc" },
   });
@@ -189,6 +222,7 @@ export async function buscarHistoricoPassagensTurno(): Promise<PassagemTurnoLinh
     status: p.status as StatusPassagemTurno,
     turnoOrigem: p.turnoOrigem as Turno,
     turnoDestino: p.turnoDestino as Turno,
+    origem: p.origem && isOrigemPassagemTurno(p.origem) ? p.origem : null,
     analistaEntrega: p.analistaEntrega.nome,
     analistaRecebe: p.analistaRecebe?.nome ?? null,
     createdAt: p.createdAt.toISOString(),

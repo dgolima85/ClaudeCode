@@ -20,6 +20,8 @@ Copie a connection string (formato `postgresql://usuario:senha@host:5432/banco?s
 2. A Vercel detecta Next.js automaticamente — não precisa mudar comandos de build.
 3. Em **Environment Variables**, adicione:
    - `DATABASE_URL` = a connection string do passo 1 (marcar para Production, Preview e Development, ou pelo menos Production).
+   - `AUTH_SECRET` = obrigatória (a aplicação usa Auth.js para o login com Microsoft Entra ID — sem essa variável ela não builda/roda, mesmo se você não for usar o Entra ID ainda). Gere com `npx auth secret` ou `openssl rand -base64 33`.
+   - `AUTH_MICROSOFT_ENTRA_ID_ID` e `AUTH_MICROSOFT_ENTRA_ID_ISSUER` = opcionais, só para habilitar o botão "Entrar com Microsoft" — veja o [README](./README.md#login-com-microsoft-entra-id-azure-ad) para o passo a passo com o Administrador do Azure.
 4. Clique em **Deploy**.
 
 No build, a Vercel roda `npm install` (que já dispara `prisma generate` via `postinstall`) e depois `npm run build`, que executa `prisma migrate deploy && next build` — ou seja, o schema do banco é criado/atualizado automaticamente a cada deploy, sem passo manual.
@@ -42,6 +44,12 @@ Se isso acontecer com frequência (não só numa sobreposição pontual de deplo
    - `DIRECT_URL` = a connection string **direta** (sem pooler) do mesmo banco — usada só pelo `prisma migrate deploy`.
 
 `DATABASE_URL` continua sendo a usada pela aplicação em tempo de execução (pode continuar pooled, é o ideal para ambiente serverless).
+
+#### Login com Microsoft Entra ID falha com "invalid_grant" mesmo com tudo certo no Azure
+
+Se a empresa tem uma política de Conditional Access no Entra ID restringindo login por IP/país, o login pode falhar mesmo com o App Registration configurado corretamente (Redirect URI certo, "Allow public client flows" habilitado). O motivo: as Vercel Functions rodam, por padrão, na região de Washington D.C. (`iad1`), e é de lá que sai a chamada do nosso servidor para trocar o código de autorização por token — não da região de quem está acessando o site.
+
+Solução: em **Vercel → Settings → Functions → Function Region**, mude para a região exigida pela política (ex: "São Paulo, Brazil" / `gru1`, para políticas restritas a IPs do Brasil) e faça um novo deploy. Regiões fora do padrão exigem plano **Pro** da Vercel. Mais detalhes no [README](./README.md), seção "Login com Microsoft Entra ID".
 
 ### 3. Popular os dados iniciais (uma vez)
 

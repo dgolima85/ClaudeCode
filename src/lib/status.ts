@@ -1,6 +1,7 @@
 export const STATUS_OCORRENCIA = [
   "EM_ANDAMENTO",
   "AGUARDANDO_VALIDACAO",
+  "PENDENTE_CAUSA",
   "RESOLVIDO",
 ] as const;
 
@@ -9,6 +10,7 @@ export type StatusOcorrencia = (typeof STATUS_OCORRENCIA)[number];
 export const STATUS_LABELS: Record<StatusOcorrencia, string> = {
   EM_ANDAMENTO: "Em Andamento",
   AGUARDANDO_VALIDACAO: "Aguardando Validação",
+  PENDENTE_CAUSA: "Pendente de Causa",
   RESOLVIDO: "Resolvido",
 };
 
@@ -16,6 +18,7 @@ export const STATUS_LABELS: Record<StatusOcorrencia, string> = {
 export const STATUS_DOT_COLOR: Record<StatusOcorrencia, string> = {
   EM_ANDAMENTO: "bg-red-500",
   AGUARDANDO_VALIDACAO: "bg-yellow-500",
+  PENDENTE_CAUSA: "bg-orange-500",
   RESOLVIDO: "bg-green-500",
 };
 
@@ -23,6 +26,7 @@ export const STATUS_DOT_COLOR: Record<StatusOcorrencia, string> = {
 export const STATUS_HEX_COLOR: Record<StatusOcorrencia, string> = {
   EM_ANDAMENTO: "#ef4444",
   AGUARDANDO_VALIDACAO: "#eab308",
+  PENDENTE_CAUSA: "#f97316",
   RESOLVIDO: "#22c55e",
 };
 

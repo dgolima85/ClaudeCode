@@ -17,13 +17,27 @@ const includeCompleto = {
   solucao: true,
 } as const;
 
+// Case e acento-insensível (ex.: "graca" encontra "Graça") — o Postgres via
+// Prisma não tem um jeito nativo de ignorar acento num `contains` sem a
+// extensão unaccent, então normaliza dos dois lados e compara em JS.
+function normalizarTitulo(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
 export async function listarResumosExecutivos(filtros: FiltrosRelatorio) {
   const where = montarWhereOcorrencia(filtros);
-  return prisma.ocorrencia.findMany({
+  const ocorrencias = await prisma.ocorrencia.findMany({
     where,
     include: includeCompleto,
     orderBy: { createdAt: "desc" },
   });
+
+  if (!filtros.titulo) return ocorrencias;
+  const buscaNormalizada = normalizarTitulo(filtros.titulo);
+  return ocorrencias.filter((o) => normalizarTitulo(o.titulo).includes(buscaNormalizada));
 }
 
 export async function buscarResumoExecutivo(id: string) {

@@ -2,7 +2,12 @@ import { prisma } from "@/lib/prisma";
 import FiltrosResumoExecutivo from "@/components/relatorios/FiltrosResumoExecutivo";
 import TabelaResumoExecutivo from "@/components/relatorios/TabelaResumoExecutivo";
 import ExportCsvButton from "@/components/relatorios/ExportCsvButton";
-import { parseFiltros, buildQueryString, type SearchParamsRelatorio } from "@/lib/relatorios";
+import {
+  parseFiltros,
+  buildQueryString,
+  temAlgumFiltro,
+  type SearchParamsRelatorio,
+} from "@/lib/relatorios";
 import { listarResumosExecutivos, nomeCausa, nomeSolucao, parceriaEmpresaLabel } from "@/lib/resumoExecutivo";
 import type { StatusOcorrencia } from "@/lib/status";
 
@@ -14,11 +19,9 @@ export default async function ResumosExecutivosPage({
   const sp = await searchParams;
   const filtros = parseFiltros(sp);
 
-  const [ocorrencias, analistas, tipos, parcerias] = await Promise.all([
+  const [ocorrencias, analistas] = await Promise.all([
     listarResumosExecutivos(filtros),
     prisma.analista.findMany({ orderBy: { nome: "asc" } }),
-    prisma.tipoOcorrencia.findMany({ orderBy: { nome: "asc" } }),
-    prisma.parceria.findMany({ orderBy: { nome: "asc" } }),
   ]);
 
   const linhas = ocorrencias.map((o) => ({
@@ -45,13 +48,14 @@ export default async function ResumosExecutivosPage({
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Resumos Executivos</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {linhas.length} ocorrência{linhas.length === 1 ? "" : "s"} encontrada
-            {linhas.length === 1 ? "" : "s"}, de qualquer status.
+            {linhas.length === 1 ? "" : "s"}, de qualquer status
+            {!temAlgumFiltro(filtros) && " (últimos 5 dias — use os filtros para ver ocorrências mais antigas)"}.
           </p>
         </div>
         <ExportCsvButton href="/relatorios/executivo/export" queryString={queryString} />
       </div>
 
-      <FiltrosResumoExecutivo analistas={analistas} tipos={tipos} parcerias={parcerias} filtros={filtros} />
+      <FiltrosResumoExecutivo analistas={analistas} filtros={filtros} />
 
       <TabelaResumoExecutivo linhas={linhas} />
     </div>
