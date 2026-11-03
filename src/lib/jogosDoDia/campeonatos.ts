@@ -1,9 +1,9 @@
 // Campeonatos/divisões que devem aparecer no painel "Jogos de Hoje" — lista
 // fechada, pedida explicitamente (Brasileirão, Sul-Americana, Libertadores,
 // Liga dos Campeões, os campeonatos Alemão/Espanhol/Italiano/Inglês/
-// Francês, e a Copa da Liga Inglesa). Qualquer outro campeonato (Série B,
-// Copa do Brasil, seleções, etc.) fica de fora por não estar nessa lista —
-// não é um bloqueio específico à Série B, é uma lista de permissão.
+// Francês, a Copa da Liga Inglesa e a Copa do Brasil). Qualquer outro
+// campeonato (Série B, seleções, etc.) fica de fora por não estar nessa
+// lista — não é um bloqueio específico à Série B, é uma lista de permissão.
 //
 // Casa tanto pelo "slug" quanto pelo nome (normalizado, sem acento/caixa)
 // porque não há como confirmar ao vivo o slug exato que o UOL usa pra cada
@@ -32,6 +32,7 @@ const CAMPEONATOS_PERMITIDOS: CampeonatoPermitido[] = [
     slugs: ["copa-da-liga-inglesa", "efl-cup", "carabao-cup", "league-cup"],
     nomes: ["copa da liga inglesa", "efl cup", "carabao cup", "league cup"],
   },
+  { slugs: ["copa-do-brasil"], nomes: ["copa do brasil"] },
 ];
 
 function normalizar(texto: string): string {
@@ -42,11 +43,14 @@ function normalizar(texto: string): string {
     .trim();
 }
 
-// A UOL inclui o ano na edição de alguns campeonatos (ex.: "Copa da Liga
-// Inglesa 2027") — remove um ano de 4 dígitos no fim do nome/slug antes de
-// comparar, pra não precisar atualizar a lista toda virada de ano.
+// A UOL inclui a edição/temporada em alguns campeonatos, às vezes como ano
+// cheio ("Copa da Liga Inglesa 2027"), às vezes curto ("Copa do Brasil -
+// 26") — remove de 2 a 4 dígitos no fim do nome/slug antes de comparar, pra
+// não precisar atualizar a lista toda virada de ano/temporada. Seguro pra
+// nomes permitidos com número no fim (ex. "Ligue 1"): só um dígito, abaixo
+// do mínimo de 2 exigido aqui.
 function semAnoFinal(texto: string): string {
-  return texto.replace(/[\s-]*\d{4}$/, "").trim();
+  return texto.replace(/[\s-]*\d{2,4}$/, "").trim();
 }
 
 export function isCampeonatoPermitido(nome: string, slug: string): boolean {
