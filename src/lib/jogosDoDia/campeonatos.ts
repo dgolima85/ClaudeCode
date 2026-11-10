@@ -1,9 +1,10 @@
 // Campeonatos/divisões que devem aparecer no painel "Jogos de Hoje" — lista
 // fechada, pedida explicitamente (Brasileirão, Sul-Americana, Libertadores,
 // Liga dos Campeões, os campeonatos Alemão/Espanhol/Italiano/Inglês/
-// Francês, a Copa da Liga Inglesa e a Copa do Brasil). Qualquer outro
-// campeonato (Série B, seleções, etc.) fica de fora por não estar nessa
-// lista — não é um bloqueio específico à Série B, é uma lista de permissão.
+// Francês, a Copa da Liga Inglesa, a Copa do Brasil, a Liga das Nações, os
+// Amistosos Internacionais e os Amistosos da Seleção Brasileira). Qualquer
+// outro campeonato (Série B, etc.) fica de fora por não estar nessa lista —
+// não é um bloqueio específico à Série B, é uma lista de permissão.
 //
 // Casa tanto pelo "slug" quanto pelo nome (normalizado, sem acento/caixa)
 // porque não há como confirmar ao vivo o slug exato que o UOL usa pra cada
@@ -33,6 +34,28 @@ const CAMPEONATOS_PERMITIDOS: CampeonatoPermitido[] = [
     nomes: ["copa da liga inglesa", "efl cup", "carabao cup", "league cup"],
   },
   { slugs: ["copa-do-brasil"], nomes: ["copa do brasil"] },
+  {
+    slugs: ["liga-das-nacoes", "nations-league", "uefa-nations-league"],
+    nomes: ["liga das nacoes", "nations league"],
+  },
+  {
+    slugs: ["amistosos-internacionais", "amistoso-internacional", "international-friendlies", "friendlies"],
+    nomes: ["amistosos internacionais", "amistoso internacional", "international friendlies", "friendlies"],
+  },
+  {
+    slugs: [
+      "amistosos-selecao-brasileira",
+      "amistoso-selecao-brasileira",
+      "amistosos-da-selecao-brasileira",
+      "amistoso-da-selecao-brasileira",
+    ],
+    nomes: [
+      "amistosos selecao brasileira",
+      "amistoso selecao brasileira",
+      "amistosos da selecao brasileira",
+      "amistoso da selecao brasileira",
+    ],
+  },
 ];
 
 function normalizar(texto: string): string {
