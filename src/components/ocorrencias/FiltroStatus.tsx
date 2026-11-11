@@ -1,16 +1,30 @@
 "use client";
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { STATUS_OCORRENCIA, STATUS_LABELS, type StatusOcorrencia } from "@/lib/status";
 
 type FiltroStatusProps = {
   statusSelecionados: StatusOcorrencia[];
+  filtroAlteradoPeloUsuario?: boolean;
 };
 
-export default function FiltroStatus({ statusSelecionados }: FiltroStatusProps) {
-  const router = useRouter();
+export default function FiltroStatus({
+  statusSelecionados,
+  filtroAlteradoPeloUsuario = true,
+}: FiltroStatusProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  function navegar(params: URLSearchParams) {
+    // Navegação "dura" (recarrega a página) em vez de client-side router:
+    // navegações client-side que só trocam querystring na mesma rota, indo
+    // e voltando rápido entre as mesmas URLs, faziam o Next.js reaproveitar
+    // dados de uma navegação anterior por engano — a tabela ficava com um
+    // resultado errado mesmo o servidor sempre respondendo certo. Recarregar
+    // de verdade garante que a tabela nunca fica desatualizada.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- ver comentário acima: é proposital, não um descuido.
+    window.location.assign(`${pathname}?${params.toString()}`);
+  }
 
   function alternar(status: StatusOcorrencia) {
     const atuais = new Set(statusSelecionados);
@@ -20,14 +34,13 @@ export default function FiltroStatus({ statusSelecionados }: FiltroStatusProps) 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("status");
     for (const s of atuais) params.append("status", s);
-
-    router.push(`${pathname}?${params.toString()}`);
+    navegar(params);
   }
 
   function limpar() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("status");
-    router.push(`${pathname}?${params.toString()}`);
+    navegar(params);
   }
 
   return (
@@ -50,7 +63,7 @@ export default function FiltroStatus({ statusSelecionados }: FiltroStatusProps) 
           </button>
         );
       })}
-      {statusSelecionados.length > 0 && (
+      {filtroAlteradoPeloUsuario && statusSelecionados.length > 0 && (
         <button
           type="button"
           onClick={limpar}

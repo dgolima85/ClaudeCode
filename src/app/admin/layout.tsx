@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/cdns", label: "CDN" },
   { href: "/admin/plataformas", label: "Plataforma" },
   { href: "/admin/canais", label: "Canal" },
+  { href: "/admin/canais-portfolio", label: "Canais de Transmissão" },
   { href: "/admin/causas", label: "Causas" },
   { href: "/admin/solucoes", label: "Soluções" },
 ];

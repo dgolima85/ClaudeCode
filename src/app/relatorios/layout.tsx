@@ -6,6 +6,7 @@ const LINKS = [
   { href: "/relatorios/passagem-turno", label: "Passagem de Turno" },
   { href: "/relatorios/passagens-turno", label: "Histórico de Passagens" },
   { href: "/relatorios/executivo", label: "Resumos Executivos" },
+  { href: "/relatorios/acompanhamento-jogos", label: "Acompanhamento dos Jogos" },
 ];
 
 export default function RelatoriosLayout({ children }: { children: React.ReactNode }) {

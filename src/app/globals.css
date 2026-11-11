@@ -26,3 +26,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Destaque do painel "Jogos de Hoje" na última hora antes do início de uma
+   partida (ver src/components/jogosDoDia/JogosDoDiaPanel.tsx) — chama
+   atenção pra fazer os testes de transmissão antes do jogo começar. */
+@keyframes jogoAlertaPiscar {
+  0%,
+  100% {
+    background-color: rgba(245, 158, 11, 0.12);
+    border-color: rgb(245, 158, 11);
+  }
+  50% {
+    background-color: rgba(245, 158, 11, 0.4);
+    border-color: rgb(180, 83, 9);
+  }
+}
+
+.jogo-alerta-piscando {
+  animation: jogoAlertaPiscar 1s ease-in-out infinite;
+}

@@ -15,6 +15,13 @@ const formatterDataHoraBR = new Intl.DateTimeFormat("pt-BR", {
   hour12: false,
 });
 
+const formatterDataCurtaBR = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: TIMEZONE_BR,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
 const formatterDiaBR = new Intl.DateTimeFormat("en-CA", {
   timeZone: TIMEZONE_BR,
   year: "numeric",
@@ -32,10 +39,23 @@ const formatterInputBR = new Intl.DateTimeFormat("en-CA", {
   hour12: false,
 });
 
+const formatterHoraBR = new Intl.DateTimeFormat("en-GB", {
+  timeZone: TIMEZONE_BR,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
 /** Formata uma data/hora no padrão dd/MM/yyyy HH:mm, sempre no horário de Brasília. */
 export function formatarDataHoraBR(data: Date | string): string {
   const d = typeof data === "string" ? new Date(data) : data;
   return formatterDataHoraBR.format(d).replace(",", "");
+}
+
+/** Formata uma data (sem horário) no padrão dd/MM/yyyy, sempre no horário de Brasília. */
+export function formatarDataBR(data: Date | string): string {
+  const d = typeof data === "string" ? new Date(data) : data;
+  return formatterDataCurtaBR.format(d);
 }
 
 /** Retorna o dia (yyyy-MM-dd) correspondente a uma data, no horário de Brasília. */
@@ -53,6 +73,23 @@ export function fimDoDiaBR(diaBR: string): Date {
   return new Date(`${diaBR}T23:59:59.999-03:00`);
 }
 
+/** Horário atual no formato HH:mm, sempre no horário de Brasília. */
+export function horaBR(data: Date = new Date()): string {
+  return formatterHoraBR.format(data);
+}
+
+/** Formata um horário HH:mm de forma curta e coloquial (ex.: "05:00" -> "5h", "23:59" -> "23h59min"). */
+export function formatarHoraCurta(horaHHmm: string): string {
+  const [hora, minuto] = horaHHmm.split(":");
+  const horaNum = Number(hora);
+  return minuto === "00" ? `${horaNum}h` : `${horaNum}h${minuto}min`;
+}
+
+/** Soma (ou subtrai, com número negativo) dias a um dia (yyyy-MM-dd), sempre em Brasília. */
+export function somarDiasBR(diaBR: string, dias: number): string {
+  return dataBR(new Date(inicioDoDiaBR(diaBR).getTime() + dias * 24 * 60 * 60 * 1000));
+}
+
 /** Formata uma data/hora para o valor de um <input type="datetime-local">, em horário de Brasília. */
 export function paraInputDataHoraBR(data: Date | string): string {
   const d = typeof data === "string" ? new Date(data) : data;
@@ -64,4 +101,14 @@ export function paraInputDataHoraBR(data: Date | string): string {
 /** Converte o valor de um <input type="datetime-local"> (yyyy-MM-ddTHH:mm), entendido como horário de Brasília, para o instante UTC correspondente. */
 export function deInputDataHoraBR(valor: string): Date {
   return new Date(`${valor}:00-03:00`);
+}
+
+/** Idade curta e legível a partir de agora (ex.: "40min", "6h", "3d"), para exibição compacta. */
+export function idadeCurta(data: Date | string): string {
+  const d = typeof data === "string" ? new Date(data) : data;
+  const minutos = Math.floor((new Date().getTime() - d.getTime()) / (1000 * 60));
+  if (minutos < 60) return `${minutos}min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `${horas}h`;
+  return `${Math.floor(horas / 24)}d`;
 }
