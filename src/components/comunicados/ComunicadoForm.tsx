@@ -10,19 +10,19 @@ const CLASSE_INPUT =
   "rounded border border-gray-300 bg-transparent px-2 py-1.5 text-sm dark:border-gray-600 dark:text-gray-100";
 const CLASSE_TEXTAREA = `${CLASSE_INPUT} w-full resize-none`;
 
-// Largura do template tanto na pré-visualização quanto na captura — não usa
-// "transform: scale" no contêiner porque o html2canvas (biblioteca que
-// transforma esse bloco numa imagem) não lida bem com transforms em
+// Largura do cabeçalho/rodapé tanto na pré-visualização quanto na captura —
+// não usa "transform: scale" no contêiner porque o html2canvas (biblioteca
+// que transforma esses blocos em imagem) não lida bem com transforms em
 // ancestrais do elemento capturado. A nitidez da imagem final não depende
 // dessa largura: vem do "scale" passado pro html2canvas no momento da
-// captura (ver gerarImagem), que fotografa em resolução maior.
+// captura (ver gerarComunicado), que fotografa em resolução maior.
 const TEMPLATE_LARGURA = 640;
 
-// Cores do template são sempre em hex/rgb "cru" (nunca classes Tailwind)
-// porque o html2canvas (biblioteca usada pra transformar esse bloco em
-// imagem) não entende cores modernas como oklch() — que é o que o Tailwind
-// v4 usa por padrão na paleta. Usando estilo inline cru aqui, a cor
-// exportada na imagem final é garantida de bater com o que aparece na tela.
+// Cores do cabeçalho/rodapé são sempre em hex/rgb "cru" (nunca classes
+// Tailwind) porque o html2canvas não entende cores modernas como oklch() —
+// que é o que o Tailwind v4 usa por padrão na paleta. O corpo, no meio, NÃO
+// é mais capturado como imagem (vira texto de verdade, pesquisável — ver
+// conversa), então ele pode usar classes Tailwind normalmente.
 const CORES = {
   fundoInicio: "#3a0ca3",
   fundoFim: "#5b16c9",
@@ -34,23 +34,6 @@ const CORES = {
   divisorFim: "#ffb347",
 } as const;
 
-type ComunicadoTemplateProps = {
-  time: string;
-  alerta: string;
-  dataHoraTexto: string;
-  descricao: string;
-  ticket: string;
-  timesNotificados: string[];
-  // O html2canvas precisa capturar exatamente o elemento com a largura
-  // fixa (width: TEMPLATE_LARGURA) — se o ref ficasse num wrapper por
-  // fora, ele capturaria a largura desse wrapper (que encolhe pra caber
-  // na coluna da página), não a do template, cortando o conteúdo.
-  innerRef: React.Ref<HTMLDivElement>;
-};
-
-// Tamanhos pensados pra largura do template (TEMPLATE_LARGURA) — a nitidez
-// final não depende deles, vem do "scale" do html2canvas na captura.
-const FONTE_CORPO = 13;
 const FONTE_TITULO = 20;
 const FONTE_RODAPE = 11;
 
@@ -101,123 +84,159 @@ function MarcaWatch() {
   return <img src="/watch-logo.png" alt="Watch" style={{ height: 22, width: "auto", flexShrink: 0 }} />;
 }
 
-function LinhaRotulo({ rotulo, valor }: { rotulo: string; valor: string }) {
-  return (
-    <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>
-      <span style={{ fontWeight: 400 }}>{rotulo}: </span>
-      {valor}
-    </p>
-  );
-}
-
-function BlocoLongo({ rotulo, valor }: { rotulo: string; valor: string }) {
-  return (
-    <div>
-      <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>{rotulo}:</p>
-      <p
-        style={{
-          margin: 0,
-          fontSize: FONTE_CORPO,
-          lineHeight: 1.55,
-          color: CORES.texto,
-          whiteSpace: "pre-wrap",
-          ...QUEBRA_TEXTO,
-        }}
-      >
-        {valor}
-      </p>
-    </div>
-  );
-}
-
-function ComunicadoTemplate({
-  time,
-  alerta,
-  dataHoraTexto,
-  descricao,
-  ticket,
-  timesNotificados,
-  innerRef,
-}: ComunicadoTemplateProps) {
-  const alertaMultilinha = alerta.includes("\n") || alerta.length > 70;
-  const descricaoMultilinha = descricao.includes("\n") || descricao.length > 70;
-
+// Cabeçalho: o único pedaço que vira imagem na ponta de cima — mesmo visual
+// de sempre (ícone + "Acionamento NOC" + logo da Watch).
+function CabecalhoTemplate({ innerRef }: { innerRef: React.Ref<HTMLDivElement> }) {
   return (
     <div
       ref={innerRef}
       style={{
         width: TEMPLATE_LARGURA,
-        // boxSizing + minWidth: 0 são necessários porque isso tudo é um
-        // flex column — sem minWidth: 0 os parágrafos (filhos de flex) não
-        // encolhem pra caber na largura fixa e o texto vaza pra fora do
-        // quadro em vez de quebrar linha (gotcha clássico de flexbox).
-        minWidth: 0,
-        background: `linear-gradient(160deg, ${CORES.fundoInicio} 0%, ${CORES.fundoFim} 100%)`,
-        padding: "28px 32px",
         boxSizing: "border-box",
+        background: `linear-gradient(160deg, ${CORES.fundoInicio} 0%, ${CORES.fundoFim} 100%)`,
+        padding: "22px 32px",
+        borderRadius: "12px 12px 0 0",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <LogoMarca />
+      <MarcaWatch />
+    </div>
+  );
+}
+
+// Rodapé: o outro pedaço que vira imagem, na ponta de baixo — a partir da
+// linha divisória que hoje já vem logo depois do "Obrigado!".
+function RodapeTemplate({
+  innerRef,
+  timesNotificados,
+}: {
+  innerRef: React.Ref<HTMLDivElement>;
+  timesNotificados: string[];
+}) {
+  return (
+    <div
+      ref={innerRef}
+      style={{
+        width: TEMPLATE_LARGURA,
+        boxSizing: "border-box",
+        background: `linear-gradient(160deg, ${CORES.fundoInicio} 0%, ${CORES.fundoFim} 100%)`,
+        padding: "16px 32px 22px",
+        borderRadius: "0 0 12px 12px",
         fontFamily: "Arial, Helvetica, sans-serif",
         display: "flex",
         flexDirection: "column",
-        gap: 18,
+        gap: 8,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <LogoMarca />
-        <MarcaWatch />
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>
-          Olá equipe de {time}!
-        </p>
-
-        <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>
-          Identificamos um novo alerta em nossa monitoração. Abaixo os detalhes para análise:
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
-          {alertaMultilinha ? <BlocoLongo rotulo="Alerta" valor={alerta} /> : <LinhaRotulo rotulo="Alerta" valor={alerta} />}
-          <LinhaRotulo rotulo="Data e Hora" valor={dataHoraTexto} />
-          {descricaoMultilinha ? (
-            <BlocoLongo rotulo="Descrição" valor={descricao} />
-          ) : (
-            <LinhaRotulo rotulo="Descrição" valor={descricao} />
-          )}
-        </div>
-
-        <LinhaRotulo rotulo="Ticket" valor={ticket || "—"} />
-
-        <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>
-          Pedimos a gentileza de validarem a ocorrência e nos retornarem assim que possível.
-        </p>
-
-        <p style={{ margin: 0, fontSize: FONTE_CORPO, lineHeight: 1.55, color: CORES.texto, ...QUEBRA_TEXTO }}>Obrigado!</p>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
-        <div
-          style={{
-            height: 3,
-            width: "100%",
-            background: `linear-gradient(90deg, ${CORES.divisorInicio}, ${CORES.divisorFim})`,
-            borderRadius: 2,
-          }}
-        />
-        <p
-          style={{
-            margin: 0,
-            fontSize: FONTE_RODAPE,
-            lineHeight: 1.5,
-            color: CORES.textoMuted,
-            textAlign: "right",
-            ...QUEBRA_TEXTO,
-          }}
-        >
-          Comunicado enviado para: {formatarListaTimes(timesNotificados)}
-        </p>
-      </div>
+      <div
+        style={{
+          height: 3,
+          width: "100%",
+          background: `linear-gradient(90deg, ${CORES.divisorInicio}, ${CORES.divisorFim})`,
+          borderRadius: 2,
+        }}
+      />
+      <p
+        style={{
+          margin: 0,
+          fontSize: FONTE_RODAPE,
+          lineHeight: 1.5,
+          color: CORES.textoMuted,
+          textAlign: "right",
+          ...QUEBRA_TEXTO,
+        }}
+      >
+        Comunicado enviado para: {formatarListaTimes(timesNotificados)}
+      </p>
     </div>
   );
+}
+
+type DadosCorpo = {
+  time: string;
+  alerta: string;
+  dataHoraTexto: string;
+  descricao: string;
+  ticket: string;
+};
+
+// Corpo: fica entre o cabeçalho e o rodapé, mas não é mais capturado como
+// imagem — é texto de verdade (pesquisável depois no Teams/e-mail). Por não
+// ser capturado pelo html2canvas, pode usar classes Tailwind à vontade.
+function CorpoPreview({ time, alerta, dataHoraTexto, descricao, ticket }: DadosCorpo) {
+  return (
+    <div
+      className="flex flex-col gap-3 bg-white px-8 py-4 text-sm leading-relaxed break-words text-gray-800 dark:bg-gray-900 dark:text-gray-100"
+      style={{ width: TEMPLATE_LARGURA, maxWidth: "100%", boxSizing: "border-box", fontFamily: "Arial, Helvetica, sans-serif" }}
+    >
+      <p className="m-0">Olá equipe de {time}!</p>
+      <p className="m-0">Identificamos um novo alerta em nossa monitoração. Abaixo os detalhes para análise:</p>
+      <div className="flex flex-col gap-1.5">
+        <p className="m-0 whitespace-pre-wrap">
+          <span className="font-semibold">Alerta:</span> {alerta}
+        </p>
+        <p className="m-0">
+          <span className="font-semibold">Data e Hora:</span> {dataHoraTexto}
+        </p>
+        <p className="m-0 whitespace-pre-wrap">
+          <span className="font-semibold">Descrição:</span> {descricao}
+        </p>
+      </div>
+      <p className="m-0">
+        <span className="font-semibold">Ticket:</span> {ticket || "—"}
+      </p>
+      <p className="m-0">Pedimos a gentileza de validarem a ocorrência e nos retornarem assim que possível.</p>
+      <p className="m-0">Obrigado!</p>
+    </div>
+  );
+}
+
+function escaparHtml(texto: string): string {
+  return texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function escaparComQuebras(texto: string): string {
+  return escaparHtml(texto).replace(/\n/g, "<br>");
+}
+
+// HTML do corpo pra colar junto com as imagens — estilo inline (não classe)
+// porque isso vai pro clipboard, não pro DOM desta página: o app de destino
+// (Teams, Outlook) é quem renderiza, sem acesso ao CSS daqui.
+function montarCorpoHtml({ time, alerta, dataHoraTexto, descricao, ticket }: DadosCorpo): string {
+  const p = (conteudo: string) =>
+    `<p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1f2937;">${conteudo}</p>`;
+  return [
+    p(`Olá equipe de ${escaparHtml(time)}!`),
+    p("Identificamos um novo alerta em nossa monitoração. Abaixo os detalhes para análise:"),
+    p(`<b>Alerta:</b> ${escaparComQuebras(alerta)}`),
+    p(`<b>Data e Hora:</b> ${escaparHtml(dataHoraTexto)}`),
+    p(`<b>Descrição:</b> ${escaparComQuebras(descricao)}`),
+    p(`<b>Ticket:</b> ${escaparHtml(ticket || "—")}`),
+    p("Pedimos a gentileza de validarem a ocorrência e nos retornarem assim que possível."),
+    p("Obrigado!"),
+  ].join("");
+}
+
+function montarCorpoTexto({ time, alerta, dataHoraTexto, descricao, ticket }: DadosCorpo): string {
+  return [
+    `Olá equipe de ${time}!`,
+    "",
+    "Identificamos um novo alerta em nossa monitoração. Abaixo os detalhes para análise:",
+    "",
+    `Alerta: ${alerta}`,
+    `Data e Hora: ${dataHoraTexto}`,
+    `Descrição: ${descricao}`,
+    `Ticket: ${ticket || "—"}`,
+    "",
+    "Pedimos a gentileza de validarem a ocorrência e nos retornarem assim que possível.",
+    "",
+    "Obrigado!",
+  ].join("\n");
 }
 
 export default function ComunicadoForm() {
@@ -228,19 +247,23 @@ export default function ComunicadoForm() {
   const [ticket, setTicket] = useState("");
   const [timesNotificados, setTimesNotificados] = useState<string[]>([]);
   const [erro, setErro] = useState<string | null>(null);
-  const [imagemUrl, setImagemUrl] = useState<string | null>(null);
-  const [imagemBlob, setImagemBlob] = useState<Blob | null>(null);
+  const [cabecalhoUrl, setCabecalhoUrl] = useState<string | null>(null);
+  const [rodapeUrl, setRodapeUrl] = useState<string | null>(null);
   const [gerando, setGerando] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [avisoCopia, setAvisoCopia] = useState<string | null>(null);
 
-  const templateRef = useRef<HTMLDivElement>(null);
+  const cabecalhoRef = useRef<HTMLDivElement>(null);
+  const rodapeRef = useRef<HTMLDivElement>(null);
 
   function alternarTimeNotificado(t: string) {
     setTimesNotificados((atual) => (atual.includes(t) ? atual.filter((x) => x !== t) : [...atual, t]));
   }
 
-  async function gerarImagem() {
+  const dataHoraTexto = dataHora ? formatarDataHoraBR(deInputDataHoraBR(dataHora)) : "";
+  const dadosCorpo: DadosCorpo = { time, alerta, dataHoraTexto, descricao, ticket };
+
+  async function gerarComunicado() {
     setErro(null);
     setCopiado(false);
     setAvisoCopia(null);
@@ -261,47 +284,51 @@ export default function ComunicadoForm() {
       setErro("Selecione ao menos um time notificado.");
       return;
     }
-    if (!templateRef.current) return;
+    if (!cabecalhoRef.current || !rodapeRef.current) return;
 
     setGerando(true);
     try {
       const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(templateRef.current, {
-        backgroundColor: null,
-        scale: 3,
-      });
-      const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-      if (!blob) {
-        setErro("Não foi possível gerar a imagem.");
-        return;
-      }
-      setImagemUrl((atual) => {
-        if (atual) URL.revokeObjectURL(atual);
-        return URL.createObjectURL(blob);
-      });
-      setImagemBlob(blob);
+      const [canvasCabecalho, canvasRodape] = await Promise.all([
+        html2canvas(cabecalhoRef.current, { backgroundColor: null, scale: 3 }),
+        html2canvas(rodapeRef.current, { backgroundColor: null, scale: 3 }),
+      ]);
+      setCabecalhoUrl(canvasCabecalho.toDataURL("image/png"));
+      setRodapeUrl(canvasRodape.toDataURL("image/png"));
     } catch {
-      setErro("Não foi possível gerar a imagem.");
+      setErro("Não foi possível gerar o comunicado.");
     } finally {
       setGerando(false);
     }
   }
 
-  async function copiarImagem() {
-    if (!imagemBlob) return;
+  async function copiarComunicado() {
+    if (!cabecalhoUrl || !rodapeUrl) return;
     setAvisoCopia(null);
+
+    const htmlCompleto = [
+      `<img src="${cabecalhoUrl}" alt="Acionamento NOC" style="display:block;width:100%;max-width:${TEMPLATE_LARGURA}px;border:0;">`,
+      `<div style="width:100%;max-width:${TEMPLATE_LARGURA}px;background:#ffffff;">${montarCorpoHtml(dadosCorpo)}</div>`,
+      `<img src="${rodapeUrl}" alt="" style="display:block;width:100%;max-width:${TEMPLATE_LARGURA}px;border:0;">`,
+    ].join("");
+
+    const textoCompleto = `${montarCorpoTexto(dadosCorpo)}\n\n—\nComunicado enviado para: ${formatarListaTimes(timesNotificados)}`;
+
     try {
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": imagemBlob })]);
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([htmlCompleto], { type: "text/html" }),
+          "text/plain": new Blob([textoCompleto], { type: "text/plain" }),
+        }),
+      ]);
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2500);
     } catch {
       setAvisoCopia(
-        "Não foi possível copiar automaticamente (permissão do navegador). Clique com o botão direito na imagem abaixo e escolha \"Copiar imagem\", ou use o botão Baixar.",
+        "Não foi possível copiar automaticamente (permissão do navegador). Baixe o cabeçalho e o rodapé abaixo, copie o texto do meio manualmente (selecione e Ctrl+C) e monte a mensagem direto no Teams/e-mail.",
       );
     }
   }
-
-  const dataHoraTexto = dataHora ? formatarDataHoraBR(deInputDataHoraBR(dataHora)) : "";
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -389,50 +416,55 @@ export default function ComunicadoForm() {
         <button
           type="button"
           disabled={gerando}
-          onClick={gerarImagem}
+          onClick={gerarComunicado}
           className="mt-1 rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {gerando ? "Gerando..." : "Gerar Imagem"}
+          {gerando ? "Gerando..." : "Gerar Comunicado"}
         </button>
       </div>
 
       <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Pré-visualização</h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Cabeçalho e rodapé viram imagem (chamam atenção no Teams); o texto do meio é copiado como texto de
+          verdade, pesquisável depois.
+        </p>
 
         <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-          <ComunicadoTemplate
-            innerRef={templateRef}
-            time={time}
-            alerta={alerta || "[Colar Alerta]"}
-            dataHoraTexto={dataHoraTexto}
-            descricao={descricao || "[Descrição do Erro]"}
-            ticket={ticket}
-            timesNotificados={timesNotificados.length > 0 ? timesNotificados : ["—"]}
-          />
+          <CabecalhoTemplate innerRef={cabecalhoRef} />
+          <CorpoPreview {...dadosCorpo} />
+          <RodapeTemplate innerRef={rodapeRef} timesNotificados={timesNotificados.length > 0 ? timesNotificados : ["—"]} />
         </div>
 
-        {imagemUrl && (
+        {cabecalhoUrl && rodapeUrl && (
           <>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Imagem gerada — clique em Copiar e cole no e-mail.</p>
-            {/* eslint-disable-next-line @next/next/no-img-element -- é uma imagem gerada em memória (data/blob URL), não um asset do projeto */}
-            <img src={imagemUrl} alt="Comunicado gerado" className="w-full rounded-md border border-gray-200 dark:border-gray-700" />
-
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={copiarImagem}
+                onClick={copiarComunicado}
                 className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
               >
-                {copiado ? "Copiado!" : "Copiar imagem"}
+                {copiado ? "Copiado!" : "Copiar comunicado"}
               </button>
               <a
-                href={imagemUrl}
-                download="acionamento-noc.png"
-                className="rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                href={cabecalhoUrl}
+                download="acionamento-noc-cabecalho.png"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
               >
-                Baixar imagem
+                Baixar cabeçalho
+              </a>
+              <a
+                href={rodapeUrl}
+                download="acionamento-noc-rodape.png"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Baixar rodapé
               </a>
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Cole direto no Teams/e-mail: cabeçalho e rodapé entram como imagem, o texto do meio entra
+              pesquisável.
+            </p>
 
             {avisoCopia && <p className="text-xs text-amber-600 dark:text-amber-400">{avisoCopia}</p>}
           </>
