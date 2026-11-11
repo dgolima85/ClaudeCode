@@ -204,22 +204,24 @@ function escaparComQuebras(texto: string): string {
   return escaparHtml(texto).replace(/\n/g, "<br>");
 }
 
-// HTML do corpo pra colar junto com as imagens — estilo inline (não classe)
-// porque isso vai pro clipboard, não pro DOM desta página: o app de destino
-// (Teams, Outlook) é quem renderiza, sem acesso ao CSS daqui.
+// HTML do corpo pra colar junto com as imagens. Usa <br><br> entre linhas em
+// vez de <p style="margin:...">: apps como o Teams removem o atributo
+// style ao colar (foi assim que a saudação "Olá equipe de..." ficou colada
+// do lado do cabeçalho em vez de embaixo, e as linhas do meio ficaram sem
+// respiro entre si — ver conversa/imagem). <br> é uma quebra de linha de
+// verdade, não depende de CSS, então sobrevive a essa limpeza.
 function montarCorpoHtml({ time, alerta, dataHoraTexto, descricao, ticket }: DadosCorpo): string {
-  const p = (conteudo: string) =>
-    `<p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1f2937;">${conteudo}</p>`;
-  return [
-    p(`Olá equipe de ${escaparHtml(time)}!`),
-    p("Identificamos um novo alerta em nossa monitoração. Abaixo os detalhes para análise:"),
-    p(`<b>Alerta:</b> ${escaparComQuebras(alerta)}`),
-    p(`<b>Data e Hora:</b> ${escaparHtml(dataHoraTexto)}`),
-    p(`<b>Descrição:</b> ${escaparComQuebras(descricao)}`),
-    p(`<b>Ticket:</b> ${escaparHtml(ticket || "—")}`),
-    p("Pedimos a gentileza de validarem a ocorrência e nos retornarem assim que possível."),
-    p("Obrigado!"),
-  ].join("");
+  const linhas = [
+    `Olá equipe de ${escaparHtml(time)}!`,
+    "Identificamos um novo alerta em nossa monitoração. Abaixo os detalhes para análise:",
+    `<b>Alerta:</b> ${escaparComQuebras(alerta)}`,
+    `<b>Data e Hora:</b> ${escaparHtml(dataHoraTexto)}`,
+    `<b>Descrição:</b> ${escaparComQuebras(descricao)}`,
+    `<b>Ticket:</b> ${escaparHtml(ticket || "—")}`,
+    "Pedimos a gentileza de validarem a ocorrência e nos retornarem assim que possível.",
+    "Obrigado!",
+  ];
+  return `<span style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1f2937;">${linhas.join("<br><br>")}</span>`;
 }
 
 function montarCorpoTexto({ time, alerta, dataHoraTexto, descricao, ticket }: DadosCorpo): string {
@@ -306,9 +308,15 @@ export default function ComunicadoForm() {
     if (!cabecalhoUrl || !rodapeUrl) return;
     setAvisoCopia(null);
 
+    // <br><br> entre a imagem e o texto (nos dois sentidos) força uma linha
+    // em branco entre eles mesmo se o Teams ignorar o "style" das imagens —
+    // sem isso, a saudação ficou colada do lado do cabeçalho em vez de
+    // embaixo dele (ver conversa/imagem).
     const htmlCompleto = [
       `<img src="${cabecalhoUrl}" alt="Acionamento NOC" style="display:block;width:100%;max-width:${TEMPLATE_LARGURA}px;border:0;">`,
-      `<div style="width:100%;max-width:${TEMPLATE_LARGURA}px;background:#ffffff;">${montarCorpoHtml(dadosCorpo)}</div>`,
+      "<br><br>",
+      montarCorpoHtml(dadosCorpo),
+      "<br><br>",
       `<img src="${rodapeUrl}" alt="" style="display:block;width:100%;max-width:${TEMPLATE_LARGURA}px;border:0;">`,
     ].join("");
 
